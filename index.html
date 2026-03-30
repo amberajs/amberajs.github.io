@@ -36,6 +36,13 @@
       color: #000;
       text-decoration: underline;
     }
+.fp-iframe,
+iframe {
+  width: 1400px !important;
+  min-width: 1400px !important;
+  height: 900px !important;
+  max-width: none !important;
+}
   </style>
 </head>
 
@@ -70,13 +77,14 @@ and reconstructing timelines from complex records.
   </p>
   <iframe>
     <div style="width:100%; min-width:1000px; max-width:1400px; margin:0 auto; overflow-x:auto;">
+  <iframe>
+    <div style="overflow-x:auto;">
   <iframe
-    src="https://heyzine.com/flip-book/9a18499bfa.html"
-    width="1200"
-    height="850"
-    frameborder="0"
-    style="border:1px solid lightgray;"
+    class="fp-iframe"
+    src="https://heyzine.com/flip-book/9a18499bfa.html?display=double"
     allowfullscreen>
+  </iframe>
+</div>
   </iframe>
 </div>
   </iframe>

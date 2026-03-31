@@ -1,0 +1,240 @@
+### Debian 13.4.0 Trixie CLI-only minimal netinst | 30 March 2026 ###
+
+### Wifi Setup ###
+root@amber:~# ip link
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+2: wlp2s0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN mode DEFAULT group default qlen 1000
+    link/ether 7c:b0:c2:2d:fb:4a brd ff:ff:ff:ff:ff:ff
+    altname wlx7cb0c22dfb4a
+
+INFO: Wifi interface detected: wlp2s0
+
+root@amber:~# ip link set wlp2s0 up
+
+### Configure wpa_supplicant ###
+root@amber:~# nano /etc/wpa_supplicant/wpa_supplicant.conf
+
+# wpa_supplicant configuration file
+# Manually add network blocks below
+network={
+    ssid="HiddenNetwork"
+    psk="password"
+    key_mgmt=WPA-PSK
+}
+
+root@amber:~# wpa_supplicant -B -i wlp2s0 -c /etc/wpa_supplicant/wpa_supplicant.conf
+Successfully initialized wpa_supplicant
+SUCCESS: wifi connection
+
+### Test internet connectivity ###
+root@amber:~# ping -c 3 google.com
+PING google.com (2607:f8b0:4009:81e::200e) 56 data bytes
+64 bytes from ncorda-ao-in-x0e.1e100.net (2607:f8b0:4009:81e::200e): icmp_seq=1 ttl=116 time=90.2 ms
+64 bytes from ncorda-ao-in-x0e.1e100.net (2607:f8b0:4009:81e::200e): icmp_seq=2 ttl=116 time=83.8 ms
+64 bytes from ncorda-ao-in-x0e.1e100.net (2607:f8b0:4009:81e::200e): icmp_seq=3 ttl=116 time=70.3 ms
+
+--- google.com ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2004ms
+rtt min/avg/max/mdev = 70.335/81.433/90.162/8.265 ms
+SUCCESS: internet connection
+
+### Update and upgrade packages ###
+root@amber:~# apt update
+All packages are up to date.
+Warning: Failed to fetch http://deb.debian.org/debian-security/dists/trixie-security/InRelease
+Could not resolve 'deb'
+Warning: Some index files failed to download. They have been ignored, or old ones used instead.
+
+root@amber:~# apt upgrade
+Summary:
+  Upgrading: 0, Installing: 0, Removing: 0, Not Upgrading: 0
+SUCCESS: packages up to date
+
+### Install Essential Tools ###
+root@amber:~# apt install sudo
+Error: Unable to locate package sudo
+NOTE: no active repositories, will try to fix APT next
+
+root@amber:~# cp /etc/apt/sources.list /etc/apt/sources.list.backup
+Backup current sources
+
+root@amber:~# nano /etc/apt/sources.list
+# Debian package sources
+deb http://deb.debian.org/debian trixie main contrib non-free-firmware
+deb http://deb.debian.org/debian-security trixie-security main
+deb http://deb.debian.org/debian trixie-updates main contrib non-free-firmware
+
+root@amber:~# apt update
+All packages are up to date.
+Warning: Failed to fetch http://deb.debian.org/debian-security/dists/trixie-security/InRelease
+Could not resolve 'deb'
+Warning: Some index files failed to download. They have been ignored, or old ones used instead.
+
+NOTE: will try to fix DNS next
+
+root@amber:~# nano /etc/resolv.conf
+# DNS resolver configuration
+nameserver 172.20.10.1
+nameserver fe80::303b:7cff:fea4:3864%wlp2s0
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+
+root@amber:~# ping -c 3 google.com
+PING google.com (2607:f8b0:4009:81e::200e) 56 data bytes
+64 bytes from ncorda-ao-in-x0e.1e100.net (2607:f8b0:4009:81e::200e): icmp_seq=1 ttl=116 time=90.2 ms
+64 bytes from ncorda-ao-in-x0e.1e100.net (2607:f8b0:4009:81e::200e): icmp_seq=2 ttl=116 time=83.8 ms
+64 bytes from ncorda-ao-in-x0e.1e100.net (2607:f8b0:4009:81e::200e): icmp_seq=3 ttl=116 time=70.3 ms
+--- google.com ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2004ms
+
+root@amber:~# echo $PATH
+/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+### Add user to sudo group ###
+root@amber:~# usermod -aG sudo amber
+SUCCESS: user amber added to sudo group, will append this log after logging out and back in
+
+root@amber:~# exit
+exit
+
+Script started on 2026-03-30 06:57:15-04:00
+amber@amber:~$ whoami
+amber
+amber@amber:~$ echo "NOTE: resuming session as amber with sudo privileges"
+NOTE: resuming session as amber with sudo privileges
+amber@amber:~$ echo "### Install Essential Packages ###"
+### Install Essential Packages ###
+amber@amber:~$ sudo apt install -y git curl wget net-tools iproute2 vim nano htop
+[sudo] password for amber:
+Sorry, try again.
+[sudo] password for amber:
+wget is already the newest version (1.25.0-2).
+iproute2 is already the newest version (6.15.0-1).
+nano is already the newest version (8.4-1).
+Installing: curl git htop net-tools vim
+Installing dependencies: git-man liberror-perl libldap2 libngtcp2-16 libsasl2-2 libsodium23 vim-runtime libcurl3t64-gnutls libgpm2 libnghttp2-14 libngtcp2-crypto-gnutls8 libsasl2-modules libssh2-1t64 libcurl4t64 libldap-common libnghttp3-9 librtmp1 libsasl2-modules-db patch
+Summary: Upgrading: 0, Installing: 24, Removing: 0, Not Upgrading: 0
+Download size: 22.6 MB
+Space needed: 103 MB / 11.9 GB available
+Fetched 22.6 MB in 6s
+Selecting previously unselected package libsasl2-modules-db.
+amber@amber:~$ sudo apt install -y build-essential gcc make
+Installing: build-essential gcc make
+Installing dependencies: binutils dpkg-dev gcc-14-x86-64-linux-gnu libbinutils libdpkg-perl libisl23 libstdc++-14-dev xz-utils binutils-common fakeroot gcc-x86-64-linux-gnu libc-dev-bin libfakeroot libitm1 libtsan2 binutils-x86-64-linux-gnu g++ libalgorithm-diff-perl libc6-dev libfile-fcntllock-perl liblsan0 libubsan1 cpp g++-14 libalgorithm-diff-xs-perl libcc1-0 libgcc-14-dev libmpc3 linux-libc-dev cpp-14 g++-14-x86-64-linux-gnu libalgorithm-merge-perl libcrypt-dev libgomp1 libmpfr6 manpages-dev cpp-14-x86-64-linux-gnu g++-x86-64-linux-gnu libasan8 libctf-nobfd0 libgprofng0 libquadmath0 rpcsvc-proto cpp-x86-64-linux-gnu gcc-14 libatomic1 libctf0 libhwasan0 libsframe1
+Summary: Upgrading: 0, Installing: 53, Removing: 0, Not Upgrading: 0
+Download size: 82.5 MB
+Space needed: 312 MB / 11.7 GB available
+amber@amber:~$ sudo apt install mariadb-client mariadb-server
+Installing: mariadb-client mariadb-server
+Installing dependencies: galera-4 libdbi-perl libhttp-date-perl libncurses6 liburing2 mariadb-plugin-provider-lzo gawk libencode-locale-perl libhttp-message-perl libnuma1 libwrap0 mariadb-plugin-provider-snappy libaio1t64 libfcgi-bin libio-compress-brotli-perl libpcre2-posix3 lsof mariadb-server-core libcgi-fast-perl libfcgi-perl libio-html-perl libsigsegv2 mariadb-client-core mysql-common libcgi-pm-perl libfcgi0t64 liblsof0 libsnappy1v5 mariadb-common psmisc libclone-perl libhtml-parser-perl liblwp-mediatypes-perl libterm-readkey-perl mariadb-plugin-provider-bzip2 pv libconfig-inifiles-perl libhtml-tagset-perl liblzo2-2 libtimedate-perl mariadb-plugin-provider-lz4 rsync libdbd-mariadb-perl libhtml-template-perl libmariadb3 liburi-perl mariadb-plugin-provider-lzma socat
+Summary: Upgrading: 0, Installing: 50, Removing: 0, Not Upgrading: 0
+Download size: 21.8 MB
+Space needed: 205 MB / 11.4 GB available
+amber@amber:~$ sudo apt install -y gparted testdisk
+Installing: gparted testdisk
+Installing dependencies: adwaita-icon-theme libatk-bridge2.0-0t64 libdav1d7 libgpg-error-l10n libpangocairo-1.0-0 libtiff6 libxml2 at-spi2-common libatk1.0-0t64 libdconf1 libgpg-error0 libpangoft2-1.0-0 libwayland-client0 at-spi2-core libatkmm-1.6-1v5 libdeflate0 libgraphite2-3 libpangomm-1.4-1v5 libwayland-cursor0 libxrender1 dconf-gsettings-backend libatspi2.0-0t64 libduktape207 libgtk-3-0t64 libparted-fs-resize0t64 libwayland-egl1 libxtst6 dconf-service libavahi-client3 libepoxy0 libgtk-3-bin libparted2t64 libwebp7 ntfs-3g fontconfig libavahi-common-data libfontconfig1 libgtk-3-common libpixman-1-0 libxcb-render0 pkexec fontconfig-config libavahi-common3 libfribidi0 libgtkmm-3.0-1t64 libpolkit-agent-1-0 libxcb-shm0 polkitd fonts-dejavu-core libcairo-gobject2 libgcrypt20 libharfbuzz0b libpolkit-gobject-1-0 libxcomposite1 sgml-base fonts-dejavu-mono libcairo2 libgdk-pixbuf-2.0-0 libjbig0 librsvg2-2 libxcursor1 fuse3 libcairomm-1.0-1v5 libgdk-pixbuf2.0-bin libjpeg62-turbo librsvg2-common libxdamage1 gparted-common libcloudproviders0 libgdk-pixbuf2.0-common liblcms2-2 libsharpyuv0 libxfixes3 xdg-user-dirs gsettings-desktop-schemas libcolord2 libglib2.0-0t64 liblerc4 libsigc++-2.0-0v5 libxi6 xml-core gtk-update-icon-cache libcups2t64 libglib2.0-data libntfs-3g89t64 libthai-data libxinerama1 hicolor-icon-theme libdatrie1 libglibmm-2.4-1t64 libpango-1.0-0 libthai0 libxkbcommon0
+Summary: Upgrading: 0, Installing: 98, Removing: 0, Not Upgrading: 0
+Download size: 31.8 MB
+Space needed: 148 MB / 11.1 GB available
+amber@amber:~$ sudo apt install -y python3 python3-pip python3-venv
+python3 is already the newest version (3.13.5-1).
+python3 set to manually installed.
+Installing: python3-pip python3-venv
+Installing dependencies: javascript-common libjs-jquery libjs-underscore libpython3.13 python3-dev python3-pip-whl python3-wheel python3.13-venv libexpat1-dev libjs-sphinxdoc libpython3-dev libpython3.13-dev python3-packaging python3-setuptools-whl python3.13-dev zlib1g-dev
+Summary: Upgrading: 0, Installing: 18, Removing: 0, Not Upgrading: 0
+Download size: 13.9 MB
+Space needed: 52.9 MB / 10.9 GB available
+amber@amber:~$ sudo apt install -y audacity gimp
+Installing: audacity gimp
+Installing dependencies: alsa-topology-conf libcamd3 libgs10-common libmailtools-perl libsamplerate0 libxcb-render-util0 alsa-ucm-conf libccolamd3 libgts-0.7-5t64 libmd4c0 libsbsms10 libxcb-shape0 audacity-data libcdt5 libgts-bin libmp3lame0 libsensors-config libxcb-sync1 dirmngr libcfitsio10t64 libgudev-1.0-0 libmpg123-0t64 libsensors5 libxcb-util1 fonts-droid-fallback libcgraph6 libgvc6 libmtdev1t64 libserd-0-0 libxcb-xfixes0 fonts-liberation libcholmod5 libgvpr2 libmypaint-1.5-1 libsm6 libxcb-xinerama0 fonts-liberation-sans-narrow libcolamd3 libharfbuzz-gobject0 libmypaint-common libsndfile1 libxcb-xinput0 fonts-noto-mono libdata-dump-perl libheif-plugin-aomenc libnet-dbus-perl libsord-0-0 libxcb-xkb1 fonts-urw-base35 libde265-0 libheif-plugin-dav1d libnet-http-perl libsoundtouch1 libxft2 ghostscript libdouble-conversion3 libheif-plugin-libde265 libnet-smtp-ssl-perl libsoxr0 libxkbcommon-x11-0 gpg libgd3 libinput10 libportaudio2 libwmf-0.2-7 libxshmfence1 gpg-agent libfontenc1 libinih1 libpcre2-32-0 mesa-libgallium gpg-wks-client libgav1-1 libinireader0 libpoppler-glib8t64 libwebpdemux2 mesa-vulkan-drivers gpgconf libgbm1 libinput-bin libpoppler147 libwebpmux3 perl-openssl-defaults gpgsm libgl1 libportmidi0 pinentry-curses gpgv libgles2 libjson-c5 libqt5core5t64 libwww-robotrules-perl qt5-gtk-platformtheme graphviz libglx-mesa0 libjson-glib-1.0-0 libqt5qml5 libx11-xcb1 x11-xserver-utils libaa1 libjson-glib-1.0-common libqt5qmlmodels5 libx265-215 xdg-utils libabsl20240722 libjxl0.11 libqt5quick5 libxaw7 libamd3 libksba8 libqt5svg5 libxcb-dri3-0 libann0 liblapack3 libqt5waylandclient5 libxcb-glx0 libaom3 libllvm19 libqt5waylandcompositor5 libxcb-icccm4 libappstream-glib8 liblilv-0-0 libqt5widgets5 libxcb-image0 libarchive13t64 libgimp-3.0-0 libjson-glib-1.0-common libqt5x11extras5 libx11-protocol-perl x11-utils libasound2-data libglvnd0 libksba8 libqt5waylandclient5 libxcb-glx0 zutty
+Summary: Upgrading: 0, Installing: 273, Removing: 0, Not Upgrading: 0
+Download size: 189 MB
+Space needed: 833 MB / 10.8 GB available
+amber@amber:~$ sudo apt install -y openvpn wireguard
+Installing: openvpn wireguard
+Installing dependencies: easy-rsa libccid libeac3 libpkcs11-helper1t64 opensc opensc-pkcs11 pcscd runit-helper wireguard-tools
+Summary: Upgrading: 0, Installing: 11, Removing: 0, Not Upgrading: 0
+Download size: 2,450 kB
+Space needed: 7,999 kB / 9,966 MB available
+amber@amber:~$ sudo apt install -y bridge-utils hostapd dnsmasq
+Installing: bridge-utils dnsmasq hostapd
+Installing dependencies: dns-root-data dnsmasq-base libnetfilter-conntrack3 libnfnetlink0
+Summary: Upgrading: 0, Installing: 7, Removing: 0, Not Upgrading: 0
+Download size: 1,544 kB
+Space needed: 4,027 kB / 9,957 MB available
+amber@amber:~$ sudo apt clean
+amber@amber:~$ sudo apt update
+
+
+Err:1 http://deb/debian.org/debian-security trixie-security InRelease
+  Could not resolve 'deb'
+All packages are up to date.
+Warning: Failed to fetch http://deb/debian.org/debian-security/dists/trixie-security/InRelease
+  Could not resolve 'deb'
+Warning: Some index files failed to download. They have been ignored, or old ones used instead.
+
+amber@amber:~$ echo "NOTE: editing sources files next"
+NOTE: editing sources file to fix security updates
+
+amber@amber:~$ sudo nano /etc/apt/sources.list
+# added online repositories | 30 March 2026 (user: amber)
+deb http://deb.debian.org/debian trixie main contrib non-free
+deb http://deb.debian.org/debian-security trixie-security main contrib non-free
+deb http://deb.debian.org/debian trixie-updates main contrib non-free
+
+amber@amber:~$ sudo apt update
+4 packages can be upgraded. Run 'apt list --upgradable' to see them.
+
+amber@amber:~$ sudo apt upgrade
+Upgrading:
+  libfreetype6 libxml-parser-perl linux-image-amd64 linux-libc-dev
+Installing dependencies:
+  linux-image-6.12.74+deb13+1-amd64
+Suggested packages:
+  firmware-linux-free linux-doc-6.12 debian-kernel-handbook
+
+Summary:
+  Upgrading: 4, Installing: 1, Removing: 0, Not Upgrading: 0
+  Download size: 111 MB
+  Space needed: 168 MB / 9,951 MB available
+
+amber@amber:~$ sudo apt install -y software-properties-common
+Error: Unable to locate package software-properties-common
+
+amber@amber:~$ sudo apt autoremove
+Summary:
+  Upgrading: 0, Installing: 0, Removing: 0, Not Upgrading: 0
+
+amber@amber:~$ sudo apt clean
+
+amber@amber:~$ echo "### initial Debian 13.4.0 Trixie netinst with necessary packages complete | ending log 30 March 2026 ###"
+### initial Debian 13.4.0 Trixie netinst with necessary packages complete | ending log 30 March 2026 ###
+
+amber@amber:~$ exit
+exit
+
+Script done on 2026-03-30 07:28:33-04:00 [COMMAND_EXIT_CODE="0"]
+Script started on 2026-03-30 16:00:50-04:00
+
+amber@amber:~$ echo "### Copying log onto SD card | 30 March 2026 ###"
+### Copying log onto SD card | 30 March 2026 ###
+
+amber@amber:~$ lsblk
+NAME         MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+mmcblk0      179:0    0 14.7G  0 disk
+├─mmcblk0p1  179:1    0  856M  0 part /boot/efi
+├─mmcblk0p2  179:2    0 13.1G  0 part /
+└─mmcblk0p3  179:3    0  790M  0 part [SWAP]
+mmcblk0boot0 179:256  0    4M  1 disk
+mmcblk0boot1 179:512  0    4M  1 disk
+mmcblk1      179:768  0  3.7G  1 disk
+└─mmcblk1p1  179:769  0  3.7G  1 part
+
+amber@amber:~$ sudo mkdir -p /mnt/sdcard
+amber@amber:~$ sudo mount /dev/mmcblk1p1 /mnt/sdcard
+mount: /mnt/sdcard: WARNING: source write-protected, mounted read-only.
+
+amber@amber:~$ sudo umount /mnt/sdcard
+
+amber@amber:~$ lsblk

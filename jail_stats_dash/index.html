@@ -206,10 +206,33 @@
   const variableMap = {
     "race": "Race",
     "sex": "Sex",
-    "release_date_status": "Release Date Status (Logged vs Null)",
-    "days_served_bins": "Days Served Bracket",
-    "bmi_status": "BMI Category"
+    "bmi_bin": "BMI",
+    "days_served": "Days Served",
+    "has_exp_rel": "Has Expected Release Date?"
   };
+
+  const DAYS_SERVED_ORDER = [
+    '0-2 Days',
+    '3-7 Days',
+    '8-30 Days',
+    '31-180 Days',
+    '181-365 Days',
+    '1+ Years'
+  ];
+
+  function sortCategories(key, categories) {
+    if (key === 'days_served') {
+      return categories.sort((a, b) => {
+        const indexA = DAYS_SERVED_ORDER.indexOf(a);
+        const indexB = DAYS_SERVED_ORDER.indexOf(b);
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+        return a.localeCompare(b);
+      });
+    }
+    return categories.sort();
+  }
 
   let rawData = [];
 
@@ -219,13 +242,10 @@
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       rawData = await response.json();
 
-
       const totalN = rawData.length;
-      const missingDates = rawData.filter(d => d.release_date_status === 'No Date (Null)').length;
-      const missingPct = ((missingDates / totalN) * 100).toFixed(1);
 
       document.getElementById('integrityBanner').innerText = 
-        `Loaded snapshot N = ${totalN} inmates | Missing Release Dates: ${missingPct}% (${missingDates}/${totalN})`;
+        `Loaded snapshot N = ${totalN} inmates`;
 
       initDropdowns();
       updateDashboard();
@@ -239,14 +259,16 @@
     const selectRow = document.getElementById('varRow');
     const selectCol = document.getElementById('varCol');
 
+    selectRow.innerHTML = '';
+    selectCol.innerHTML = '';
+
     Object.entries(variableMap).forEach(([key, label]) => {
       selectRow.add(new Option(label, key));
       selectCol.add(new Option(label, key));
     });
-
-
+    
     selectRow.value = "race";
-    selectCol.value = "release_date_status";
+    selectCol.value = "has_exp_rel";
 
     selectRow.addEventListener('change', updateDashboard);
     selectCol.addEventListener('change', updateDashboard);
@@ -256,17 +278,14 @@
     const rowKey = document.getElementById('varRow').value;
     const colKey = document.getElementById('varCol').value;
 
-
-    const rowCats = [...new Set(rawData.map(d => String(d[rowKey] || 'Unrecorded')))].sort();
-    const colCats = [...new Set(rawData.map(d => String(d[colKey] || 'Unrecorded')))].sort();
-
+    const rowCats = sortCategories(rowKey, [...new Set(rawData.map(d => String(d[rowKey] || 'Unrecorded')))]);
+    const colCats = sortCategories(colKey, [...new Set(rawData.map(d => String(d[colKey] || 'Unrecorded')))]);
 
     const matrix = {};
     rowCats.forEach(r => {
       matrix[r] = {};
       colCats.forEach(c => matrix[r][c] = 0);
     });
-
 
     let totalN = 0;
     rawData.forEach(d => {
@@ -277,7 +296,6 @@
         totalN++;
       }
     });
-
    
     const rowTotals = {};
     const colTotals = {};
@@ -290,7 +308,6 @@
       colTotals[c] = rowCats.reduce((sum, r) => sum + matrix[r][c], 0);
     });
 
-    
     let chiSquare = 0;
     rowCats.forEach(r => {
       colCats.forEach(c => {
@@ -302,15 +319,12 @@
       });
     });
 
-
     const df = Math.max(0, (rowCats.length - 1) * (colCats.length - 1));
-
 
     let pValue = 1.0;
     if (df > 0 && chiSquare >= 0 && typeof jStat !== 'undefined') {
       pValue = 1 - jStat.chisquare.cdf(chiSquare, df);
     }
-
 
     document.getElementById('statChi2').innerText = chiSquare.toFixed(3);
     document.getElementById('statDF').innerText = df;
@@ -322,7 +336,6 @@
       `<span class="significance-tag ${isSig ? 'sig-true' : 'sig-false'}">
         ${isSig ? 'Statistically Significant (p < 0.05)' : 'Not Statistically Significant (p ≥ 0.05)'}
       </span>` : '';
-
 
     let html = `<table><thead><tr><th>${variableMap[rowKey]} \\ ${variableMap[colKey]}</th>`;
     colCats.forEach(c => html += `<th>${c}</th>`);

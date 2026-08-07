@@ -278,8 +278,8 @@
     const rowKey = document.getElementById('varRow').value;
     const colKey = document.getElementById('varCol').value;
 
-    const rowCats = sortCategories(rowKey, [...new Set(rawData.map(d => String(d[rowKey])))]);
-    const colCats = sortCategories(colKey, [...new Set(rawData.map(d => String(d[colKey])))]);
+  const rowCats = sortCategories(rowKey, [...new Set(rawData.map(d => String(d[rowKey] || 'Unrecorded')))]);
+  const colCats = sortCategories(colKey, [...new Set(rawData.map(d => String(d[colKey] || 'Unrecorded')))]);
 
     const matrix = {};
     rowCats.forEach(r => {

@@ -454,35 +454,7 @@ Sources for mutually exclusive demographic populations to match race classificat
     "days_served": "Days Served",
     "has_exp_rel": "Has Expected Release Date?"
   };
-
-  const benchmarks = {
-    "bm_fayette": {
-      name: "Fayette Co. Population (Census)",
-      probs: { "White": 0.6675, "Black": 0.1439, "Hispanic": 0.0952, "Other/Unknown": 0.0467 },
-      totalN: 323725
-    },
-    "bm_ky_pop": {
-      name: "Kentucky Population (Census)",
-      probs: { "White": 0.8155, "Black": 0.0755, "Hispanic": 0.0500, "Other/Unknown": 0.0205 },
-      totalN: 4534824
-    },
-    "bm_us_pop": {
-      name: "US Population (Census)",
-      probs: { "White": 0.5739, "Black": 0.1191, "Hispanic": 0.1934, "Other/Unknown": 0.0711 },
-      totalN: 334922499
-    },
-    "bm_bjs_inc": {
-      name: "US Incarcerated (BJS)",
-      probs: { "White": 0.1077, "Black": 0.4974, "Hispanic": 0.2051, "Other/Unknown": 0.1897 },
-      totalN: null
-    },
-    "bm_kydoc_inc": {
-      name: "KY DOC Incarcerated",
-      probs: { "White": 0.7400, "Black": 0.2200, "Hispanic": 0.0200, "Other/Unknown": 0.0200 },
-      totalN: null
-    }
-  };
-
+  
   const DAYS_SERVED_ORDER = [
     '0-2 Days',
     '3-7 Days',
@@ -496,10 +468,10 @@ Sources for mutually exclusive demographic populations to match race classificat
     if (!rawVal) return 'Other/Unknown';
     const str = String(rawVal).trim().toLowerCase();
     
-    if (str === 'white' || str === 'w') return 'White';
-    if (str === 'black' || str === 'b' || str.includes('african')) return 'Black';
-    if (str === 'hispanic' || str === 'h' || str.includes('latino')) return 'Hispanic';
-    if (str === 'other' || str === 'unknown' || str === 'u' || str === 'other/unknown') return 'Other/Unknown';
+    if (str === 'white') return 'White';
+    if (str === 'black') return 'Black';
+    if (str === 'hispanic') return 'Hispanic';
+    if (str === 'other' || str === 'unknown' || str === 'other/unknown') return 'Other/Unknown';
     
     return 'Other/Unknown';
   }
@@ -702,13 +674,6 @@ Sources for mutually exclusive demographic populations to match race classificat
       selectRow.add(new Option(label, key));
       selectCol.add(new Option(label, key));
     });
-
-    const optGroup = document.createElement('optgroup');
-    optGroup.label = "Goodness-of-Fit Benchmarks";
-    Object.entries(benchmarks).forEach(([bmKey, bmObj]) => {
-      optGroup.appendChild(new Option(bmObj.name, bmKey));
-    });
-    selectCol.appendChild(optGroup);
     
     selectRow.value = "race";
     selectCol.value = "has_exp_rel";
@@ -721,101 +686,7 @@ Sources for mutually exclusive demographic populations to match race classificat
     const rowKey = document.getElementById('varRow').value;
     const colKey = document.getElementById('varCol').value;
 
-    if (colKey.startsWith("bm_")) {
-      runGoodnessOfFit(rowKey, colKey);
-    } else {
-      runCrosstab(rowKey, colKey);
-    }
-  }
-
-  function runGoodnessOfFit(rowKey, bmKey) {
-    const bm = benchmarks[bmKey];
-    const categories = Object.keys(bm.probs);
-
-    const observedCounts = {};
-    categories.forEach(cat => observedCounts[cat] = 0);
-
-    let totalN = 0;
-    rawData.forEach(d => {
-      let val = rowKey === 'race' ? normalizeRace(d.race) : String(d[rowKey] || 'Other/Unknown');
-      if (!observedCounts.hasOwnProperty(val)) {
-        val = 'Other/Unknown';
-      }
-      observedCounts[val]++;
-      totalN++;
-    });
-
-    let chiSquare = 0;
-    const details = [];
-
-    categories.forEach(cat => {
-      const obs = observedCounts[cat];
-      const expProb = bm.probs[cat];
-      const expCount = totalN * expProb;
-      const contrib = expCount > 0 ? Math.pow(obs - expCount, 2) / expCount : 0;
-      chiSquare += contrib;
-
-      details.push({
-        category: cat,
-        observed: obs,
-        obsPct: totalN > 0 ? (obs / totalN) * 100 : 0,
-        expPct: expProb * 100,
-        expected: expCount,
-        contrib: contrib
-      });
-    });
-
-    const df = Math.max(0, categories.length - 1);
-    let pValue = 1.0;
-    if (df > 0 && chiSquare >= 0 && typeof jStat !== 'undefined') {
-      pValue = 1 - jStat.chisquare.cdf(chiSquare, df);
-    }
-
-    document.getElementById('statChi2').innerText = chiSquare.toFixed(3);
-    document.getElementById('statDF').innerText = df;
-    document.getElementById('statPValue').innerText = pValue < 0.0001 ? '< 0.0001' : pValue.toFixed(4);
-    document.getElementById('statN').innerText = totalN;
-
-    const isSig = pValue < 0.05;
-    document.getElementById('sigContainer').innerHTML = 
-      `<span class="significance-tag ${isSig ? 'sig-true' : 'sig-false'}">
-        ${isSig ? 'Statistically Significant (p < 0.05)' : 'Not Statistically Significant (p ≥ 0.05)'}
-      </span>`;
-
-    let html = `<table>
-      <thead>
-        <tr>
-          <th>Category (${variableMap[rowKey] || rowKey})</th>
-          <th>Observed Count</th>
-          <th>Observed %</th>
-          <th>Expected % (${bm.name})</th>
-          <th>Expected Count</th>
-          <th>(O - E)² / E</th>
-        </tr>
-      </thead>
-      <tbody>`;
-
-    details.forEach(row => {
-      html += `<tr>
-        <th>${row.category}</th>
-        <td>${row.observed}</td>
-        <td>${row.obsPct.toFixed(2)}%</td>
-        <td>${row.expPct.toFixed(2)}%</td>
-        <td>${row.expected.toFixed(2)}</td>
-        <td>${row.contrib.toFixed(3)}</td>
-      </tr>`;
-    });
-
-    html += `<tr>
-      <th class="total-cell">Total</th>
-      <td class="total-cell">${totalN}</td>
-      <td class="total-cell">100.00%</td>
-      <td class="total-cell">100.00%</td>
-      <td class="total-cell">${totalN.toFixed(2)}</td>
-      <td class="total-cell">${chiSquare.toFixed(3)}</td>
-    </tr></tbody></table>`;
-
-    document.getElementById('matrixContainer').innerHTML = html;
+    runCrosstab(rowKey, colKey);
   }
 
   function runCrosstab(rowKey, colKey) {
@@ -907,6 +778,3 @@ Sources for mutually exclusive demographic populations to match race classificat
     loadData();
   });
 </script>
-
-</body>
-</html>

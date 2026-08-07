@@ -271,11 +271,53 @@
   <div id="integrityBanner" class="integrity-banner">Loading snapshot_data.json...</div>
 
   <div class="tab-nav">
-    <button class="tab-btn active" onclick="switchTab('matrixTab', this)">Crosstab & Chi-Square</button>
-    <button class="tab-btn" onclick="switchTab('sourcesTab', this)">Data Sources & Baselines</button>
+    <button class="tab-btn active" onclick="switchTab('raceTab', this)">Race Population Comparisons</button>
+    <button class="tab-btn" onclick="switchTab('matrixTab', this)">Snapshot Crosstabs & Chi-Square</button>
   </div>
 
-  <div id="matrixTab" class="tab-content active">
+  <div id="raceTab" class="tab-content active">
+    <div class="card">
+      <h2>Compare Race Data Across Population & Incarceration Groups</h2>
+      <div class="controls">
+        <div class="control-group">
+          <label for="raceGroup1">Primary Group (Observed):</label>
+          <select id="raceGroup1"></select>
+        </div>
+        <div class="control-group">
+          <label for="raceGroup2">Comparison Group (Baseline / Expected):</label>
+          <select id="raceGroup2"></select>
+        </div>
+      </div>
+
+      <div class="hud-grid">
+        <div class="stat-box">
+          <h3 id="raceStatChi2">0.00</h3>
+          <p>Chi-Square (χ²)</p>
+        </div>
+        <div class="stat-box">
+          <h3 id="raceStatDF">3</h3>
+          <p>Degrees of Freedom (df)</p>
+        </div>
+        <div class="stat-box">
+          <h3 id="raceStatPValue">1.0000</h3>
+          <p>p-value</p>
+        </div>
+        <div class="stat-box">
+          <h3 id="raceStatN">0</h3>
+          <p>Base Sample Size (N)</p>
+        </div>
+      </div>
+
+      <div style="text-align: right; margin-bottom: 0.5rem;" id="raceSigContainer"></div>
+      <div class="table-container" id="raceMatrixContainer"></div>
+    </div>
+
+    <div class="card">
+      <div id="sourcesMarkdownContainer" class="markdown-body"></div>
+    </div>
+  </div>
+
+  <div id="matrixTab" class="tab-content">
     <div class="card">
       <div class="controls">
         <div class="control-group">
@@ -309,12 +351,6 @@
 
       <div style="text-align: right; margin-bottom: 0.5rem;" id="sigContainer"></div>
       <div class="table-container" id="matrixContainer"></div>
-    </div>
-  </div>
-
-  <div id="sourcesTab" class="tab-content">
-    <div class="card">
-      <div id="sourcesMarkdownContainer" class="markdown-body"></div>
     </div>
   </div>
 </div>
@@ -421,24 +457,29 @@ Sources for mutually exclusive demographic populations to match race classificat
 
   const benchmarks = {
     "bm_fayette": {
-      name: "Benchmark: Fayette Co. Population (Census)",
-      probs: { "White": 0.6675, "Black": 0.1439, "Hispanic": 0.0952, "Other/Unknown": 0.0467 }
+      name: "Fayette Co. Population (Census)",
+      probs: { "White": 0.6675, "Black": 0.1439, "Hispanic": 0.0952, "Other/Unknown": 0.0467 },
+      totalN: 323725
     },
     "bm_ky_pop": {
-      name: "Benchmark: Kentucky Population (Census)",
-      probs: { "White": 0.8155, "Black": 0.0755, "Hispanic": 0.0500, "Other/Unknown": 0.0205 }
+      name: "Kentucky Population (Census)",
+      probs: { "White": 0.8155, "Black": 0.0755, "Hispanic": 0.0500, "Other/Unknown": 0.0205 },
+      totalN: 4534824
     },
     "bm_us_pop": {
-      name: "Benchmark: US Population (Census)",
-      probs: { "White": 0.5739, "Black": 0.1191, "Hispanic": 0.1934, "Other/Unknown": 0.0711 }
+      name: "US Population (Census)",
+      probs: { "White": 0.5739, "Black": 0.1191, "Hispanic": 0.1934, "Other/Unknown": 0.0711 },
+      totalN: 334922499
     },
     "bm_bjs_inc": {
-      name: "Benchmark: BJS National Incarcerated",
-      probs: { "White": 0.1077, "Black": 0.4974, "Hispanic": 0.2051, "Other/Unknown": 0.1897 }
+      name: "US Incarcerated (BJS)",
+      probs: { "White": 0.1077, "Black": 0.4974, "Hispanic": 0.2051, "Other/Unknown": 0.1897 },
+      totalN: null
     },
     "bm_kydoc_inc": {
-      name: "Benchmark: KY DOC Incarcerated",
-      probs: { "White": 0.7400, "Black": 0.2200, "Hispanic": 0.0200, "Other/Unknown": 0.0200 }
+      name: "KY DOC Incarcerated",
+      probs: { "White": 0.7400, "Black": 0.2200, "Hispanic": 0.0200, "Other/Unknown": 0.0200 },
+      totalN: null
     }
   };
 
@@ -467,6 +508,32 @@ Sources for mutually exclusive demographic populations to match race classificat
 
   let rawData = [];
 
+  // Get race stats dynamically from snapshot_data.json (Fayette Incarcerated)
+  function getFayetteIncRaceStats() {
+    const categories = ["White", "Black", "Hispanic", "Other/Unknown"];
+    const counts = { "White": 0, "Black": 0, "Hispanic": 0, "Other/Unknown": 0 };
+    let totalN = 0;
+
+    rawData.forEach(d => {
+      let val = String(d.race || 'Other/Unknown');
+      if (!counts.hasOwnProperty(val)) val = 'Other/Unknown';
+      counts[val]++;
+      totalN++;
+    });
+
+    const probs = {};
+    categories.forEach(cat => {
+      probs[cat] = totalN > 0 ? counts[cat] / totalN : 0;
+    });
+
+    return {
+      name: "Fayette Incarcerated (Snapshot Data)",
+      counts: counts,
+      probs: probs,
+      totalN: totalN
+    };
+  }
+
   async function loadData() {
     try {
       const response = await fetch('./snapshot_data.json');
@@ -478,7 +545,10 @@ Sources for mutually exclusive demographic populations to match race classificat
       document.getElementById('integrityBanner').innerText = 
         `Loaded snapshot N = ${totalN} inmates`;
 
-      initDropdowns();
+      initRaceTabDropdowns();
+      initTab2Dropdowns();
+      
+      updateRaceComparison();
       updateDashboard();
     } catch (err) {
       document.getElementById('integrityBanner').innerText = 
@@ -486,7 +556,132 @@ Sources for mutually exclusive demographic populations to match race classificat
     }
   }
 
-  function initDropdowns() {
+  const ALL_RACE_GROUPS = {
+    "us_pop": { label: "US Population (Census)", key: "bm_us_pop" },
+    "us_inc": { label: "US Incarcerated (BJS)", key: "bm_bjs_inc" },
+    "ky_pop": { label: "KY Population (Census)", key: "bm_ky_pop" },
+    "ky_inc": { label: "KY DOC Incarcerated", key: "bm_kydoc_inc" },
+    "fayette_pop": { label: "Fayette Co. Population (Census)", key: "bm_fayette" },
+    "fayette_inc": { label: "Fayette Incarcerated (Snapshot Data)", key: "fayette_inc" }
+  };
+
+  function getGroupData(groupId) {
+    if (groupId === "fayette_inc") {
+      return getFayetteIncRaceStats();
+    }
+    const bmKey = ALL_RACE_GROUPS[groupId].key;
+    const bm = benchmarks[bmKey];
+    return {
+      name: bm.name,
+      probs: bm.probs,
+      totalN: bm.totalN || null
+    };
+  }
+
+  function initRaceTabDropdowns() {
+    const sel1 = document.getElementById('raceGroup1');
+    const sel2 = document.getElementById('raceGroup2');
+
+    sel1.innerHTML = '';
+    sel2.innerHTML = '';
+
+    Object.entries(ALL_RACE_GROUPS).forEach(([id, obj]) => {
+      sel1.add(new Option(obj.label, id));
+      sel2.add(new Option(obj.label, id));
+    });
+
+    sel1.value = "fayette_inc";
+    sel2.value = "fayette_pop";
+
+    sel1.addEventListener('change', updateRaceComparison);
+    sel2.addEventListener('change', updateRaceComparison);
+  }
+
+  function updateRaceComparison() {
+    const id1 = document.getElementById('raceGroup1').value;
+    const id2 = document.getElementById('raceGroup2').value;
+
+    const g1 = getGroupData(id1);
+    const g2 = getGroupData(id2);
+
+    const categories = ["White", "Black", "Hispanic", "Other/Unknown"];
+    const baseN = g1.totalN || (rawData.length > 0 ? rawData.length : 1000);
+
+    let chiSquare = 0;
+    const details = [];
+
+    categories.forEach(cat => {
+      const p1 = g1.probs[cat] || 0;
+      const p2 = g2.probs[cat] || 0;
+      const obsCount = g1.counts ? g1.counts[cat] : Math.round(p1 * baseN);
+      const expCount = p2 * baseN;
+      const contrib = expCount > 0 ? Math.pow(obsCount - expCount, 2) / expCount : 0;
+      chiSquare += contrib;
+
+      details.push({
+        category: cat,
+        g1Pct: p1 * 100,
+        g1Count: obsCount,
+        g2Pct: p2 * 100,
+        expCount: expCount,
+        contrib: contrib
+      });
+    });
+
+    const df = 3;
+    let pValue = 1.0;
+    if (df > 0 && chiSquare >= 0 && typeof jStat !== 'undefined') {
+      pValue = 1 - jStat.chisquare.cdf(chiSquare, df);
+    }
+
+    document.getElementById('raceStatChi2').innerText = chiSquare.toFixed(3);
+    document.getElementById('raceStatDF').innerText = df;
+    document.getElementById('raceStatPValue').innerText = pValue < 0.0001 ? '< 0.0001' : pValue.toFixed(4);
+    document.getElementById('raceStatN').innerText = baseN.toLocaleString();
+
+    const isSig = pValue < 0.05;
+    document.getElementById('raceSigContainer').innerHTML = 
+      `<span class="significance-tag ${isSig ? 'sig-true' : 'sig-false'}">
+        ${isSig ? 'Statistically Significant Difference (p < 0.05)' : 'No Significant Difference (p ≥ 0.05)'}
+      </span>`;
+
+    let html = `<table>
+      <thead>
+        <tr>
+          <th>Race Category</th>
+          <th>${g1.name} %</th>
+          <th>Observed Count (N=${baseN.toLocaleString()})</th>
+          <th>${g2.name} %</th>
+          <th>Expected Count</th>
+          <th>(O - E)² / E</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    details.forEach(row => {
+      html += `<tr>
+        <th>${row.category}</th>
+        <td>${row.g1Pct.toFixed(2)}%</td>
+        <td>${row.g1Count.toLocaleString()}</td>
+        <td>${row.g2Pct.toFixed(2)}%</td>
+        <td>${row.expCount.toFixed(2)}</td>
+        <td>${row.contrib.toFixed(3)}</td>
+      </tr>`;
+    });
+
+    html += `<tr>
+      <th class="total-cell">Total</th>
+      <td class="total-cell">100.00%</td>
+      <td class="total-cell">${baseN.toLocaleString()}</td>
+      <td class="total-cell">100.00%</td>
+      <td class="total-cell">${baseN.toFixed(2)}</td>
+      <td class="total-cell">${chiSquare.toFixed(3)}</td>
+    </tr></tbody></table>`;
+
+    document.getElementById('raceMatrixContainer').innerHTML = html;
+  }
+
+  function initTab2Dropdowns() {
     const selectRow = document.getElementById('varRow');
     const selectCol = document.getElementById('varCol');
 
@@ -632,7 +827,7 @@ Sources for mutually exclusive demographic populations to match race classificat
         totalN++;
       }
     });
-   
+    
     const rowTotals = {};
     const colTotals = {};
 

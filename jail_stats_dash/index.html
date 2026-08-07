@@ -274,7 +274,7 @@
     <button class="tab-btn active" onclick="switchTab('raceTab', this)">Race Population Comparisons</button>
     <button class="tab-btn" onclick="switchTab('matrixTab', this)">Snapshot Crosstabs & Chi-Square</button>
   </div>
-
+>
   <div id="raceTab" class="tab-content active">
     <div class="card">
       <h2>Compare Race Data Across Population & Incarceration Groups</h2>
@@ -492,6 +492,18 @@ Sources for mutually exclusive demographic populations to match race classificat
     '1+ Years'
   ];
 
+  function normalizeRace(rawVal) {
+    if (!rawVal) return 'Other/Unknown';
+    const str = String(rawVal).trim().toLowerCase();
+    
+    if (str === 'white' || str === 'w') return 'White';
+    if (str === 'black' || str === 'b' || str.includes('african')) return 'Black';
+    if (str === 'hispanic' || str === 'h' || str.includes('latino')) return 'Hispanic';
+    if (str === 'other' || str === 'unknown' || str === 'u' || str === 'other/unknown') return 'Other/Unknown';
+    
+    return 'Other/Unknown';
+  }
+
   function sortCategories(key, categories) {
     if (key === 'days_served') {
       return categories.sort((a, b) => {
@@ -508,16 +520,14 @@ Sources for mutually exclusive demographic populations to match race classificat
 
   let rawData = [];
 
-  // Get race stats dynamically from snapshot_data.json (Fayette Incarcerated)
   function getFayetteIncRaceStats() {
     const categories = ["White", "Black", "Hispanic", "Other/Unknown"];
     const counts = { "White": 0, "Black": 0, "Hispanic": 0, "Other/Unknown": 0 };
     let totalN = 0;
 
     rawData.forEach(d => {
-      let val = String(d.race || 'Other/Unknown');
-      if (!counts.hasOwnProperty(val)) val = 'Other/Unknown';
-      counts[val]++;
+      const normalized = normalizeRace(d.race);
+      counts[normalized]++;
       totalN++;
     });
 
@@ -727,7 +737,7 @@ Sources for mutually exclusive demographic populations to match race classificat
 
     let totalN = 0;
     rawData.forEach(d => {
-      let val = String(d[rowKey] || 'Other/Unknown');
+      let val = rowKey === 'race' ? normalizeRace(d.race) : String(d[rowKey] || 'Other/Unknown');
       if (!observedCounts.hasOwnProperty(val)) {
         val = 'Other/Unknown';
       }
@@ -809,8 +819,11 @@ Sources for mutually exclusive demographic populations to match race classificat
   }
 
   function runCrosstab(rowKey, colKey) {
-    const rowCats = sortCategories(rowKey, [...new Set(rawData.map(d => String(d[rowKey] || 'Unrecorded')))]);
-    const colCats = sortCategories(colKey, [...new Set(rawData.map(d => String(d[colKey] || 'Unrecorded')))]);
+    const rawRowCats = [...new Set(rawData.map(d => rowKey === 'race' ? normalizeRace(d.race) : String(d[rowKey] || 'Unrecorded')))];
+    const rawColCats = [...new Set(rawData.map(d => colKey === 'race' ? normalizeRace(d.race) : String(d[colKey] || 'Unrecorded')))];
+
+    const rowCats = sortCategories(rowKey, rawRowCats);
+    const colCats = sortCategories(colKey, rawColCats);
 
     const matrix = {};
     rowCats.forEach(r => {
@@ -820,8 +833,8 @@ Sources for mutually exclusive demographic populations to match race classificat
 
     let totalN = 0;
     rawData.forEach(d => {
-      const rVal = String(d[rowKey] || 'Unrecorded');
-      const cVal = String(d[colKey] || 'Unrecorded');
+      const rVal = rowKey === 'race' ? normalizeRace(d.race) : String(d[rowKey] || 'Unrecorded');
+      const cVal = colKey === 'race' ? normalizeRace(d.race) : String(d[colKey] || 'Unrecorded');
       if (matrix[rVal] && matrix[rVal][cVal] !== undefined) {
         matrix[rVal][cVal]++;
         totalN++;

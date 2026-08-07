@@ -198,7 +198,69 @@
 
     .markdown-body {
       background-color: transparent !important;
+      color: var(--text) !important;
       font-family: inherit;
+    }
+
+    .markdown-body h1, 
+    .markdown-body h2, 
+    .markdown-body h3, 
+    .markdown-body h4 {
+      color: var(--primary) !important;
+      border-bottom-color: var(--border) !important;
+    }
+
+    .markdown-body p,
+    .markdown-body li,
+    .markdown-body td,
+    .markdown-body th,
+    .markdown-body span,
+    .markdown-body strong {
+      color: var(--text) !important;
+    }
+
+    .markdown-body table {
+      background-color: var(--card-bg) !important;
+      display: table !important;
+      width: 100% !important;
+      border-collapse: collapse !important;
+    }
+
+    .markdown-body table tr {
+      background-color: var(--card-bg) !important;
+      border-top-color: var(--border) !important;
+    }
+
+    .markdown-body table tr:nth-child(2n) {
+      background-color: #f8f9fa !important;
+    }
+
+    .markdown-body table th, 
+    .markdown-body table td {
+      border: 1px solid var(--border) !important;
+      padding: 10px 14px !important;
+      color: var(--text) !important;
+    }
+
+    .markdown-body table th {
+      background-color: #f1f3f5 !important;
+    }
+
+    .markdown-body code {
+      background-color: #e9ecef !important;
+      color: var(--text) !important;
+      border-radius: 4px !important;
+      padding: 0.2em 0.4em !important;
+    }
+
+    .markdown-body blockquote {
+      color: #495057 !important;
+      border-left-color: var(--border) !important;
+    }
+
+    .markdown-body hr {
+      background-color: var(--border) !important;
+      height: 1px !important;
     }
   </style>
 </head>
@@ -274,7 +336,6 @@ Sources for mutually exclusive demographic populations to match race classificat
 * **Black:** Line 4 (`Not Hispanic or Latino: Black or African American alone`)
 * **Hispanic:** Line 12 (`Hispanic or Latino of any race`)
 * **Other / Unknown:** Sum of Lines 5, 6, 7, and 8
-  $$\text{Other/Unknown} = \text{Line 5 (AIAN)} + \text{Line 6 (Asian)} + \text{Line 7 (NHPI)} + \text{Line 8 (Some Other / Two+ Races)}$$
 
 ### Data Breakdown
 
@@ -301,8 +362,6 @@ Sources for mutually exclusive demographic populations to match race classificat
 * **Source:** Bureau of Justice Statistics (BJS), *Correctional Populations in the United States, 2023*, Table 7.
 * **Access Date:** August 7, 2026.
 * **URL:** `https://bjs.ojp.gov/document/cpus23st.pdf`
-
-$$\text{Implied Category \%} = \left(\frac{\text{Group Rate}}{\text{Total Combined Rate (3,900)}}\right) \times 100$$
 
 | Category | Incarceration Rate (per 100k US Residents) | Implied Distribution % |
 | :--- | :--- | :--- |
@@ -338,7 +397,6 @@ $$\text{Implied Category \%} = \left(\frac{\text{Group Rate}}{\text{Total Combin
 </script>
 
 <script>
-  // Tab Switching Functionality
   function switchTab(tabId, element) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -347,7 +405,6 @@ $$\text{Implied Category \%} = \left(\frac{\text{Group Rate}}{\text{Total Combin
     element.classList.add('active');
   }
 
-  // Render Embedded Markdown Sources on Page Load
   function renderSources() {
     const markdownSource = document.getElementById('sources-markdown').textContent;
     const renderedHTML = marked.parse(markdownSource);
@@ -360,6 +417,29 @@ $$\text{Implied Category \%} = \left(\frac{\text{Group Rate}}{\text{Total Combin
     "bmi_bin": "BMI",
     "days_served": "Days Served",
     "has_exp_rel": "Has Expected Release Date?"
+  };
+
+  const benchmarks = {
+    "bm_fayette": {
+      name: "Benchmark: Fayette Co. Population (Census)",
+      probs: { "White": 0.6675, "Black": 0.1439, "Hispanic": 0.0952, "Other/Unknown": 0.0467 }
+    },
+    "bm_ky_pop": {
+      name: "Benchmark: Kentucky Population (Census)",
+      probs: { "White": 0.8155, "Black": 0.0755, "Hispanic": 0.0500, "Other/Unknown": 0.0205 }
+    },
+    "bm_us_pop": {
+      name: "Benchmark: US Population (Census)",
+      probs: { "White": 0.5739, "Black": 0.1191, "Hispanic": 0.1934, "Other/Unknown": 0.0711 }
+    },
+    "bm_bjs_inc": {
+      name: "Benchmark: BJS National Incarcerated",
+      probs: { "White": 0.1077, "Black": 0.4974, "Hispanic": 0.2051, "Other/Unknown": 0.1897 }
+    },
+    "bm_kydoc_inc": {
+      name: "Benchmark: KY DOC Incarcerated",
+      probs: { "White": 0.7400, "Black": 0.2200, "Hispanic": 0.0200, "Other/Unknown": 0.0200 }
+    }
   };
 
   const DAYS_SERVED_ORDER = [
@@ -417,6 +497,13 @@ $$\text{Implied Category \%} = \left(\frac{\text{Group Rate}}{\text{Total Combin
       selectRow.add(new Option(label, key));
       selectCol.add(new Option(label, key));
     });
+
+    const optGroup = document.createElement('optgroup');
+    optGroup.label = "Goodness-of-Fit Benchmarks";
+    Object.entries(benchmarks).forEach(([bmKey, bmObj]) => {
+      optGroup.appendChild(new Option(bmObj.name, bmKey));
+    });
+    selectCol.appendChild(optGroup);
     
     selectRow.value = "race";
     selectCol.value = "has_exp_rel";
@@ -429,6 +516,104 @@ $$\text{Implied Category \%} = \left(\frac{\text{Group Rate}}{\text{Total Combin
     const rowKey = document.getElementById('varRow').value;
     const colKey = document.getElementById('varCol').value;
 
+    if (colKey.startsWith("bm_")) {
+      runGoodnessOfFit(rowKey, colKey);
+    } else {
+      runCrosstab(rowKey, colKey);
+    }
+  }
+
+  function runGoodnessOfFit(rowKey, bmKey) {
+    const bm = benchmarks[bmKey];
+    const categories = Object.keys(bm.probs);
+
+    const observedCounts = {};
+    categories.forEach(cat => observedCounts[cat] = 0);
+
+    let totalN = 0;
+    rawData.forEach(d => {
+      let val = String(d[rowKey] || 'Other/Unknown');
+      if (!observedCounts.hasOwnProperty(val)) {
+        val = 'Other/Unknown';
+      }
+      observedCounts[val]++;
+      totalN++;
+    });
+
+    let chiSquare = 0;
+    const details = [];
+
+    categories.forEach(cat => {
+      const obs = observedCounts[cat];
+      const expProb = bm.probs[cat];
+      const expCount = totalN * expProb;
+      const contrib = expCount > 0 ? Math.pow(obs - expCount, 2) / expCount : 0;
+      chiSquare += contrib;
+
+      details.push({
+        category: cat,
+        observed: obs,
+        obsPct: totalN > 0 ? (obs / totalN) * 100 : 0,
+        expPct: expProb * 100,
+        expected: expCount,
+        contrib: contrib
+      });
+    });
+
+    const df = Math.max(0, categories.length - 1);
+    let pValue = 1.0;
+    if (df > 0 && chiSquare >= 0 && typeof jStat !== 'undefined') {
+      pValue = 1 - jStat.chisquare.cdf(chiSquare, df);
+    }
+
+    document.getElementById('statChi2').innerText = chiSquare.toFixed(3);
+    document.getElementById('statDF').innerText = df;
+    document.getElementById('statPValue').innerText = pValue < 0.0001 ? '< 0.0001' : pValue.toFixed(4);
+    document.getElementById('statN').innerText = totalN;
+
+    const isSig = pValue < 0.05;
+    document.getElementById('sigContainer').innerHTML = 
+      `<span class="significance-tag ${isSig ? 'sig-true' : 'sig-false'}">
+        ${isSig ? 'Statistically Significant (p < 0.05)' : 'Not Statistically Significant (p ≥ 0.05)'}
+      </span>`;
+
+    let html = `<table>
+      <thead>
+        <tr>
+          <th>Category (${variableMap[rowKey] || rowKey})</th>
+          <th>Observed Count</th>
+          <th>Observed %</th>
+          <th>Expected % (${bm.name})</th>
+          <th>Expected Count</th>
+          <th>(O - E)² / E</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    details.forEach(row => {
+      html += `<tr>
+        <th>${row.category}</th>
+        <td>${row.observed}</td>
+        <td>${row.obsPct.toFixed(2)}%</td>
+        <td>${row.expPct.toFixed(2)}%</td>
+        <td>${row.expected.toFixed(2)}</td>
+        <td>${row.contrib.toFixed(3)}</td>
+      </tr>`;
+    });
+
+    html += `<tr>
+      <th class="total-cell">Total</th>
+      <td class="total-cell">${totalN}</td>
+      <td class="total-cell">100.00%</td>
+      <td class="total-cell">100.00%</td>
+      <td class="total-cell">${totalN.toFixed(2)}</td>
+      <td class="total-cell">${chiSquare.toFixed(3)}</td>
+    </tr></tbody></table>`;
+
+    document.getElementById('matrixContainer').innerHTML = html;
+  }
+
+  function runCrosstab(rowKey, colKey) {
     const rowCats = sortCategories(rowKey, [...new Set(rawData.map(d => String(d[rowKey] || 'Unrecorded')))]);
     const colCats = sortCategories(colKey, [...new Set(rawData.map(d => String(d[colKey] || 'Unrecorded')))]);
 
@@ -488,7 +673,7 @@ $$\text{Implied Category \%} = \left(\frac{\text{Group Rate}}{\text{Total Combin
         ${isSig ? 'Statistically Significant (p < 0.05)' : 'Not Statistically Significant (p ≥ 0.05)'}
       </span>` : '';
 
-    let html = `<table><thead><tr><th>${variableMap[rowKey]} \\ ${variableMap[colKey]}</th>`;
+    let html = `<table><thead><tr><th>${variableMap[rowKey] || rowKey} \\ ${variableMap[colKey] || colKey}</th>`;
     colCats.forEach(c => html += `<th>${c}</th>`);
     html += `<th class="total-cell">Total</th></tr></thead><tbody>`;
 

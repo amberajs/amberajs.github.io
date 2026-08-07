@@ -162,7 +162,7 @@
 
 <div class="container">
   <h1>County Jail Population Snapshot</h1>
-  <div id="integrityBanner" class="integrity-banner">Loading data.json...</div>
+  <div id="integrityBanner" class="integrity-banner">Loading snapshot_data.json...</div>
 
   <div class="card">
     <div class="controls">
@@ -231,7 +231,7 @@
       updateDashboard();
     } catch (err) {
       document.getElementById('integrityBanner').innerText = 
-        `Error loading data.json: ${err.message}. Ensure data.json is in the same folder.`;
+        `Error loading snapshot_data.json: ${err.message}.`;
     }
   }
 

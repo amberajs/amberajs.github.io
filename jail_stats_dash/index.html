@@ -210,8 +210,8 @@
   <div id="integrityBanner" class="integrity-banner">Loading snapshot_data.json...</div>
 
   <div class="tab-nav">
-    <button class="tab-btn active" onclick="switchTab('matrixTab', this)">📊 Crosstab & Chi-Square</button>
-    <button class="tab-btn" onclick="switchTab('sourcesTab', this)">📜 Data Sources & Baselines</button>
+    <button class="tab-btn active" onclick="switchTab('matrixTab', this)">Crosstab & Chi-Square</button>
+    <button class="tab-btn" onclick="switchTab('sourcesTab', this)">Data Sources & Baselines</button>
   </div>
 
   <div id="matrixTab" class="tab-content active">
@@ -278,7 +278,7 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
 
 ### Category Mapping Logic
 * **White:** Line 3 (`Not Hispanic or Latino: White alone`)
-* **Black:** Line 4 (`Not Hispanic or Latino: Black or African American alone`)
+* **Black:** Line 4 (`Not Hispanic or Latino: Black alone`)
 * **Hispanic:** Line 12 (`Hispanic or Latino of any race`)
 * **Other / Unknown:** Sum of Lines 5, 6, 7, and 8  
 
@@ -343,6 +343,7 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
 
 <script>
 
+ <script>
   function switchTab(tabId, element) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -350,6 +351,7 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
     document.getElementById(tabId).classList.add('active');
     element.classList.add('active');
   }
+
   function renderSources() {
     const markdownSource = document.getElementById('sources-markdown').textContent;
     const renderedHTML = marked.parse(markdownSource);
@@ -363,7 +365,7 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
     "days_served": "Days Served",
     "has_exp_rel": "Has Expected Release Date?"
   };
-
+  
   const DAYS_SERVED_ORDER = [
     '0-2 Days',
     '3-7 Days',
@@ -372,6 +374,18 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
     '181-365 Days',
     '1+ Years'
   ];
+
+  function normalizeRace(rawVal) {
+    if (!rawVal) return 'Other/Unknown';
+    const str = String(rawVal).trim().toLowerCase();
+    
+    if (str === 'white') return 'White';
+    if (str === 'black') return 'Black';
+    if (str === 'hispanic') return 'Hispanic';
+    if (str === 'other' || str === 'unknown' || str === 'other/unknown') return 'Other/Unknown';
+    
+    return 'Other/Unknown';
+  }
 
   function sortCategories(key, categories) {
     if (key === 'days_served') {
@@ -389,6 +403,30 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
 
   let rawData = [];
 
+  function getFayetteIncRaceStats() {
+    const categories = ["White", "Black", "Hispanic", "Other/Unknown"];
+    const counts = { "White": 0, "Black": 0, "Hispanic": 0, "Other/Unknown": 0 };
+    let totalN = 0;
+
+    rawData.forEach(d => {
+      const normalized = normalizeRace(d.race);
+      counts[normalized]++;
+      totalN++;
+    });
+
+    const probs = {};
+    categories.forEach(cat => {
+      probs[cat] = totalN > 0 ? counts[cat] / totalN : 0;
+    });
+
+    return {
+      name: "Fayette Incarcerated (Snapshot Data)",
+      counts: counts,
+      probs: probs,
+      totalN: totalN
+    };
+  }
+
   async function loadData() {
     try {
       const response = await fetch('./snapshot_data.json');
@@ -400,16 +438,148 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
       document.getElementById('integrityBanner').innerText = 
         `Loaded snapshot N = ${totalN} inmates`;
 
-      initDropdowns();
+      initRaceTabDropdowns();
+      initTab2Dropdowns();
+      
+      updateRaceComparison();
       updateDashboard();
-      updateComparisonMatrixData();
     } catch (err) {
       document.getElementById('integrityBanner').innerText = 
         `Error loading snapshot_data.json: ${err.message}.`;
     }
   }
 
-  function initDropdowns() {
+  const ALL_RACE_GROUPS = {
+    "us_pop": { label: "US Population (Census)", key: "bm_us_pop" },
+    "us_inc": { label: "US Incarcerated (BJS)", key: "bm_bjs_inc" },
+    "ky_pop": { label: "KY Population (Census)", key: "bm_ky_pop" },
+    "ky_inc": { label: "KY DOC Incarcerated", key: "bm_kydoc_inc" },
+    "fayette_pop": { label: "Fayette Co. Population (Census)", key: "bm_fayette" },
+    "fayette_inc": { label: "Fayette Incarcerated (Snapshot Data)", key: "fayette_inc" }
+  };
+
+  function getGroupData(groupId) {
+    if (groupId === "fayette_inc") {
+      return getFayetteIncRaceStats();
+    }
+    const bmKey = ALL_RACE_GROUPS[groupId].key;
+    const bm = benchmarks[bmKey];
+    return {
+      name: bm.name,
+      probs: bm.probs,
+      totalN: bm.totalN || null
+    };
+  }
+
+  function initRaceTabDropdowns() {
+    const sel1 = document.getElementById('raceGroup1');
+    const sel2 = document.getElementById('raceGroup2');
+
+    sel1.innerHTML = '';
+    sel2.innerHTML = '';
+
+    Object.entries(ALL_RACE_GROUPS).forEach(([id, obj]) => {
+      sel1.add(new Option(obj.label, id));
+      sel2.add(new Option(obj.label, id));
+    });
+
+    sel1.value = "fayette_inc";
+    sel2.value = "fayette_pop";
+
+    sel1.addEventListener('change', updateRaceComparison);
+    sel2.addEventListener('change', updateRaceComparison);
+  }
+
+  function updateRaceComparison() {
+    const id1 = document.getElementById('raceGroup1').value;
+    const id2 = document.getElementById('raceGroup2').value;
+
+    const g1 = getGroupData(id1);
+    const g2 = getGroupData(id2);
+    const snapStats = getFayetteIncRaceStats();
+
+    const categories = ["White", "Black", "Hispanic", "Other/Unknown"];
+    const baseN = g1.totalN || (rawData.length > 0 ? rawData.length : 1000);
+
+    let chiSquare = 0;
+    const details = [];
+
+    categories.forEach(cat => {
+      const p1 = g1.probs[cat] || 0;
+      const p2 = g2.probs[cat] || 0;
+      const obsCount = g1.counts ? g1.counts[cat] : Math.round(p1 * baseN);
+      const expCount = p2 * baseN;
+      const contrib = expCount > 0 ? Math.pow(obsCount - expCount, 2) / expCount : 0;
+      chiSquare += contrib;
+
+      details.push({
+        category: cat,
+        g1Pct: p1 * 100,
+        g1Count: obsCount,
+        g2Pct: p2 * 100,
+        expCount: expCount,
+        contrib: contrib,
+        snapPct: (snapStats.probs[cat] || 0) * 100
+      });
+    });
+
+    const df = 3;
+    let pValue = 1.0;
+    if (df > 0 && chiSquare >= 0 && typeof jStat !== 'undefined') {
+      pValue = 1 - jStat.chisquare.cdf(chiSquare, df);
+    }
+
+    document.getElementById('raceStatChi2').innerText = chiSquare.toFixed(3);
+    document.getElementById('raceStatDF').innerText = df;
+    document.getElementById('raceStatPValue').innerText = pValue < 0.0001 ? '< 0.0001' : pValue.toFixed(4);
+    document.getElementById('raceStatN').innerText = baseN.toLocaleString();
+
+    const isSig = pValue < 0.05;
+    document.getElementById('raceSigContainer').innerHTML = 
+      `<span class="significance-tag ${isSig ? 'sig-true' : 'sig-false'}">
+        ${isSig ? 'Statistically Significant Difference (p < 0.05)' : 'No Significant Difference (p ≥ 0.05)'}
+      </span>`;
+
+    let html = `<table>
+      <thead>
+        <tr>
+          <th>Race Category</th>
+          <th>${g1.name} %</th>
+          <th>Observed Count (N=${baseN.toLocaleString()})</th>
+          <th>${g2.name} %</th>
+          <th>Expected Count</th>
+          <th>(O - E)² / E</th>
+          <th>Jail Snapshot %</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    details.forEach(row => {
+      html += `<tr>
+        <th>${row.category}</th>
+        <td>${row.g1Pct.toFixed(2)}%</td>
+        <td>${row.g1Count.toLocaleString()}</td>
+        <td>${row.g2Pct.toFixed(2)}%</td>
+        <td>${row.expCount.toFixed(2)}</td>
+        <td>${row.contrib.toFixed(3)}</td>
+        <td>${row.snapPct.toFixed(2)}%</td>
+      </tr>`;
+    });
+
+    html += `<tr>
+      <th class="total-cell">Total</th>
+      <td class="total-cell">100.00%</td>
+      <td class="total-cell">${baseN.toLocaleString()}</td>
+      <td class="total-cell">100.00%</td>
+      <td class="total-cell">${baseN.toFixed(2)}</td>
+      <td class="total-cell">${chiSquare.toFixed(3)}</td>
+      <td class="total-cell">100.00%</td>
+    </tr></tbody></table>`;
+
+    document.getElementById('raceMatrixContainer').innerHTML = html;
+  }
+
+  function initTab2Dropdowns() {
     const selectRow = document.getElementById('varRow');
     const selectCol = document.getElementById('varCol');
 
@@ -420,6 +590,19 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
       selectRow.add(new Option(label, key));
       selectCol.add(new Option(label, key));
     });
+
+    const optGroup = document.createElement('optgroup');
+    optGroup.label = "Goodness-of-Fit Benchmarks";
+    Object.entries(benchmarks).forEach(([bmKey, bmObj]) => {
+      const isUSorKY = bmKey.includes('us') || bmKey.includes('ky') || bmKey.includes('bjs') || bmKey.includes('kydoc') ||
+                       bmObj.name.toLowerCase().includes('us') || bmObj.name.toLowerCase().includes('ky');
+      if (!isUSorKY) {
+        optGroup.appendChild(new Option(bmObj.name, bmKey));
+      }
+    });
+    if (optGroup.children.length > 0) {
+      selectCol.appendChild(optGroup);
+    }
     
     selectRow.value = "race";
     selectCol.value = "has_exp_rel";
@@ -432,8 +615,109 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
     const rowKey = document.getElementById('varRow').value;
     const colKey = document.getElementById('varCol').value;
 
-    const rowCats = sortCategories(rowKey, [...new Set(rawData.map(d => String(d[rowKey] || 'Unrecorded')))]);
-    const colCats = sortCategories(colKey, [...new Set(rawData.map(d => String(d[colKey] || 'Unrecorded')))]);
+    if (colKey.startsWith("bm_")) {
+      runGoodnessOfFit(rowKey, colKey);
+    } else {
+      runCrosstab(rowKey, colKey);
+    }
+  }
+
+  function runGoodnessOfFit(rowKey, bmKey) {
+    const bm = benchmarks[bmKey];
+    const categories = Object.keys(bm.probs);
+
+    const observedCounts = {};
+    categories.forEach(cat => observedCounts[cat] = 0);
+
+    let totalN = 0;
+    rawData.forEach(d => {
+      let val = rowKey === 'race' ? normalizeRace(d.race) : String(d[rowKey] || 'Other/Unknown');
+      if (!observedCounts.hasOwnProperty(val)) {
+        val = 'Other/Unknown';
+      }
+      observedCounts[val]++;
+      totalN++;
+    });
+
+    let chiSquare = 0;
+    const details = [];
+
+    categories.forEach(cat => {
+      const obs = observedCounts[cat];
+      const expProb = bm.probs[cat];
+      const expCount = totalN * expProb;
+      const contrib = expCount > 0 ? Math.pow(obs - expCount, 2) / expCount : 0;
+      chiSquare += contrib;
+
+      details.push({
+        category: cat,
+        observed: obs,
+        obsPct: totalN > 0 ? (obs / totalN) * 100 : 0,
+        expPct: expProb * 100,
+        expected: expCount,
+        contrib: contrib
+      });
+    });
+
+    const df = Math.max(0, categories.length - 1);
+    let pValue = 1.0;
+    if (df > 0 && chiSquare >= 0 && typeof jStat !== 'undefined') {
+      pValue = 1 - jStat.chisquare.cdf(chiSquare, df);
+    }
+
+    document.getElementById('statChi2').innerText = chiSquare.toFixed(3);
+    document.getElementById('statDF').innerText = df;
+    document.getElementById('statPValue').innerText = pValue < 0.0001 ? '< 0.0001' : pValue.toFixed(4);
+    document.getElementById('statN').innerText = totalN;
+
+    const isSig = pValue < 0.05;
+    document.getElementById('sigContainer').innerHTML = 
+      `<span class="significance-tag ${isSig ? 'sig-true' : 'sig-false'}">
+        ${isSig ? 'Statistically Significant (p < 0.05)' : 'Not Statistically Significant (p ≥ 0.05)'}
+      </span>`;
+
+    let html = `<table>
+      <thead>
+        <tr>
+          <th>Category (${variableMap[rowKey] || rowKey})</th>
+          <th>Observed Count</th>
+          <th>Observed %</th>
+          <th>Expected % (${bm.name})</th>
+          <th>Expected Count</th>
+          <th>(O - E)² / E</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    details.forEach(row => {
+      html += `<tr>
+        <th>${row.category}</th>
+        <td>${row.observed}</td>
+        <td>${row.obsPct.toFixed(2)}%</td>
+        <td>${row.expPct.toFixed(2)}%</td>
+        <td>${row.expected.toFixed(2)}</td>
+        <td>${row.contrib.toFixed(3)}</td>
+      </tr>`;
+    });
+
+    html += `<tr>
+      <th class="total-cell">Total</th>
+      <td class="total-cell">${totalN}</td>
+      <td class="total-cell">100.00%</td>
+      <td class="total-cell">100.00%</td>
+      <td class="total-cell">${totalN.toFixed(2)}</td>
+      <td class="total-cell">${chiSquare.toFixed(3)}</td>
+    </tr></tbody></table>`;
+
+    document.getElementById('matrixContainer').innerHTML = html;
+  }
+
+  function runCrosstab(rowKey, colKey) {
+    const rawRowCats = [...new Set(rawData.map(d => rowKey === 'race' ? normalizeRace(d.race) : String(d[rowKey] || 'Unrecorded')))];
+    const rawColCats = [...new Set(rawData.map(d => colKey === 'race' ? normalizeRace(d.race) : String(d[colKey] || 'Unrecorded')))];
+
+    const rowCats = sortCategories(rowKey, rawRowCats);
+    const colCats = sortCategories(colKey, rawColCats);
 
     const matrix = {};
     rowCats.forEach(r => {
@@ -443,14 +727,14 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
 
     let totalN = 0;
     rawData.forEach(d => {
-      const rVal = String(d[rowKey] || 'Unrecorded');
-      const cVal = String(d[colKey] || 'Unrecorded');
+      const rVal = rowKey === 'race' ? normalizeRace(d.race) : String(d[rowKey] || 'Unrecorded');
+      const cVal = colKey === 'race' ? normalizeRace(d.race) : String(d[colKey] || 'Unrecorded');
       if (matrix[rVal] && matrix[rVal][cVal] !== undefined) {
         matrix[rVal][cVal]++;
         totalN++;
       }
     });
-   
+    
     const rowTotals = {};
     const colTotals = {};
 
@@ -491,7 +775,7 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
         ${isSig ? 'Statistically Significant (p < 0.05)' : 'Not Statistically Significant (p ≥ 0.05)'}
       </span>` : '';
 
-    let html = `<table><thead><tr><th>${variableMap[rowKey]} \\ ${variableMap[colKey]}</th>`;
+    let html = `<table><thead><tr><th>${variableMap[rowKey] || rowKey} \\ ${variableMap[colKey] || colKey}</th>`;
     colCats.forEach(c => html += `<th>${c}</th>`);
     html += `<th class="total-cell">Total</th></tr></thead><tbody>`;
 
@@ -510,55 +794,6 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
     html += `<td class="total-cell">${totalN}</td></tr></tbody></table>`;
 
     document.getElementById('matrixContainer').innerHTML = html;
-  }
-
-  function updateComparisonMatrixData() {
-    if (!rawData || rawData.length === 0) return;
-    const totalN = rawData.length;
-    const counts = { 'White': 0, 'Black': 0, 'Hispanic': 0, 'Other / Unknown': 0 };
-
-    rawData.forEach(d => {
-      const r = String(d.race || '').trim();
-      if (r === 'White') counts['White']++;
-      else if (r === 'Black') counts['Black']++;
-      else if (r === 'Hispanic') counts['Hispanic']++;
-      else counts['Other / Unknown']++;
-    });
-
-    const pcts = {};
-    Object.keys(counts).forEach(k => {
-      pcts[k] = ((counts[k] / totalN) * 100).toFixed(2) + '%';
-    });
-
-    if (document.getElementById('snap-white')) document.getElementById('snap-white').innerText = pcts['White'];
-    if (document.getElementById('snap-black')) document.getElementById('snap-black').innerText = pcts['Black'];
-    if (document.getElementById('snap-hispanic')) document.getElementById('snap-hispanic').innerText = pcts['Hispanic'];
-    if (document.getElementById('snap-other')) document.getElementById('snap-other').innerText = pcts['Other / Unknown'];
-
-    const compContainer = document.getElementById('comparisonMatrixTab1Container');
-    if (compContainer) {
-      compContainer.innerHTML = `
-        <table>
-          <thead>
-            <tr>
-              <th>Demographic Group</th>
-              <th>USA Pop. % (Census)</th>
-              <th>KY Pop. % (Census)</th>
-              <th>Fayette Co. Pop. % (Census)</th>
-              <th>BJS National Incarcerated %</th>
-              <th>KY DOC Incarcerated %</th>
-              <th>Jail Snapshot % of Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><th>White</th><td>57.39%</td><td>81.55%</td><td>66.75%</td><td>10.77%</td><td>74.00%</td><td>${pcts['White']}</td></tr>
-            <tr><th>Black</th><td>11.91%</td><td>7.55%</td><td>14.39%</td><td>49.74%</td><td>22.00%</td><td>${pcts['Black']}</td></tr>
-            <tr><th>Hispanic</th><td>19.34%</td><td>5.00%</td><td>9.52%</td><td>20.51%</td><td>2.00%</td><td>${pcts['Hispanic']}</td></tr>
-            <tr><th>Other / Unknown</th><td>7.11%</td><td>2.05%</td><td>4.67%</td><td>18.97%</td><td>2.00%</td><td>${pcts['Other / Unknown']}</td></tr>
-          </tbody>
-        </table>
-      `;
-    }
   }
 
   window.addEventListener('DOMContentLoaded', () => {

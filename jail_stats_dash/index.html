@@ -356,50 +356,134 @@
 </div>
 
 <script id="sources-markdown" type="text/markdown">
-    <div class="markdown-body">
-        {% include_relative data_sources.md %}
-    </div>
-</body>
-</html>
+# Demographic Baseline & Comparison Matrix
+
+Sources for mutually exclusive demographic populations to match race classifications in the county jail that was studied (`White`, `Black`, `Hispanic`, `Other/Unknown`).
+
+---
+
+## General Population Baselines
+
+**Source:** U.S. Census Bureau, *American Community Survey (ACS)* 1-Year Estimates, Table `B03002` (*Hispanic or Latino Origin by Race*), 2024.
+**Access Date:** August 7, 2026.
+
+### Category Mapping Logic
+* **White:** Line 3 (`Not Hispanic or Latino: White alone`)
+* **Black:** Line 4 (`Not Hispanic or Latino: Black or African American alone`)
+* **Hispanic:** Line 12 (`Hispanic or Latino of any race`)
+* **Other / Unknown:** Sum of Lines 5, 6, 7, and 8
+  $$\text{Other/Unknown} = \text{Line 5 (AIAN)} + \text{Line 6 (Asian)} + \text{Line 7 (NHPI)} + \text{Line 8 (Some Other / Two+ Races)}$$
+
+### Data Breakdown
+
+| Geographic Scope | Category | Line Item | Raw Count | Calculated % |
+| :--- | :--- | :--- | :--- | :--- |
+| **United States**<br>*(Total Base: 334,922,499)* | White | Line 3 | 192,214,378 | **57.39%** |
+| | Black | Line 4 | 39,896,127 | **11.91%** |
+| | Hispanic | Line 12 | 64,759,370 | **19.34%** |
+| | Other / Unknown | Lines 5, 6, 7, 8 | 23,812,622 | **7.11%** |
+| **Kentucky**<br>*(Total Base: 4,534,824)* | White | Line 3 | 3,698,087 | **81.55%** |
+| | Black | Line 4 | 342,570 | **7.55%** |
+| | Hispanic | Line 12 | 226,744 | **5.00%** |
+| | Other / Unknown | Lines 5, 6, 7, 8 | 92,737 | **2.05%** |
+| **Fayette County, KY**<br>*(Total Base: 323,725)* | White | Line 3 | 216,082 | **66.75%** |
+| | Black | Line 4 | 46,573 | **14.39%** |
+| | Hispanic | Line 12 | 30,824 | **9.52%** |
+| | Other / Unknown | Lines 5, 6, 7, 8 | 15,121 | **4.67%** |
+
+---
+
+## Incarcerated Population Benchmarks
+
+### National Incarcerated Population
+* **Source:** Bureau of Justice Statistics (BJS), *Correctional Populations in the United States, 2023*, Table 7.
+* **Access Date:** August 7, 2026.
+* **URL:** `https://bjs.ojp.gov/document/cpus23st.pdf`
+
+$$\text{Implied Category \%} = \left(\frac{\text{Group Rate}}{\text{Total Combined Rate (3,900)}}\right) \times 100$$
+
+| Category | Incarceration Rate (per 100k US Residents) | Implied Distribution % |
+| :--- | :--- | :--- |
+| **White** | 420 | **10.77%** |
+| **Black** | 1,940 | **49.74%** |
+| **Hispanic** | 800 | **20.51%** |
+| **Other / Unknown** | 740 | **18.97%** |
+| **Total Combined Rate Base** | **3,900** | **100.00%** |
+
+### Kentucky State Incarcerated Population
+* **Source:** Kentucky Department of Corrections (KY DOC), *2025 Annual Report*, Page 4.
+* **Access Date:** August 7, 2026.
+* **URL:** `https://corrections.ky.gov/public-information/researchandstats/Documents/Annual%20Reports/DOC%202025%20Annual%20Report%20-%20Final.pdf`
+
+| Category | KY DOC Reported Percentage |
+| :--- | :--- |
+| **White** | **74.00%** |
+| **Black** | **22.00%** |
+| **Hispanic** | **2.00%** |
+| **Other / Unknown** | **2.00%** |
+| **Total Base** | **100.00%** |
+
+---
+
+## Comparison Matrix
+
+| Demographic Group | USA Pop. % (Census) | KY Pop. % (Census) | Fayette Co. Pop. % (Census) | BJS National Incarcerated % | KY DOC Incarcerated % | Fayette Jail Snapshot % |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **White** | 57.39% | 81.55% | 66.75% | 10.77% | 74.00% | Calculated from Snapshot |
+| **Black** | 11.91% | 7.55% | 14.39% | 49.74% | 22.00% | Calculated from Snapshot |
+| **Hispanic** | 19.34% | 5.00% | 9.52% | 20.51% | 2.00% | Calculated from Snapshot |
+| **Other / Unknown** | 7.11% | 2.05% | 4.67% | 18.97% | 2.00% | Calculated from Snapshot |
 </script>
 
 <script>
-  function switchTab(tabId, element) {
-    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    
-    document.getElementById(tabId).classList.add('active');
-    element.classList.add('active');
-  }
+  let rawData = [];
 
-  function renderSources() {
-    let markdownSource = document.getElementById('sources-markdown').textContent;
-    if (rawData && rawData.length > 0) {
-      const stats = getFayetteIncRaceStats();
-      const whitePct = (stats.probs["White"] * 100).toFixed(2) + "%";
-      const blackPct = (stats.probs["Black"] * 100).toFixed(2) + "%";
-      const hispanicPct = (stats.probs["Hispanic"] * 100).toFixed(2) + "%";
-      const otherPct = (stats.probs["Other/Unknown"] * 100).toFixed(2) + "%";
-
-      markdownSource = markdownSource
-        .replace("Calculated from Snapshot", whitePct)
-        .replace("Calculated from Snapshot", blackPct)
-        .replace("Calculated from Snapshot", hispanicPct)
-        .replace("Calculated from Snapshot", otherPct);
+  const benchmarks = {
+    bm_us_pop: {
+      name: "US Population (Census)",
+      probs: { "White": 0.5739, "Black": 0.1191, "Hispanic": 0.1934, "Other/Unknown": 0.0711 },
+      totalN: 334922499
+    },
+    bm_bjs_inc: {
+      name: "US Incarcerated (BJS)",
+      probs: { "White": 0.1077, "Black": 0.4974, "Hispanic": 0.2051, "Other/Unknown": 0.1897 },
+      totalN: 1200000
+    },
+    bm_ky_pop: {
+      name: "KY Population (Census)",
+      probs: { "White": 0.8155, "Black": 0.0755, "Hispanic": 0.0500, "Other/Unknown": 0.0205 },
+      totalN: 4534824
+    },
+    bm_kydoc_inc: {
+      name: "KY DOC Incarcerated",
+      probs: { "White": 0.7400, "Black": 0.2200, "Hispanic": 0.0200, "Other/Unknown": 0.0200 },
+      totalN: 20000
+    },
+    bm_fayette: {
+      name: "Fayette Co. Population (Census)",
+      probs: { "White": 0.6675, "Black": 0.1439, "Hispanic": 0.0952, "Other/Unknown": 0.0467 },
+      totalN: 323725
     }
-    const renderedHTML = marked.parse(markdownSource);
-    document.getElementById('sourcesMarkdownContainer').innerHTML = renderedHTML;
-  }
+  };
+
+  const ALL_RACE_GROUPS = {
+    "us_pop": { label: "US Population (Census)", key: "bm_us_pop" },
+    "us_inc": { label: "US Incarcerated (BJS)", key: "bm_bjs_inc" },
+    "ky_pop": { label: "KY Population (Census)", key: "bm_ky_pop" },
+    "ky_inc": { label: "KY DOC Incarcerated", key: "bm_kydoc_inc" },
+    "fayette_pop": { label: "Fayette Co. Population (Census)", key: "bm_fayette" },
+    "fayette_inc": { label: "Fayette Incarcerated (Snapshot Data)", key: "fayette_inc" }
+  };
 
   const variableMap = {
     "age": "Age",
     "race": "Race",
     "sex": "Sex",
-    "bmi_bin": "BMI",
     "days_served": "Days Served",
+    "bmi_bin": "BMI",
     "has_exp_rel": "Has Expected Release Date?"
   };
-  
+
   const DAYS_SERVED_ORDER = [
     '0-2 Days',
     '3-7 Days',
@@ -409,6 +493,14 @@
     '1+ Years'
   ];
 
+  function switchTab(tabId, element) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    
+    document.getElementById(tabId).classList.add('active');
+    element.classList.add('active');
+  }
+
   function normalizeRace(rawVal) {
     if (!rawVal) return 'Other/Unknown';
     const str = String(rawVal).trim().toLowerCase();
@@ -416,8 +508,6 @@
     if (str === 'white') return 'White';
     if (str === 'black') return 'Black';
     if (str === 'hispanic') return 'Hispanic';
-    if (str === 'other' || str === 'unknown' || str === 'other/unknown') return 'Other/Unknown';
-    
     return 'Other/Unknown';
   }
 
@@ -434,8 +524,6 @@
     }
     return categories.sort();
   }
-
-  let rawData = [];
 
   function getFayetteIncRaceStats() {
     const categories = ["White", "Black", "Hispanic", "Other/Unknown"];
@@ -461,38 +549,6 @@
     };
   }
 
-  async function loadData() {
-    try {
-      const response = await fetch('./snapshot_data.json');
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      rawData = await response.json();
-
-      const totalN = rawData.length;
-
-      document.getElementById('integrityBanner').innerText = 
-        `Loaded snapshot N = ${totalN} inmates`;
-
-      initRaceTabDropdowns();
-      initTab2Dropdowns();
-      
-      updateRaceComparison();
-      updateDashboard();
-      renderSources();
-    } catch (err) {
-      document.getElementById('integrityBanner').innerText = 
-        `Error loading snapshot_data.json: ${err.message}.`;
-    }
-  }
-
-  const ALL_RACE_GROUPS = {
-    "us_pop": { label: "US Population (Census)", key: "bm_us_pop" },
-    "us_inc": { label: "US Incarcerated (BJS)", key: "bm_bjs_inc" },
-    "ky_pop": { label: "KY Population (Census)", key: "bm_ky_pop" },
-    "ky_inc": { label: "KY DOC Incarcerated", key: "bm_kydoc_inc" },
-    "fayette_pop": { label: "Fayette Co. Population (Census)", key: "bm_fayette" },
-    "fayette_inc": { label: "Fayette Incarcerated (Snapshot Data)", key: "fayette_inc" }
-  };
-
   function getGroupData(groupId) {
     if (groupId === "fayette_inc") {
       return getFayetteIncRaceStats();
@@ -504,6 +560,25 @@
       probs: bm.probs,
       totalN: bm.totalN || null
     };
+  }
+
+  function renderSources() {
+    let markdownSource = document.getElementById('sources-markdown').textContent;
+    if (rawData && rawData.length > 0) {
+      const stats = getFayetteIncRaceStats();
+      const whitePct = (stats.probs["White"] * 100).toFixed(2) + "%";
+      const blackPct = (stats.probs["Black"] * 100).toFixed(2) + "%";
+      const hispanicPct = (stats.probs["Hispanic"] * 100).toFixed(2) + "%";
+      const otherPct = (stats.probs["Other/Unknown"] * 100).toFixed(2) + "%";
+
+      markdownSource = markdownSource
+        .replace("Calculated from Snapshot", whitePct)
+        .replace("Calculated from Snapshot", blackPct)
+        .replace("Calculated from Snapshot", hispanicPct)
+        .replace("Calculated from Snapshot", otherPct);
+    }
+    const renderedHTML = marked.parse(markdownSource);
+    document.getElementById('sourcesMarkdownContainer').innerHTML = renderedHTML;
   }
 
   function initRaceTabDropdowns() {
@@ -632,98 +707,7 @@
     const rowKey = document.getElementById('varRow').value;
     const colKey = document.getElementById('varCol').value;
 
-    if (colKey.startsWith("bm_")) {
-      runGoodnessOfFit(rowKey, colKey);
-    } else {
-      runCrosstab(rowKey, colKey);
-    }
-  }
-
-
-    const observedCounts = {};
-    categories.forEach(cat => observedCounts[cat] = 0);
-
-    let totalN = 0;
-    rawData.forEach(d => {
-      let val = rowKey === 'race' ? normalizeRace(d.race) : String(d[rowKey] || 'Other/Unknown');
-      if (!observedCounts.hasOwnProperty(val)) {
-        val = 'Other/Unknown';
-      }
-      observedCounts[val]++;
-      totalN++;
-    });
-
-    let chiSquare = 0;
-    const details = [];
-
-    categories.forEach(cat => {
-      const obs = observedCounts[cat];
-      const expProb = bm.probs[cat];
-      const expCount = totalN * expProb;
-      const contrib = expCount > 0 ? Math.pow(obs - expCount, 2) / expCount : 0;
-      chiSquare += contrib;
-
-      details.push({
-        category: cat,
-        observed: obs,
-        obsPct: totalN > 0 ? (obs / totalN) * 100 : 0,
-        expPct: expProb * 100,
-        expected: expCount,
-        contrib: contrib
-      });
-    });
-
-    const df = Math.max(0, categories.length - 1);
-    let pValue = 1.0;
-    if (df > 0 && chiSquare >= 0 && typeof jStat !== 'undefined') {
-      pValue = 1 - jStat.chisquare.cdf(chiSquare, df);
-    }
-
-    document.getElementById('statChi2').innerText = chiSquare.toFixed(3);
-    document.getElementById('statDF').innerText = df;
-    document.getElementById('statPValue').innerText = pValue < 0.0001 ? '< 0.0001' : pValue.toFixed(4);
-    document.getElementById('statN').innerText = totalN;
-
-    const isSig = pValue < 0.05;
-    document.getElementById('sigContainer').innerHTML = 
-      `<span class="significance-tag ${isSig ? 'sig-true' : 'sig-false'}">
-        ${isSig ? 'Statistically Significant Relationship(p < 0.05)' : 'Not Statistically Significant Relationship(p ≥ 0.05)'}
-      </span>`;
-
-    let html = `<table>
-      <thead>
-        <tr>
-          <th>Category (${variableMap[rowKey] || rowKey})</th>
-          <th>Observed Count</th>
-          <th>Observed %</th>
-          <th>Expected % (${bm.name})</th>
-          <th>Expected Count</th>
-          <th>(O - E)² / E</th>
-        </tr>
-      </thead>
-      <tbody>`;
-
-    details.forEach(row => {
-      html += `<tr>
-        <th>${row.category}</th>
-        <td>${row.observed}</td>
-        <td>${row.obsPct.toFixed(2)}%</td>
-        <td>${row.expPct.toFixed(2)}%</td>
-        <td>${row.expected.toFixed(2)}</td>
-        <td>${row.contrib.toFixed(3)}</td>
-      </tr>`;
-    });
-
-    html += `<tr>
-      <th class="total-cell">Total</th>
-      <td class="total-cell">${totalN}</td>
-      <td class="total-cell">100.00%</td>
-      <td class="total-cell">100.00%</td>
-      <td class="total-cell">${totalN.toFixed(2)}</td>
-      <td class="total-cell">${chiSquare.toFixed(3)}</td>
-    </tr></tbody></table>`;
-
-    document.getElementById('matrixContainer').innerHTML = html;
+    runCrosstab(rowKey, colKey);
   }
 
   function runCrosstab(rowKey, colKey) {
@@ -786,7 +770,7 @@
     const isSig = pValue < 0.05;
     document.getElementById('sigContainer').innerHTML = df > 0 ? 
       `<span class="significance-tag ${isSig ? 'sig-true' : 'sig-false'}">
-        ${isSig ? 'Statistically Significant (p < 0.05)' : 'Not Statistically Significant (p ≥ 0.05)'}
+        ${isSig ? 'Statistically Significant Relationship (p < 0.05)' : 'Not Statistically Significant Relationship (p ≥ 0.05)'}
       </span>` : '';
 
     let html = `<table><thead><tr><th>${variableMap[rowKey] || rowKey} \\ ${variableMap[colKey] || colKey}</th>`;
@@ -808,6 +792,29 @@
     html += `<td class="total-cell">${totalN}</td></tr></tbody></table>`;
 
     document.getElementById('matrixContainer').innerHTML = html;
+  }
+
+  async function loadData() {
+    try {
+      const response = await fetch('./snapshot_data.json');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      rawData = await response.json();
+
+      const totalN = rawData.length;
+
+      document.getElementById('integrityBanner').innerText = 
+        `Loaded snapshot N = ${totalN} inmates`;
+
+      initRaceTabDropdowns();
+      initTab2Dropdowns();
+      
+      updateRaceComparison();
+      updateDashboard();
+      renderSources();
+    } catch (err) {
+      document.getElementById('integrityBanner').innerText = 
+        `Error loading snapshot_data.json: ${err.message}.`;
+    }
   }
 
   window.addEventListener('DOMContentLoaded', () => {

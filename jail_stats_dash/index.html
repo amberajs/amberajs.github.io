@@ -392,6 +392,7 @@
   }
 
   const variableMap = {
+    "age": "Age",
     "race": "Race",
     "sex": "Sex",
     "bmi_bin": "BMI",
@@ -490,13 +491,6 @@
     "ky_inc": { label: "KY DOC Incarcerated", key: "bm_kydoc_inc" },
     "fayette_pop": { label: "Fayette Co. Population (Census)", key: "bm_fayette" },
     "fayette_inc": { label: "Fayette Incarcerated (Snapshot Data)", key: "fayette_inc" }
-  };
-
-  const benchmarks = {
-    "bm_fayette": {
-      name: "Fayette Co. Population (Census)",
-      probs: { "White": 0.6675, "Black": 0.1439, "Hispanic": 0.0952, "Other/Unknown": 0.0467 }
-    }
   };
 
   function getGroupData(groupId) {
@@ -626,13 +620,6 @@
       selectRow.add(new Option(label, key));
       selectCol.add(new Option(label, key));
     });
-
-    const optGroup = document.createElement('optgroup');
-    optGroup.label = "Goodness-of-Fit Benchmarks";
-    Object.entries(benchmarks).forEach(([bmKey, bmObj]) => {
-      optGroup.appendChild(new Option(bmObj.name, bmKey));
-    });
-    selectCol.appendChild(optGroup);
     
     selectRow.value = "race";
     selectCol.value = "has_exp_rel";
@@ -652,9 +639,6 @@
     }
   }
 
-  function runGoodnessOfFit(rowKey, bmKey) {
-    const bm = benchmarks[bmKey];
-    const categories = Object.keys(bm.probs);
 
     const observedCounts = {};
     categories.forEach(cat => observedCounts[cat] = 0);
@@ -703,7 +687,7 @@
     const isSig = pValue < 0.05;
     document.getElementById('sigContainer').innerHTML = 
       `<span class="significance-tag ${isSig ? 'sig-true' : 'sig-false'}">
-        ${isSig ? 'Statistically Significant (p < 0.05)' : 'Not Statistically Significant (p ≥ 0.05)'}
+        ${isSig ? 'Statistically Significant Relationship(p < 0.05)' : 'Not Statistically Significant Relationship(p ≥ 0.05)'}
       </span>`;
 
     let html = `<table>

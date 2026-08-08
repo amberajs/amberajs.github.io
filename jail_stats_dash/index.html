@@ -1,5 +1,4 @@
-
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -40,23 +39,7 @@
       color: var(--primary);
     }
 
-    .file-loader-bar {
-      background: #fff3bf;
-      border: 1px solid #fcc419;
-      padding: 0.75rem 1rem;
-      border-radius: 6px;
-      margin-bottom: 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      font-size: 0.9rem;
-    }
-
-    .file-loader-bar input[type="file"] {
-      font-size: 0.85rem;
-    }
-
+    /* Tab Navigation Styles */
     .tab-nav {
       display: flex;
       gap: 0.5rem;
@@ -211,11 +194,11 @@
     .integrity-banner {
       font-size: 0.85rem;
       color: #6c757d;
+      margin-bottom: 1rem;
     }
 
     .markdown-body {
       background-color: transparent !important;
-      color: var(--text) !important;
       font-family: inherit;
     }
   </style>
@@ -224,65 +207,14 @@
 
 <div class="container">
   <h1>County Jail Population Snapshot</h1>
-
-  <div class="file-loader-bar">
-    <div>
-      <strong>Data Source:</strong> <span id="integrityBanner" class="integrity-banner">Initializing...</span>
-    </div>
-    <div>
-      <label for="jsonFileInput" style="margin-right:0.5rem;">Load JSON File:</label>
-      <input type="file" id="jsonFileInput" accept=".json">
-    </div>
-  </div>
+  <div id="integrityBanner" class="integrity-banner">Loading snapshot_data.json...</div>
 
   <div class="tab-nav">
-    <button class="tab-btn active" onclick="switchTab('raceTab', this)">Race Population Comparisons</button>
-    <button class="tab-btn" onclick="switchTab('matrixTab', this)">Snapshot Crosstabs & Chi-Square</button>
+    <button class="tab-btn active" onclick="switchTab('matrixTab', this)">📊 Crosstab & Chi-Square</button>
+    <button class="tab-btn" onclick="switchTab('sourcesTab', this)">📜 Data Sources & Baselines</button>
   </div>
 
-  <div id="raceTab" class="tab-content active">
-    <div class="card">
-      <h2>Compare Race Data Across Population & Incarceration Groups</h2>
-      <div class="controls">
-        <div class="control-group">
-          <label for="raceGroup1">Primary Group (Observed):</label>
-          <select id="raceGroup1"></select>
-        </div>
-        <div class="control-group">
-          <label for="raceGroup2">Comparison Group (Baseline / Expected):</label>
-          <select id="raceGroup2"></select>
-        </div>
-      </div>
-
-      <div class="hud-grid">
-        <div class="stat-box">
-          <h3 id="raceStatChi2">0.00</h3>
-          <p>Chi-Square (χ²)</p>
-        </div>
-        <div class="stat-box">
-          <h3 id="raceStatDF">3</h3>
-          <p>Degrees of Freedom (df)</p>
-        </div>
-        <div class="stat-box">
-          <h3 id="raceStatPValue">1.0000</h3>
-          <p>p-value</p>
-        </div>
-        <div class="stat-box">
-          <h3 id="raceStatN">0</h3>
-          <p>Base Sample Size (N)</p>
-        </div>
-      </div>
-
-      <div style="text-align: right; margin-bottom: 0.5rem;" id="raceSigContainer"></div>
-      <div class="table-container" id="raceMatrixContainer"></div>
-    </div>
-
-    <div class="card">
-      <div id="sourcesMarkdownContainer" class="markdown-body"></div>
-    </div>
-  </div>
-
-  <div id="matrixTab" class="tab-content">
+  <div id="matrixTab" class="tab-content active">
     <div class="card">
       <div class="controls">
         <div class="control-group">
@@ -317,50 +249,112 @@
       <div style="text-align: right; margin-bottom: 0.5rem;" id="sigContainer"></div>
       <div class="table-container" id="matrixContainer"></div>
     </div>
+
+    <div class="card">
+      <h2 style="margin-top:0; color: var(--primary); font-size: 1.25rem;">Master Comparison Matrix</h2>
+      <div class="table-container" id="comparisonMatrixTab1Container"></div>
+    </div>
+  </div>
+  
+  <div id="sourcesTab" class="tab-content">
+    <div class="card">
+      <div id="sourcesMarkdownContainer" class="markdown-body"></div>
+    </div>
   </div>
 </div>
 
+<!-- Embedded Raw Sources Markdown Document -->
 <script id="sources-markdown" type="text/markdown">
 # Demographic Baseline & Comparison Matrix
 
-Sources for mutually exclusive demographic populations to match race classifications in the county jail study (`White`, `Black`, `Hispanic`, `Other/Unknown`).
+This document aggregates mutually exclusive demographic baselines from the U.S. Census Bureau alongside national and state correctional metrics. All categories are recoded to align with local booking classification schemas (`White`, `Black`, `Hispanic`, `Other/Unknown`).
 
 ---
 
-## General Population Baselines
+## 1. General Population Baselines
 
-**Source:** U.S. Census Bureau, *American Community Survey (ACS)* 1-Year Estimates, Table `B03002` (*Hispanic or Latino Origin by Race*), 2024.
+**Source:** U.S. Census Bureau, *American Community Survey (ACS)* 1-Year Estimates, Table `B03002` (*Hispanic or Latino Origin by Race*), 2024.  
+**Access Date:** August 7, 2026.
 
-| Geographic Scope | White % | Black % | Hispanic % | Other/Unknown % |
+### Category Mapping Logic
+* **White:** Line 3 (`Not Hispanic or Latino: White alone`)
+* **Black:** Line 4 (`Not Hispanic or Latino: Black or African American alone`)
+* **Hispanic:** Line 12 (`Hispanic or Latino of any race`)
+* **Other / Unknown:** Sum of Lines 5, 6, 7, and 8  
+
+### Data Breakdown
+
+| Geographic Scope | Category | Line Item | Raw Count | Calculated % |
 | :--- | :--- | :--- | :--- | :--- |
-| **United States** | 57.39% | 11.91% | 19.34% | 7.11% |
-| **Kentucky** | 81.55% | 7.55% | 5.00% | 2.05% |
-| **Fayette County, KY** | 66.75% | 14.39% | 9.52% | 4.67% |
+| **United States**<br>*(Total Base: 334,922,499)* | White | Line 3 | 192,214,378 | **57.39%** |
+| | Black | Line 4 | 39,896,127 | **11.91%** |
+| | Hispanic | Line 12 | 64,759,370 | **19.34%** |
+| | Other / Unknown | Lines 5, 6, 7, 8 | 23,812,622 | **7.11%** |
+| **Kentucky**<br>*(Total Base: 4,534,824)* | White | Line 3 | 3,698,087 | **81.55%** |
+| | Black | Line 4 | 342,570 | **7.55%** |
+| | Hispanic | Line 12 | 226,744 | **5.00%** |
+| | Other / Unknown | Lines 5, 6, 7, 8 | 92,737 | **2.05%** |
+| **Fayette County, KY**<br>*(Total Base: 323,725)* | White | Line 3 | 216,082 | **66.75%** |
+| | Black | Line 4 | 46,573 | **14.39%** |
+| | Hispanic | Line 12 | 30,824 | **9.52%** |
+| | Other / Unknown | Lines 5, 6, 7, 8 | 15,121 | **4.67%** |
 
 ---
 
-## Incarcerated Population Benchmarks
+## 2. Incarcerated Population Benchmarks
 
-| Demographic Group | BJS National Incarcerated % | KY DOC Incarcerated % |
+### A. National System-Involved Benchmark
+* **Source:** Bureau of Justice Statistics (BJS), *Correctional Populations in the United States, 2023*, Table 7.  
+* **Access Date:** August 7, 2026.  
+* **URL:** `https://bjs.ojp.gov/document/cpus23st.pdf`
+
+| Category | Incarceration Rate (per 100k US Residents) | Implied Distribution % |
 | :--- | :--- | :--- |
-| **White** | 10.77% | 74.00% |
-| **Black** | 49.74% | 22.00% |
-| **Hispanic** | 20.51% | 2.00% |
-| **Other / Unknown** | 18.97% | 2.00% |
+| **White** | 420 | **10.77%** |
+| **Black** | 1,940 | **49.74%** |
+| **Hispanic** | 800 | **20.51%** |
+| **Other / Unknown** | 740 | **18.97%** |
+| **Total Combined Rate Base** | **3,900** | **100.00%** |
+
+### B. Kentucky State Incarcerated Benchmark
+* **Source:** Kentucky Department of Corrections (KY DOC), *2025 Annual Report*, Page 4.  
+* **Access Date:** August 7, 2026.  
+* **URL:** `https://corrections.ky.gov/public-information/researchandstats/Documents/Annual%20Reports/DOC%202025%20Annual%20Report%20-%20Final.pdf`
+
+| Category | KY DOC Reported Percentage |
+| :--- | :--- |
+| **White** | **74.00%** |
+| **Black** | **22.00%** |
+| **Hispanic** | **2.00%** |
+| **Other / Unknown** | **2.00%** |
+| **Total Base** | **100.00%** |
+
+---
+
+## 3. Master Comparison Matrix
+
+| Demographic Group | USA Pop. % (Census) | KY Pop. % (Census) | Fayette Co. Pop. % (Census) | BJS National Incarcerated % | KY DOC Incarcerated % | Jail Snapshot % of Total |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **White** | 57.39% | 81.55% | 66.75% | 10.77% | 74.00% | <span id="snap-white">--</span> |
+| **Black** | 11.91% | 7.55% | 14.39% | 49.74% | 22.00% | <span id="snap-black">--</span> |
+| **Hispanic** | 19.34% | 5.00% | 9.52% | 20.51% | 2.00% | <span id="snap-hispanic">--</span> |
+| **Other / Unknown** | 7.11% | 2.05% | 4.67% | 18.97% | 2.00% | <span id="snap-other">--</span> |
 </script>
 
 <script>
-  
-  const sampleFallbackData = [
-    { race: "Black", sex: "Male", bmi_bin: "Normal", days_served: "8-30 Days", has_exp_rel: "Yes" },
-    { race: "White", sex: "Male", bmi_bin: "Overweight", days_served: "31-180 Days", has_exp_rel: "No" },
-    { race: "Black", sex: "Female", bmi_bin: "Obese", days_served: "3-7 Days", has_exp_rel: "Yes" },
-    { race: "Hispanic", sex: "Male", bmi_bin: "Normal", days_served: "0-2 Days", has_exp_rel: "No" },
-    { race: "White", sex: "Male", bmi_bin: "Overweight", days_served: "181-365 Days", has_exp_rel: "No" },
-    { race: "Black", sex: "Male", bmi_bin: "Normal", days_served: "1+ Years", has_exp_rel: "Yes" }
-  ];
 
-  let rawData = [];
+  function switchTab(tabId, element) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    
+    document.getElementById(tabId).classList.add('active');
+    element.classList.add('active');
+  }
+  function renderSources() {
+    const markdownSource = document.getElementById('sources-markdown').textContent;
+    const renderedHTML = marked.parse(markdownSource);
+    document.getElementById('sourcesMarkdownContainer').innerHTML = renderedHTML;
+  }
 
   const variableMap = {
     "race": "Race",
@@ -370,47 +364,14 @@ Sources for mutually exclusive demographic populations to match race classificat
     "has_exp_rel": "Has Expected Release Date?"
   };
 
-  const benchmarks = {
-    "bm_fayette": { name: "Fayette Co. Population (Census)", probs: { "White": 0.6675, "Black": 0.1439, "Hispanic": 0.0952, "Other/Unknown": 0.0467 }, totalN: 323725 },
-    "bm_ky_pop": { name: "Kentucky Population (Census)", probs: { "White": 0.8155, "Black": 0.0755, "Hispanic": 0.0500, "Other/Unknown": 0.0205 }, totalN: 4534824 },
-    "bm_us_pop": { name: "US Population (Census)", probs: { "White": 0.5739, "Black": 0.1191, "Hispanic": 0.1934, "Other/Unknown": 0.0711 }, totalN: 334922499 },
-    "bm_bjs_inc": { name: "US Incarcerated (BJS)", probs: { "White": 0.1077, "Black": 0.4974, "Hispanic": 0.2051, "Other/Unknown": 0.1897 }, totalN: null },
-    "bm_kydoc_inc": { name: "KY DOC Incarcerated", probs: { "White": 0.7400, "Black": 0.2200, "Hispanic": 0.0200, "Other/Unknown": 0.0200 }, totalN: null }
-  };
-
-  const ALL_RACE_GROUPS = {
-    "us_pop": { label: "US Population (Census)", key: "bm_us_pop" },
-    "us_inc": { label: "US Incarcerated (BJS)", key: "bm_bjs_inc" },
-    "ky_pop": { label: "KY Population (Census)", key: "bm_ky_pop" },
-    "ky_inc": { label: "KY DOC Incarcerated", key: "bm_kydoc_inc" },
-    "fayette_pop": { label: "Fayette Co. Population (Census)", key: "bm_fayette" },
-    "fayette_inc": { label: "Fayette Incarcerated (Snapshot Data)", key: "fayette_inc" }
-  };
-
-  const DAYS_SERVED_ORDER = ['0-2 Days', '3-7 Days', '8-30 Days', '31-180 Days', '181-365 Days', '1+ Years'];
-
-  function switchTab(tabId, element) {
-    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    element.classList.add('active');
-  }
-
-  function renderSources() {
-    const markdownSource = document.getElementById('sources-markdown').textContent;
-    if (typeof marked !== 'undefined') {
-      document.getElementById('sourcesMarkdownContainer').innerHTML = marked.parse(markdownSource);
-    }
-  }
-
-  function normalizeRace(rawVal) {
-    if (!rawVal) return 'Other/Unknown';
-    const str = String(rawVal).trim().toLowerCase();
-    if (str === 'white' || str === 'w') return 'White';
-    if (str === 'black' || str === 'b' || str.includes('african')) return 'Black';
-    if (str === 'hispanic' || str === 'h' || str.includes('latino')) return 'Hispanic';
-    return 'Other/Unknown';
-  }
+  const DAYS_SERVED_ORDER = [
+    '0-2 Days',
+    '3-7 Days',
+    '8-30 Days',
+    '31-180 Days',
+    '181-365 Days',
+    '1+ Years'
+  ];
 
   function sortCategories(key, categories) {
     if (key === 'days_served') {
@@ -426,127 +387,32 @@ Sources for mutually exclusive demographic populations to match race classificat
     return categories.sort();
   }
 
-  function getFayetteIncRaceStats() {
-    const categories = ["White", "Black", "Hispanic", "Other/Unknown"];
-    const counts = { "White": 0, "Black": 0, "Hispanic": 0, "Other/Unknown": 0 };
-    let totalN = 0;
+  let rawData = [];
 
-    rawData.forEach(d => {
-      const normalized = normalizeRace(d.race);
-      counts[normalized]++;
-      totalN++;
-    });
+  async function loadData() {
+    try {
+      const response = await fetch('./snapshot_data.json');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      rawData = await response.json();
 
-    const probs = {};
-    categories.forEach(cat => {
-      probs[cat] = totalN > 0 ? counts[cat] / totalN : 0;
-    });
+      const totalN = rawData.length;
 
-    return { name: "Fayette Incarcerated (Snapshot Data)", counts, probs, totalN };
-  }
+      document.getElementById('integrityBanner').innerText = 
+        `Loaded snapshot N = ${totalN} inmates`;
 
-  function getGroupData(groupId) {
-    if (groupId === "fayette_inc") return getFayetteIncRaceStats();
-    const bmKey = ALL_RACE_GROUPS[groupId].key;
-    const bm = benchmarks[bmKey];
-    return { name: bm.name, probs: bm.probs, totalN: bm.totalN || null };
-  }
-
-  function initUI() {
-    initRaceTabDropdowns();
-    initTab2Dropdowns();
-    updateRaceComparison();
-    updateDashboard();
-  }
-
-  function initRaceTabDropdowns() {
-    const sel1 = document.getElementById('raceGroup1');
-    const sel2 = document.getElementById('raceGroup2');
-    sel1.innerHTML = '';
-    sel2.innerHTML = '';
-
-    Object.entries(ALL_RACE_GROUPS).forEach(([id, obj]) => {
-      sel1.add(new Option(obj.label, id));
-      sel2.add(new Option(obj.label, id));
-    });
-
-    sel1.value = "fayette_inc";
-    sel2.value = "fayette_pop";
-
-    sel1.onchange = updateRaceComparison;
-    sel2.onchange = updateRaceComparison;
-  }
-
-  function updateRaceComparison() {
-    const id1 = document.getElementById('raceGroup1').value;
-    const id2 = document.getElementById('raceGroup2').value;
-
-    const g1 = getGroupData(id1);
-    const g2 = getGroupData(id2);
-
-    const categories = ["White", "Black", "Hispanic", "Other/Unknown"];
-    const baseN = g1.totalN || (rawData.length > 0 ? rawData.length : 1000);
-
-    let chiSquare = 0;
-    const details = [];
-
-    categories.forEach(cat => {
-      const p1 = g1.probs[cat] || 0;
-      const p2 = g2.probs[cat] || 0;
-      const obsCount = g1.counts ? g1.counts[cat] : Math.round(p1 * baseN);
-      const expCount = p2 * baseN;
-      const contrib = expCount > 0 ? Math.pow(obsCount - expCount, 2) / expCount : 0;
-      chiSquare += contrib;
-
-      details.push({
-        category: cat,
-        g1Pct: p1 * 100,
-        g1Count: obsCount,
-        g2Pct: p2 * 100,
-        expCount: expCount,
-        contrib: contrib
-      });
-    });
-
-    const df = 3;
-    let pValue = 1.0;
-    if (typeof jStat !== 'undefined') {
-      pValue = 1 - jStat.chisquare.cdf(chiSquare, df);
+      initDropdowns();
+      updateDashboard();
+      updateComparisonMatrixData();
+    } catch (err) {
+      document.getElementById('integrityBanner').innerText = 
+        `Error loading snapshot_data.json: ${err.message}.`;
     }
-
-    document.getElementById('raceStatChi2').innerText = chiSquare.toFixed(3);
-    document.getElementById('raceStatDF').innerText = df;
-    document.getElementById('raceStatPValue').innerText = pValue < 0.0001 ? '< 0.0001' : pValue.toFixed(4);
-    document.getElementById('raceStatN').innerText = baseN.toLocaleString();
-
-    const isSig = pValue < 0.05;
-    document.getElementById('raceSigContainer').innerHTML = 
-      `<span class="significance-tag ${isSig ? 'sig-true' : 'sig-false'}">
-        ${isSig ? 'Statistically Significant Difference (p < 0.05)' : 'No Significant Difference (p ≥ 0.05)'}
-      </span>`;
-
-    let html = `<table><thead><tr>
-      <th>Race Category</th><th>${g1.name} %</th><th>Observed Count (N=${baseN.toLocaleString()})</th>
-      <th>${g2.name} %</th><th>Expected Count</th><th>(O - E)² / E</th>
-    </tr></thead><tbody>`;
-
-    details.forEach(row => {
-      html += `<tr>
-        <th>${row.category}</th><td>${row.g1Pct.toFixed(2)}%</td><td>${row.g1Count.toLocaleString()}</td>
-        <td>${row.g2Pct.toFixed(2)}%</td><td>${row.expCount.toFixed(2)}</td><td>${row.contrib.toFixed(3)}</td>
-      </tr>`;
-    });
-
-    html += `<tr><th class="total-cell">Total</th><td class="total-cell">100.00%</td>
-      <td class="total-cell">${baseN.toLocaleString()}</td><td class="total-cell">100.00%</td>
-      <td class="total-cell">${baseN.toFixed(2)}</td><td class="total-cell">${chiSquare.toFixed(3)}</td></tr></tbody></table>`;
-
-    document.getElementById('raceMatrixContainer').innerHTML = html;
   }
 
-  function initTab2Dropdowns() {
+  function initDropdowns() {
     const selectRow = document.getElementById('varRow');
     const selectCol = document.getElementById('varCol');
+
     selectRow.innerHTML = '';
     selectCol.innerHTML = '';
 
@@ -554,28 +420,20 @@ Sources for mutually exclusive demographic populations to match race classificat
       selectRow.add(new Option(label, key));
       selectCol.add(new Option(label, key));
     });
-
+    
     selectRow.value = "race";
     selectCol.value = "has_exp_rel";
 
-    selectRow.onchange = updateDashboard;
-    selectCol.onchange = updateDashboard;
+    selectRow.addEventListener('change', updateDashboard);
+    selectCol.addEventListener('change', updateDashboard);
   }
 
   function updateDashboard() {
     const rowKey = document.getElementById('varRow').value;
     const colKey = document.getElementById('varCol').value;
-    runCrosstab(rowKey, colKey);
-  }
 
-  function runCrosstab(rowKey, colKey) {
-    if (!rawData || rawData.length === 0) return;
-
-    const rawRowCats = [...new Set(rawData.map(d => rowKey === 'race' ? normalizeRace(d.race) : String(d[rowKey] || 'Unrecorded')))];
-    const rawColCats = [...new Set(rawData.map(d => colKey === 'race' ? normalizeRace(d.race) : String(d[colKey] || 'Unrecorded')))];
-
-    const rowCats = sortCategories(rowKey, rawRowCats);
-    const colCats = sortCategories(colKey, rawColCats);
+    const rowCats = sortCategories(rowKey, [...new Set(rawData.map(d => String(d[rowKey] || 'Unrecorded')))]);
+    const colCats = sortCategories(colKey, [...new Set(rawData.map(d => String(d[colKey] || 'Unrecorded')))]);
 
     const matrix = {};
     rowCats.forEach(r => {
@@ -585,31 +443,40 @@ Sources for mutually exclusive demographic populations to match race classificat
 
     let totalN = 0;
     rawData.forEach(d => {
-      const rVal = rowKey === 'race' ? normalizeRace(d.race) : String(d[rowKey] || 'Unrecorded');
-      const cVal = colKey === 'race' ? normalizeRace(d.race) : String(d[colKey] || 'Unrecorded');
+      const rVal = String(d[rowKey] || 'Unrecorded');
+      const cVal = String(d[colKey] || 'Unrecorded');
       if (matrix[rVal] && matrix[rVal][cVal] !== undefined) {
         matrix[rVal][cVal]++;
         totalN++;
       }
     });
-
+   
     const rowTotals = {};
     const colTotals = {};
-    rowCats.forEach(r => rowTotals[r] = colCats.reduce((sum, c) => sum + matrix[r][c], 0));
-    colCats.forEach(c => colTotals[c] = rowCats.reduce((sum, r) => sum + matrix[r][c], 0));
+
+    rowCats.forEach(r => {
+      rowTotals[r] = colCats.reduce((sum, c) => sum + matrix[r][c], 0);
+    });
+
+    colCats.forEach(c => {
+      colTotals[c] = rowCats.reduce((sum, r) => sum + matrix[r][c], 0);
+    });
 
     let chiSquare = 0;
     rowCats.forEach(r => {
       colCats.forEach(c => {
         const observed = matrix[r][c];
         const expected = (rowTotals[r] * colTotals[c]) / totalN;
-        if (expected > 0) chiSquare += Math.pow(observed - expected, 2) / expected;
+        if (expected > 0) {
+          chiSquare += Math.pow(observed - expected, 2) / expected;
+        }
       });
     });
 
     const df = Math.max(0, (rowCats.length - 1) * (colCats.length - 1));
+
     let pValue = 1.0;
-    if (df > 0 && typeof jStat !== 'undefined') {
+    if (df > 0 && chiSquare >= 0 && typeof jStat !== 'undefined') {
       pValue = 1 - jStat.chisquare.cdf(chiSquare, df);
     }
 
@@ -624,51 +491,74 @@ Sources for mutually exclusive demographic populations to match race classificat
         ${isSig ? 'Statistically Significant (p < 0.05)' : 'Not Statistically Significant (p ≥ 0.05)'}
       </span>` : '';
 
-    let html = `<table><thead><tr><th>${variableMap[rowKey] || rowKey} \\ ${variableMap[colKey] || colKey}</th>`;
+    let html = `<table><thead><tr><th>${variableMap[rowKey]} \\ ${variableMap[colKey]}</th>`;
     colCats.forEach(c => html += `<th>${c}</th>`);
     html += `<th class="total-cell">Total</th></tr></thead><tbody>`;
 
     rowCats.forEach(r => {
       html += `<tr><th>${r}</th>`;
-      colCats.forEach(c => html += `<td>${matrix[r][c]}</td>`);
+      colCats.forEach(c => {
+        html += `<td>${matrix[r][c]}</td>`;
+      });
       html += `<td class="total-cell">${rowTotals[r]}</td></tr>`;
     });
 
     html += `<tr><th class="total-cell">Total</th>`;
-    colCats.forEach(c => html += `<td class="total-cell">${colTotals[c]}</td>`);
+    colCats.forEach(c => {
+      html += `<td class="total-cell">${colTotals[c]}</td>`;
+    });
     html += `<td class="total-cell">${totalN}</td></tr></tbody></table>`;
 
     document.getElementById('matrixContainer').innerHTML = html;
   }
 
-  document.getElementById('jsonFileInput').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  function updateComparisonMatrixData() {
+    if (!rawData || rawData.length === 0) return;
+    const totalN = rawData.length;
+    const counts = { 'White': 0, 'Black': 0, 'Hispanic': 0, 'Other / Unknown': 0 };
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        rawData = JSON.parse(event.target.result);
-        document.getElementById('integrityBanner').innerText = `Uploaded File (N = ${rawData.length} records)`;
-        initUI();
-      } catch (err) {
-        alert("Invalid JSON file uploaded.");
-      }
-    };
-    reader.readAsText(file);
-  });
+    rawData.forEach(d => {
+      const r = String(d.race || '').trim();
+      if (r === 'White') counts['White']++;
+      else if (r === 'Black') counts['Black']++;
+      else if (r === 'Hispanic') counts['Hispanic']++;
+      else counts['Other / Unknown']++;
+    });
 
-  async function loadData() {
-    try {
-      const response = await fetch('./snapshot_data.json');
-      if (!response.ok) throw new Error('CORS or file missing');
-      rawData = await response.json();
-      document.getElementById('integrityBanner').innerText = `snapshot_data.json (N = ${rawData.length})`;
-    } catch (err) {
-      rawData = sampleFallbackData;
-      document.getElementById('integrityBanner').innerText = `Sample Fallback Data (N = ${rawData.length}). Use button to upload snapshot_data.json.`;
+    const pcts = {};
+    Object.keys(counts).forEach(k => {
+      pcts[k] = ((counts[k] / totalN) * 100).toFixed(2) + '%';
+    });
+
+    if (document.getElementById('snap-white')) document.getElementById('snap-white').innerText = pcts['White'];
+    if (document.getElementById('snap-black')) document.getElementById('snap-black').innerText = pcts['Black'];
+    if (document.getElementById('snap-hispanic')) document.getElementById('snap-hispanic').innerText = pcts['Hispanic'];
+    if (document.getElementById('snap-other')) document.getElementById('snap-other').innerText = pcts['Other / Unknown'];
+
+    const compContainer = document.getElementById('comparisonMatrixTab1Container');
+    if (compContainer) {
+      compContainer.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Demographic Group</th>
+              <th>USA Pop. % (Census)</th>
+              <th>KY Pop. % (Census)</th>
+              <th>Fayette Co. Pop. % (Census)</th>
+              <th>BJS National Incarcerated %</th>
+              <th>KY DOC Incarcerated %</th>
+              <th>Jail Snapshot % of Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th>White</th><td>57.39%</td><td>81.55%</td><td>66.75%</td><td>10.77%</td><td>74.00%</td><td>${pcts['White']}</td></tr>
+            <tr><th>Black</th><td>11.91%</td><td>7.55%</td><td>14.39%</td><td>49.74%</td><td>22.00%</td><td>${pcts['Black']}</td></tr>
+            <tr><th>Hispanic</th><td>19.34%</td><td>5.00%</td><td>9.52%</td><td>20.51%</td><td>2.00%</td><td>${pcts['Hispanic']}</td></tr>
+            <tr><th>Other / Unknown</th><td>7.11%</td><td>2.05%</td><td>4.67%</td><td>18.97%</td><td>2.00%</td><td>${pcts['Other / Unknown']}</td></tr>
+          </tbody>
+        </table>
+      `;
     }
-    initUI();
   }
 
   window.addEventListener('DOMContentLoaded', () => {

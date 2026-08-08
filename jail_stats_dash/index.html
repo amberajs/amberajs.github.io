@@ -1,0 +1,346 @@
+<script>
+  function switchTab(tabId, element) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    
+    document.getElementById(tabId).classList.add('active');
+    element.classList.add('active');
+  }
+
+  function renderSources() {
+    const markdownSource = document.getElementById('sources-markdown').textContent;
+    const renderedHTML = marked.parse(markdownSource);
+    document.getElementById('sourcesMarkdownContainer').innerHTML = renderedHTML;
+  }
+
+  const variableMap = {
+    "race": "Race",
+    "sex": "Sex",
+    "bmi_bin": "BMI",
+    "days_served": "Days Served",
+    "has_exp_rel": "Has Expected Release Date?"
+  };
+  
+  const DAYS_SERVED_ORDER = [
+    '0-2 Days',
+    '3-7 Days',
+    '8-30 Days',
+    '31-180 Days',
+    '181-365 Days',
+    '1+ Years'
+  ];
+
+  function normalizeRace(rawVal) {
+    if (!rawVal) return 'Other/Unknown';
+    const str = String(rawVal).trim().toLowerCase();
+    
+    if (str === 'white') return 'White';
+    if (str === 'black') return 'Black';
+    if (str === 'hispanic') return 'Hispanic';
+    if (str === 'other' || str === 'unknown' || str === 'other/unknown') return 'Other/Unknown';
+    
+    return 'Other/Unknown';
+  }
+
+  function sortCategories(key, categories) {
+    if (key === 'days_served') {
+      return categories.sort((a, b) => {
+        const indexA = DAYS_SERVED_ORDER.indexOf(a);
+        const indexB = DAYS_SERVED_ORDER.indexOf(b);
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+        return a.localeCompare(b);
+      });
+    }
+    return categories.sort();
+  }
+
+  let rawData = [];
+
+  function getFayetteIncRaceStats() {
+    const categories = ["White", "Black", "Hispanic", "Other/Unknown"];
+    const counts = { "White": 0, "Black": 0, "Hispanic": 0, "Other/Unknown": 0 };
+    let totalN = 0;
+
+    rawData.forEach(d => {
+      const normalized = normalizeRace(d.race);
+      counts[normalized]++;
+      totalN++;
+    });
+
+    const probs = {};
+    categories.forEach(cat => {
+      probs[cat] = totalN > 0 ? counts[cat] / totalN : 0;
+    });
+
+    return {
+      name: "Fayette Incarcerated (Snapshot Data)",
+      counts: counts,
+      probs: probs,
+      totalN: totalN
+    };
+  }
+
+  async function loadData() {
+    try {
+      const response = await fetch('./snapshot_data.json');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      rawData = await response.json();
+
+      const totalN = rawData.length;
+
+      document.getElementById('integrityBanner').innerText = 
+        `Loaded snapshot N = ${totalN} inmates`;
+
+      initRaceTabDropdowns();
+      initTab2Dropdowns();
+      
+      updateRaceComparison();
+      updateDashboard();
+    } catch (err) {
+      document.getElementById('integrityBanner').innerText = 
+        `Error loading snapshot_data.json: ${err.message}.`;
+    }
+  }
+
+  const ALL_RACE_GROUPS = {
+    "us_pop": { label: "US Population (Census)", key: "bm_us_pop" },
+    "us_inc": { label: "US Incarcerated (BJS)", key: "bm_bjs_inc" },
+    "ky_pop": { label: "KY Population (Census)", key: "bm_ky_pop" },
+    "ky_inc": { label: "KY DOC Incarcerated", key: "bm_kydoc_inc" },
+    "fayette_pop": { label: "Fayette Co. Population (Census)", key: "bm_fayette" },
+    "fayette_inc": { label: "Fayette Incarcerated (Snapshot Data)", key: "fayette_inc" }
+  };
+
+  function getGroupData(groupId) {
+    if (groupId === "fayette_inc") {
+      return getFayetteIncRaceStats();
+    }
+    const bmKey = ALL_RACE_GROUPS[groupId].key;
+    const bm = benchmarks[bmKey];
+    return {
+      name: bm.name,
+      probs: bm.probs,
+      totalN: bm.totalN || null
+    };
+  }
+
+  function initRaceTabDropdowns() {
+    const sel1 = document.getElementById('raceGroup1');
+    const sel2 = document.getElementById('raceGroup2');
+
+    sel1.innerHTML = '';
+    sel2.innerHTML = '';
+
+    Object.entries(ALL_RACE_GROUPS).forEach(([id, obj]) => {
+      sel1.add(new Option(obj.label, id));
+      sel2.add(new Option(obj.label, id));
+    });
+
+    sel1.value = "fayette_inc";
+    sel2.value = "fayette_pop";
+
+    sel1.addEventListener('change', updateRaceComparison);
+    sel2.addEventListener('change', updateRaceComparison);
+  }
+
+  function updateRaceComparison() {
+    const id1 = document.getElementById('raceGroup1').value;
+    const id2 = document.getElementById('raceGroup2').value;
+
+    const g1 = getGroupData(id1);
+    const g2 = getGroupData(id2);
+
+    const categories = ["White", "Black", "Hispanic", "Other/Unknown"];
+    const baseN = g1.totalN || (rawData.length > 0 ? rawData.length : 1000);
+
+    let chiSquare = 0;
+    const details = [];
+
+    categories.forEach(cat => {
+      const p1 = g1.probs[cat] || 0;
+      const p2 = g2.probs[cat] || 0;
+      const obsCount = g1.counts ? g1.counts[cat] : Math.round(p1 * baseN);
+      const expCount = p2 * baseN;
+      const contrib = expCount > 0 ? Math.pow(obsCount - expCount, 2) / expCount : 0;
+      chiSquare += contrib;
+
+      details.push({
+        category: cat,
+        g1Pct: p1 * 100,
+        g1Count: obsCount,
+        g2Pct: p2 * 100,
+        expCount: expCount,
+        contrib: contrib
+      });
+    });
+
+    const df = 3;
+    let pValue = 1.0;
+    if (df > 0 && chiSquare >= 0 && typeof jStat !== 'undefined') {
+      pValue = 1 - jStat.chisquare.cdf(chiSquare, df);
+    }
+
+    document.getElementById('raceStatChi2').innerText = chiSquare.toFixed(3);
+    document.getElementById('raceStatDF').innerText = df;
+    document.getElementById('raceStatPValue').innerText = pValue < 0.0001 ? '< 0.0001' : pValue.toFixed(4);
+    document.getElementById('raceStatN').innerText = baseN.toLocaleString();
+
+    const isSig = pValue < 0.05;
+    document.getElementById('raceSigContainer').innerHTML = 
+      `<span class="significance-tag ${isSig ? 'sig-true' : 'sig-false'}">
+        ${isSig ? 'Statistically Significant Difference (p < 0.05)' : 'No Significant Difference (p ≥ 0.05)'}
+      </span>`;
+
+    let html = `<table>
+      <thead>
+        <tr>
+          <th>Race Category</th>
+          <th>${g1.name} %</th>
+          <th>Observed Count (N=${baseN.toLocaleString()})</th>
+          <th>${g2.name} %</th>
+          <th>Expected Count</th>
+          <th>(O - E)² / E</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    details.forEach(row => {
+      html += `<tr>
+        <th>${row.category}</th>
+        <td>${row.g1Pct.toFixed(2)}%</td>
+        <td>${row.g1Count.toLocaleString()}</td>
+        <td>${row.g2Pct.toFixed(2)}%</td>
+        <td>${row.expCount.toFixed(2)}</td>
+        <td>${row.contrib.toFixed(3)}</td>
+      </tr>`;
+    });
+
+    html += `<tr>
+      <th class="total-cell">Total</th>
+      <td class="total-cell">100.00%</td>
+      <td class="total-cell">${baseN.toLocaleString()}</td>
+      <td class="total-cell">100.00%</td>
+      <td class="total-cell">${baseN.toFixed(2)}</td>
+      <td class="total-cell">${chiSquare.toFixed(3)}</td>
+    </tr></tbody></table>`;
+
+    document.getElementById('raceMatrixContainer').innerHTML = html;
+  }
+
+  function initTab2Dropdowns() {
+    const selectRow = document.getElementById('varRow');
+    const selectCol = document.getElementById('varCol');
+
+    selectRow.innerHTML = '';
+    selectCol.innerHTML = '';
+
+    Object.entries(variableMap).forEach(([key, label]) => {
+      selectRow.add(new Option(label, key));
+      selectCol.add(new Option(label, key));
+    });
+    
+    selectRow.value = "race";
+    selectCol.value = "has_exp_rel";
+
+    selectRow.addEventListener('change', updateDashboard);
+    selectCol.addEventListener('change', updateDashboard);
+  }
+
+  function updateDashboard() {
+    const rowKey = document.getElementById('varRow').value;
+    const colKey = document.getElementById('varCol').value;
+
+    runCrosstab(rowKey, colKey);
+  }
+
+  function runCrosstab(rowKey, colKey) {
+    const rawRowCats = [...new Set(rawData.map(d => rowKey === 'race' ? normalizeRace(d.race) : String(d[rowKey] || 'Unrecorded')))];
+    const rawColCats = [...new Set(rawData.map(d => colKey === 'race' ? normalizeRace(d.race) : String(d[colKey] || 'Unrecorded')))];
+
+    const rowCats = sortCategories(rowKey, rawRowCats);
+    const colCats = sortCategories(colKey, rawColCats);
+
+    const matrix = {};
+    rowCats.forEach(r => {
+      matrix[r] = {};
+      colCats.forEach(c => matrix[r][c] = 0);
+    });
+
+    let totalN = 0;
+    rawData.forEach(d => {
+      const rVal = rowKey === 'race' ? normalizeRace(d.race) : String(d[rowKey] || 'Unrecorded');
+      const cVal = colKey === 'race' ? normalizeRace(d.race) : String(d[colKey] || 'Unrecorded');
+      if (matrix[rVal] && matrix[rVal][cVal] !== undefined) {
+        matrix[rVal][cVal]++;
+        totalN++;
+      }
+    });
+    
+    const rowTotals = {};
+    const colTotals = {};
+
+    rowCats.forEach(r => {
+      rowTotals[r] = colCats.reduce((sum, c) => sum + matrix[r][c], 0);
+    });
+
+    colCats.forEach(c => {
+      colTotals[c] = rowCats.reduce((sum, r) => sum + matrix[r][c], 0);
+    });
+
+    let chiSquare = 0;
+    rowCats.forEach(r => {
+      colCats.forEach(c => {
+        const observed = matrix[r][c];
+        const expected = (rowTotals[r] * colTotals[c]) / totalN;
+        if (expected > 0) {
+          chiSquare += Math.pow(observed - expected, 2) / expected;
+        }
+      });
+    });
+
+    const df = Math.max(0, (rowCats.length - 1) * (colCats.length - 1));
+
+    let pValue = 1.0;
+    if (df > 0 && chiSquare >= 0 && typeof jStat !== 'undefined') {
+      pValue = 1 - jStat.chisquare.cdf(chiSquare, df);
+    }
+
+    document.getElementById('statChi2').innerText = chiSquare.toFixed(3);
+    document.getElementById('statDF').innerText = df;
+    document.getElementById('statPValue').innerText = pValue < 0.0001 ? '< 0.0001' : pValue.toFixed(4);
+    document.getElementById('statN').innerText = totalN;
+
+    const isSig = pValue < 0.05;
+    document.getElementById('sigContainer').innerHTML = df > 0 ? 
+      `<span class="significance-tag ${isSig ? 'sig-true' : 'sig-false'}">
+        ${isSig ? 'Statistically Significant (p < 0.05)' : 'Not Statistically Significant (p ≥ 0.05)'}
+      </span>` : '';
+
+    let html = `<table><thead><tr><th>${variableMap[rowKey] || rowKey} \\ ${variableMap[colKey] || colKey}</th>`;
+    colCats.forEach(c => html += `<th>${c}</th>`);
+    html += `<th class="total-cell">Total</th></tr></thead><tbody>`;
+
+    rowCats.forEach(r => {
+      html += `<tr><th>${r}</th>`;
+      colCats.forEach(c => {
+        html += `<td>${matrix[r][c]}</td>`;
+      });
+      html += `<td class="total-cell">${rowTotals[r]}</td></tr>`;
+    });
+
+    html += `<tr><th class="total-cell">Total</th>`;
+    colCats.forEach(c => {
+      html += `<td class="total-cell">${colTotals[c]}</td>`;
+    });
+    html += `<td class="total-cell">${totalN}</td></tr></tbody></table>`;
+
+    document.getElementById('matrixContainer').innerHTML = html;
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    renderSources();
+    loadData();
+  });
+</script>

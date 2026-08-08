@@ -39,7 +39,6 @@
       color: var(--primary);
     }
 
-    /* Tab Navigation Styles */
     .tab-nav {
       display: flex;
       gap: 0.5rem;
@@ -199,7 +198,69 @@
 
     .markdown-body {
       background-color: transparent !important;
+      color: var(--text) !important;
       font-family: inherit;
+    }
+
+    .markdown-body h1, 
+    .markdown-body h2, 
+    .markdown-body h3, 
+    .markdown-body h4 {
+      color: var(--primary) !important;
+      border-bottom-color: var(--border) !important;
+    }
+
+    .markdown-body p,
+    .markdown-body li,
+    .markdown-body td,
+    .markdown-body th,
+    .markdown-body span,
+    .markdown-body strong {
+      color: var(--text) !important;
+    }
+
+    .markdown-body table {
+      background-color: var(--card-bg) !important;
+      display: table !important;
+      width: 100% !important;
+      border-collapse: collapse !important;
+    }
+
+    .markdown-body table tr {
+      background-color: var(--card-bg) !important;
+      border-top-color: var(--border) !important;
+    }
+
+    .markdown-body table tr:nth-child(2n) {
+      background-color: #f8f9fa !important;
+    }
+
+    .markdown-body table th, 
+    .markdown-body table td {
+      border: 1px solid var(--border) !important;
+      padding: 10px 14px !important;
+      color: var(--text) !important;
+    }
+
+    .markdown-body table th {
+      background-color: #f1f3f5 !important;
+    }
+
+    .markdown-body code {
+      background-color: #e9ecef !important;
+      color: var(--text) !important;
+      border-radius: 4px !important;
+      padding: 0.2em 0.4em !important;
+    }
+
+    .markdown-body blockquote {
+      color: #495057 !important;
+      border-left-color: var(--border) !important;
+    }
+
+    .markdown-body hr {
+      background-color: var(--border) !important;
+      height: 1px !important;
     }
   </style>
 </head>
@@ -210,11 +271,53 @@
   <div id="integrityBanner" class="integrity-banner">Loading snapshot_data.json...</div>
 
   <div class="tab-nav">
-    <button class="tab-btn active" onclick="switchTab('matrixTab', this)">Crosstab & Chi-Square</button>
-    <button class="tab-btn" onclick="switchTab('sourcesTab', this)">Data Sources & Baselines</button>
+    <button class="tab-btn active" onclick="switchTab('raceTab', this)">Race Population Comparisons</button>
+    <button class="tab-btn" onclick="switchTab('matrixTab', this)">Snapshot Crosstabs & Chi-Square</button>
   </div>
 
-  <div id="matrixTab" class="tab-content active">
+  <div id="raceTab" class="tab-content active">
+    <div class="card">
+      <h2>Compare Race Data Across Population & Incarceration Groups</h2>
+      <div class="controls">
+        <div class="control-group">
+          <label for="raceGroup1">Primary Group (Observed):</label>
+          <select id="raceGroup1"></select>
+        </div>
+        <div class="control-group">
+          <label for="raceGroup2">Comparison Group (Baseline / Expected):</label>
+          <select id="raceGroup2"></select>
+        </div>
+      </div>
+
+      <div class="hud-grid">
+        <div class="stat-box">
+          <h3 id="raceStatChi2">0.00</h3>
+          <p>Chi-Square (χ²)</p>
+        </div>
+        <div class="stat-box">
+          <h3 id="raceStatDF">3</h3>
+          <p>Degrees of Freedom (df)</p>
+        </div>
+        <div class="stat-box">
+          <h3 id="raceStatPValue">1.0000</h3>
+          <p>p-value</p>
+        </div>
+        <div class="stat-box">
+          <h3 id="raceStatN">0</h3>
+          <p>Base Sample Size (N)</p>
+        </div>
+      </div>
+
+      <div style="text-align: right; margin-bottom: 0.5rem;" id="raceSigContainer"></div>
+      <div class="table-container" id="raceMatrixContainer"></div>
+    </div>
+
+    <div class="card">
+      <div id="sourcesMarkdownContainer" class="markdown-body"></div>
+    </div>
+  </div>
+
+  <div id="matrixTab" class="tab-content">
     <div class="card">
       <div class="controls">
         <div class="control-group">
@@ -249,38 +352,26 @@
       <div style="text-align: right; margin-bottom: 0.5rem;" id="sigContainer"></div>
       <div class="table-container" id="matrixContainer"></div>
     </div>
-
-    <div class="card">
-      <h2 style="margin-top:0; color: var(--primary); font-size: 1.25rem;">Master Comparison Matrix</h2>
-      <div class="table-container" id="comparisonMatrixTab1Container"></div>
-    </div>
-  </div>
-  
-  <div id="sourcesTab" class="tab-content">
-    <div class="card">
-      <div id="sourcesMarkdownContainer" class="markdown-body"></div>
-    </div>
   </div>
 </div>
 
-<!-- Embedded Raw Sources Markdown Document -->
 <script id="sources-markdown" type="text/markdown">
 # Demographic Baseline & Comparison Matrix
 
-This document aggregates mutually exclusive demographic baselines from the U.S. Census Bureau alongside national and state correctional metrics. All categories are recoded to align with local booking classification schemas (`White`, `Black`, `Hispanic`, `Other/Unknown`).
+Sources for mutually exclusive demographic populations to match race classifications in the county jail that was studied (`White`, `Black`, `Hispanic`, `Other/Unknown`).
 
 ---
 
-## 1. General Population Baselines
+## General Population Baselines
 
-**Source:** U.S. Census Bureau, *American Community Survey (ACS)* 1-Year Estimates, Table `B03002` (*Hispanic or Latino Origin by Race*), 2024.  
+**Source:** U.S. Census Bureau, *American Community Survey (ACS)* 1-Year Estimates, Table `B03002` (*Hispanic or Latino Origin by Race*), 2024.
 **Access Date:** August 7, 2026.
 
 ### Category Mapping Logic
 * **White:** Line 3 (`Not Hispanic or Latino: White alone`)
-* **Black:** Line 4 (`Not Hispanic or Latino: Black alone`)
+* **Black:** Line 4 (`Not Hispanic or Latino: Black or African American alone`)
 * **Hispanic:** Line 12 (`Hispanic or Latino of any race`)
-* **Other / Unknown:** Sum of Lines 5, 6, 7, and 8  
+* **Other / Unknown:** Sum of Lines 5, 6, 7, and 8
 
 ### Data Breakdown
 
@@ -301,11 +392,11 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
 
 ---
 
-## 2. Incarcerated Population Benchmarks
+## Incarcerated Population Benchmarks
 
-### A. National System-Involved Benchmark
-* **Source:** Bureau of Justice Statistics (BJS), *Correctional Populations in the United States, 2023*, Table 7.  
-* **Access Date:** August 7, 2026.  
+### National Incarcerated Population
+* **Source:** Bureau of Justice Statistics (BJS), *Correctional Populations in the United States, 2023*, Table 7.
+* **Access Date:** August 7, 2026.
 * **URL:** `https://bjs.ojp.gov/document/cpus23st.pdf`
 
 | Category | Incarceration Rate (per 100k US Residents) | Implied Distribution % |
@@ -316,9 +407,9 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
 | **Other / Unknown** | 740 | **18.97%** |
 | **Total Combined Rate Base** | **3,900** | **100.00%** |
 
-### B. Kentucky State Incarcerated Benchmark
-* **Source:** Kentucky Department of Corrections (KY DOC), *2025 Annual Report*, Page 4.  
-* **Access Date:** August 7, 2026.  
+### Kentucky State Incarcerated Population
+* **Source:** Kentucky Department of Corrections (KY DOC), *2025 Annual Report*, Page 4.
+* **Access Date:** August 7, 2026.
 * **URL:** `https://corrections.ky.gov/public-information/researchandstats/Documents/Annual%20Reports/DOC%202025%20Annual%20Report%20-%20Final.pdf`
 
 | Category | KY DOC Reported Percentage |
@@ -331,19 +422,17 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
 
 ---
 
-## 3. Master Comparison Matrix
+## Comparison Matrix
 
-| Demographic Group | USA Pop. % (Census) | KY Pop. % (Census) | Fayette Co. Pop. % (Census) | BJS National Incarcerated % | KY DOC Incarcerated % | Jail Snapshot % of Total |
+| Demographic Group | USA Pop. % (Census) | KY Pop. % (Census) | Fayette Co. Pop. % (Census) | BJS National Incarcerated % | KY DOC Incarcerated % | Fayette Jail Snapshot % |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **White** | 57.39% | 81.55% | 66.75% | 10.77% | 74.00% | <span id="snap-white">--</span> |
-| **Black** | 11.91% | 7.55% | 14.39% | 49.74% | 22.00% | <span id="snap-black">--</span> |
-| **Hispanic** | 19.34% | 5.00% | 9.52% | 20.51% | 2.00% | <span id="snap-hispanic">--</span> |
-| **Other / Unknown** | 7.11% | 2.05% | 4.67% | 18.97% | 2.00% | <span id="snap-other">--</span> |
+| **White** | 57.39% | 81.55% | 66.75% | 10.77% | 74.00% | Calculated from Snapshot |
+| **Black** | 11.91% | 7.55% | 14.39% | 49.74% | 22.00% | Calculated from Snapshot |
+| **Hispanic** | 19.34% | 5.00% | 9.52% | 20.51% | 2.00% | Calculated from Snapshot |
+| **Other / Unknown** | 7.11% | 2.05% | 4.67% | 18.97% | 2.00% | Calculated from Snapshot |
 </script>
 
 <script>
-
- <script>
   function switchTab(tabId, element) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -353,7 +442,20 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
   }
 
   function renderSources() {
-    const markdownSource = document.getElementById('sources-markdown').textContent;
+    let markdownSource = document.getElementById('sources-markdown').textContent;
+    if (rawData && rawData.length > 0) {
+      const stats = getFayetteIncRaceStats();
+      const whitePct = (stats.probs["White"] * 100).toFixed(2) + "%";
+      const blackPct = (stats.probs["Black"] * 100).toFixed(2) + "%";
+      const hispanicPct = (stats.probs["Hispanic"] * 100).toFixed(2) + "%";
+      const otherPct = (stats.probs["Other/Unknown"] * 100).toFixed(2) + "%";
+
+      markdownSource = markdownSource
+        .replace("Calculated from Snapshot", whitePct)
+        .replace("Calculated from Snapshot", blackPct)
+        .replace("Calculated from Snapshot", hispanicPct)
+        .replace("Calculated from Snapshot", otherPct);
+    }
     const renderedHTML = marked.parse(markdownSource);
     document.getElementById('sourcesMarkdownContainer').innerHTML = renderedHTML;
   }
@@ -443,6 +545,7 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
       
       updateRaceComparison();
       updateDashboard();
+      renderSources();
     } catch (err) {
       document.getElementById('integrityBanner').innerText = 
         `Error loading snapshot_data.json: ${err.message}.`;
@@ -456,6 +559,13 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
     "ky_inc": { label: "KY DOC Incarcerated", key: "bm_kydoc_inc" },
     "fayette_pop": { label: "Fayette Co. Population (Census)", key: "bm_fayette" },
     "fayette_inc": { label: "Fayette Incarcerated (Snapshot Data)", key: "fayette_inc" }
+  };
+
+  const benchmarks = {
+    "bm_fayette": {
+      name: "Fayette Co. Population (Census)",
+      probs: { "White": 0.6675, "Black": 0.1439, "Hispanic": 0.0952, "Other/Unknown": 0.0467 }
+    }
   };
 
   function getGroupData(groupId) {
@@ -496,7 +606,6 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
 
     const g1 = getGroupData(id1);
     const g2 = getGroupData(id2);
-    const snapStats = getFayetteIncRaceStats();
 
     const categories = ["White", "Black", "Hispanic", "Other/Unknown"];
     const baseN = g1.totalN || (rawData.length > 0 ? rawData.length : 1000);
@@ -518,8 +627,7 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
         g1Count: obsCount,
         g2Pct: p2 * 100,
         expCount: expCount,
-        contrib: contrib,
-        snapPct: (snapStats.probs[cat] || 0) * 100
+        contrib: contrib
       });
     });
 
@@ -549,7 +657,6 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
           <th>${g2.name} %</th>
           <th>Expected Count</th>
           <th>(O - E)² / E</th>
-          <th>Jail Snapshot %</th>
         </tr>
       </thead>
       <tbody>`;
@@ -562,7 +669,6 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
         <td>${row.g2Pct.toFixed(2)}%</td>
         <td>${row.expCount.toFixed(2)}</td>
         <td>${row.contrib.toFixed(3)}</td>
-        <td>${row.snapPct.toFixed(2)}%</td>
       </tr>`;
     });
 
@@ -573,7 +679,6 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
       <td class="total-cell">100.00%</td>
       <td class="total-cell">${baseN.toFixed(2)}</td>
       <td class="total-cell">${chiSquare.toFixed(3)}</td>
-      <td class="total-cell">100.00%</td>
     </tr></tbody></table>`;
 
     document.getElementById('raceMatrixContainer').innerHTML = html;
@@ -594,15 +699,9 @@ This document aggregates mutually exclusive demographic baselines from the U.S. 
     const optGroup = document.createElement('optgroup');
     optGroup.label = "Goodness-of-Fit Benchmarks";
     Object.entries(benchmarks).forEach(([bmKey, bmObj]) => {
-      const isUSorKY = bmKey.includes('us') || bmKey.includes('ky') || bmKey.includes('bjs') || bmKey.includes('kydoc') ||
-                       bmObj.name.toLowerCase().includes('us') || bmObj.name.toLowerCase().includes('ky');
-      if (!isUSorKY) {
-        optGroup.appendChild(new Option(bmObj.name, bmKey));
-      }
+      optGroup.appendChild(new Option(bmObj.name, bmKey));
     });
-    if (optGroup.children.length > 0) {
-      selectCol.appendChild(optGroup);
-    }
+    selectCol.appendChild(optGroup);
     
     selectRow.value = "race";
     selectCol.value = "has_exp_rel";

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Amber Swartzentruber | Portfolio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body, html {
+      height: 100%;
+      width: 100%;
+      overflow: hidden; /* Lock screen so everything fits on one computer screen */
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: #f9f9f9;
+      color: #222;
+    }
+
+    /* 2x2 Grid Container */
+    .grid-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      height: 100vh;
+      width: 100vw;
+      position: relative;
+    }
+
+    /* Floating Center Hub */
+    .center-hub {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 20;
+      background: #ffffff;
+      padding: 24px 28px;
+      border-radius: 10px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      border: 1px solid #eaeaea;
+      text-align: center;
+      max-width: 440px;
+      width: 90%;
+      pointer-events: auto;
+    }
+
+    .center-hub h1 {
+      font-size: 1.6rem;
+      border-bottom: 3px solid #000;
+      padding-bottom: 6px;
+      margin-bottom: 10px;
+    }
+
+    .center-hub p {
+      font-size: 0.85rem;
+      line-height: 1.4;
+      color: #555;
+    }
+
+    /* Quadrant Styling */
+    .quadrant {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #e0e0e0;
+      background: #ffffff;
+      padding: 30px;
+      overflow: hidden;
+      transition: background 0.3s ease;
+    }
+
+    /* Default View inside Quadrant */
+    .quad-label-container {
+      text-align: center;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .quad-category {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #111;
+    }
+
+    .quad-subtext {
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 6px;
+      font-weight: 500;
+    }
+
+    /* Hover Details Overlay */
+    .quad-details {
+      position: absolute;
+      inset: 0;
+      padding: 35px;
+      background: rgba(255, 255, 255, 0.98);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 10;
+    }
+
+    .quadrant:hover .quad-details,
+    .quadrant:focus-within .quad-details {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .quadrant:hover .quad-label-container {
+      opacity: 0.15;
+      transform: scale(0.95);
+    }
+
+    /* Content Styling within Overlays */
+    .quad-details h3 {
+      font-size: 1.25rem;
+      margin-bottom: 4px;
+      color: #000;
+    }
+
+    .quad-details .date {
+      font-size: 0.8rem;
+      color: #777;
+      margin-bottom: 12px;
+    }
+
+    .quad-details p {
+      font-size: 0.85rem;
+      line-height: 1.45;
+      color: #333;
+      max-width: 380px;
+      margin-bottom: 14px;
+    }
+
+    .quad-details .tags {
+      font-size: 0.78rem;
+      color: #555;
+      font-style: italic;
+      display: block;
+      margin-top: 6px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+
+    .btn-link {
+      display: inline-block;
+      padding: 8px 16px;
+      background-color: #007bff;
+      color: white !important;
+      text-decoration: none;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn-link:hover {
+      background-color: #0056b3;
+    }
+
+    /* Mobile Fallback adjustments */
+    @media (max-width: 768px) {
+      body, html {
+        overflow: auto;
+      }
+      .grid-container {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+      }
+      .center-hub {
+        position: relative;
+        top: 0;
+        left: 0;
+        transform: none;
+        margin: 20px auto;
+        width: calc(100% - 40px);
+      }
+      .quadrant {
+        min-height: 300px;
+      }
+      .quad-details {
+        opacity: 1;
+        position: relative;
+        background: transparent;
+        pointer-events: auto;
+        padding: 20px;
+      }
+      .quad-label-container {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="grid-container">
+
+    <!-- Center Floating Info Card -->
+    <header class="center-hub">
+      <h1>Amber Swartzentruber</h1>
+      <p>
+        Qualitative Analysis | Database Refinement | Independent Research | Pattern Recognition | Written Communication
+      </p>
+    </header>
+
+    <!-- Quadrant 1: DATA -->
+    <section class="quadrant">
+      <div class="quad-label-container">
+        <div class="quad-category">Data</div>
+        <div class="quad-subtext">Arrest Stats</div>
+      </div>
+      <div class="quad-details">
+        <h3>Arrest Stats</h3>
+        <div class="date">June 2026 - Present</div>
+        <div class="btn-group">
+          <a href="http://amberajs.github.io/jail_stats_dash/" target="_blank" class="btn-link">
+            View Demo
+          </a>
+          <a href="http://github.com/amberajs/arrest_stats" target="_blank" class="btn-link">
+            View Source Code
+          </a>
+        </div>
+        <p>
+          Actively developing a full-stack project that will consist of an ELT data pipeline and front-end application with a goal of making local arrest metrics more accessible to the public.
+          <span class="tags">SQL/PostgreSQL | Version Control (Github) | Python | Web Scraping</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- Quadrant 2: TECH -->
+    <section class="quadrant">
+      <div class="quad-label-container">
+        <div class="quad-category">Tech</div>
+        <div class="quad-subtext">Debian Net-Installation</div>
+      </div>
+      <div class="quad-details">
+        <h3>Lightweight Debian Net-Installation</h3>
+        <div class="date">March 2026</div>
+        <div class="btn-group">
+          <a href="debian_netinst_log.html" target="_blank" class="btn-link">
+            View
+          </a>
+        </div>
+        <p>
+          Installed lightweight Debian 13.4 on a Chromebook n22, configured networking and users, and maintained a timestamped installation log.
+          <span class="tags">Operating System Deployment (Linux) | Network Configuration | Technical Troubleshooting</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- Quadrant 3: RESEARCH -->
+    <section class="quadrant">
+      <div class="quad-label-container">
+        <div class="quad-category">Research</div>
+        <div class="quad-subtext">Legal Case Study</div>
+      </div>
+      <div class="quad-details">
+        <h3>Legal Case Study</h3>
+        <div class="date">October 2025</div>
+        <div class="btn-group">
+          <a href="Legal_Case_Study.pdf" target="_blank" class="btn-link">
+            View
+          </a>
+        </div>
+        <p>
+          Reviewed and organized over 2,000 pages of court records. Identified key inconsistencies, reconstructed event timelines, and highlighted procedural concerns relevant to appeal strategy.
+          <span class="tags">Legal Research | Document Management | Open-Source Intelligence (OSINT)</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- Quadrant 4: PRESENTATION -->
+    <section class="quadrant">
+      <div class="quad-label-container">
+        <div class="quad-category">Presentation</div>
+        <div class="quad-subtext">Ancestry eBook</div>
+      </div>
+      <div class="quad-details">
+        <h3>Ancestry eBook</h3>
+        <div class="date">December 2025</div>
+        <div class="btn-group">
+          <a href="Ancestry_eBook.html" target="_blank" class="btn-link">
+            View
+          </a>
+        </div>
+        <p>
+          Expanded minimal initial family information into a 60-page eBook with historical records, photographs, and custom graphics. The final version of this project before redactions also contained audiobook narration.
+          <span class="tags">Historical Research | Pedigree Reconstruction | Graphic Design (Canva)</span>
+        </p>
+      </div>
+    </section>
+
+  </div>
+
+</body>
+</html>

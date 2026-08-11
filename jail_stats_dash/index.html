@@ -172,7 +172,6 @@
       width: 100%;
     }
 
-    /* Tab 1 Interactive Grid Layout */
     .pie-interactive-wrapper {
       margin-bottom: 1rem;
     }
@@ -214,6 +213,7 @@
       width: 300px;
       height: 300px;
       position: relative;
+      filter: drop-shadow(0px 8px 10px rgba(0,0,0,0.15));
     }
 
     .chart-container.clickable {
@@ -236,31 +236,26 @@
       text-decoration: underline;
     }
 
-    .divider-line {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: 1.5rem 0;
-    }
-
     .stats-summary {
       text-align: center;
-      margin-bottom: 1.5rem;
+      margin-top: 1rem;
+      margin-bottom: 1rem;
     }
 
     .stats-values {
       font-weight: bold;
-      margin-bottom: 0.8rem;
+      margin-bottom: 0.5rem;
       font-size: 1.05rem;
     }
 
     .stat-item {
       display: inline-block;
-      margin: 0 1.5rem;
+      margin: 0 1rem;
     }
 
     .table-toggle-wrapper {
       text-align: left;
-      margin-top: 1rem;
+      margin-top: 1.5rem;
     }
 
     .table-toggle {
@@ -357,7 +352,6 @@
     <button class="tab-btn" onclick="switchTab('matrixTab', this)">Qualitative Relationships</button>
   </div>
 
-  <!-- TAB 1 CONTENT -->
   <div id="raceTab" class="tab-content active">
     <div class="card">
       <div class="controls">
@@ -366,23 +360,16 @@
         </div>
       </div>
 
-      <div class="pie-interactive-wrapper" id="pieInteractiveWrapper">
-        <!-- Rendered via state engine -->
-      </div>
+      <div class="pie-interactive-wrapper" id="pieInteractiveWrapper"></div>
 
-      <!-- Below divider content (States 3 & 4) -->
       <div id="tab1BottomSection" style="display: none;">
-        <hr class="divider-line">
-        
         <div class="stats-summary">
           <div class="stats-values">
-            <span class="stat-item">χ² = <span id="raceStatChi2">0.000</span></span>
+            <span class="stat-item">&chi;&sup2; = <span id="raceStatChi2">0.000</span></span>
             <span class="stat-item">p-value = <span id="raceStatPValue">1.0000</span></span>
           </div>
-          <div id="raceStatStatement" style="padding: 0 1rem;"></div>
+          <div id="raceStatStatement" style="padding: 0 1rem; max-width: 800px; margin: 0 auto;"></div>
         </div>
-
-        <hr class="divider-line">
 
         <div class="table-toggle-wrapper">
           <div class="table-toggle" id="tableToggleBtn" onclick="toggleTable()">
@@ -394,7 +381,6 @@
     </div>
   </div>
 
-  <!-- TAB 2 CONTENT -->
   <div id="matrixTab" class="tab-content">
     <div class="card">
       <div class="controls">
@@ -411,7 +397,7 @@
       <div class="hud-grid">
         <div class="stat-box">
           <h3 id="statChi2">0.00</h3>
-          <p>Chi-Square (χ²)</p>
+          <p>Chi-Square (&chi;&sup2;)</p>
         </div>
         <div class="stat-box">
           <h3 id="statDF">0</h3>
@@ -438,19 +424,14 @@
   let chart1Instance = null;
   let chart2Instance = null;
   
-  // App Stage State for Tab 1:
-  // 1 = Initial Load (Default dropdown prompt, centered FCDC chart)
-  // 2 = Dropdown selected (Left: left-justified question text, Right: centered FCDC chart)
-  // 3 = Chart clicked (Left: FCDC chart, Right: Selected Pop chart)
-  // 4 = Table expanded (State 3 + centered table displayed below)
   let appState = 1;
-  let isTableOpen = false;
+  let hasBeenRevealed = false;
 
   const colorMap = {
-    "White": "#5C7CFA",
-    "Black": "#FF922B",
-    "Hispanic": "#38D9A9",
-    "Other": "#ADB5BD"
+    "White": { inner: "#829abf", outer: "#4263eb" },
+    "Black": { inner: "#ffc078", outer: "#f76707" },
+    "Hispanic": { inner: "#8ce99a", outer: "#0ca678" },
+    "Other": { inner: "#e9ecef", outer: "#868e96" }
   };
 
   const sourceRepoBase = "https://github.com/amberajs/arrest_stats/blob/main/data/original_sources/";
@@ -594,8 +575,11 @@
 
     sel2.addEventListener('change', () => {
       if (sel2.value) {
-        appState = 2;
-        isTableOpen = false;
+        if (hasBeenRevealed) {
+          appState = 3;
+        } else {
+          appState = 2;
+        }
         renderTab1Layout();
       }
     });
@@ -695,6 +679,7 @@
 
   function handlePieClick() {
     if (appState === 2) {
+      hasBeenRevealed = true;
       appState = 3;
       renderTab1Layout();
     }
@@ -709,12 +694,20 @@
     renderTab1Layout();
   }
 
+  function create3DGradient(ctx, innerColor, outerColor) {
+    const gradient = ctx.createRadialGradient(150, 150, 20, 150, 150, 150);
+    gradient.addColorStop(0, innerColor);
+    gradient.addColorStop(1, outerColor);
+    return gradient;
+  }
+
   function renderPieChart(canvasId, groupData) {
     const labels = ["White", "Black", "Hispanic", "Other"];
     const data = labels.map(l => (groupData.probs[l] || 0) * 100);
-    const bgColors = labels.map(l => colorMap[l]);
 
     const ctx = document.getElementById(canvasId).getContext('2d');
+    const bgColors = labels.map(l => create3DGradient(ctx, colorMap[l].inner, colorMap[l].outer));
+
     return new Chart(ctx, {
       type: 'pie',
       plugins: [ChartDataLabels],
@@ -724,7 +717,8 @@
           data: data,
           backgroundColor: bgColors,
           borderWidth: 2,
-          borderColor: '#ffffff'
+          borderColor: '#ffffff',
+          hoverOffset: 12
         }]
       },
       options: {
@@ -734,6 +728,8 @@
           datalabels: {
             color: '#ffffff',
             font: { weight: 'bold', size: 12 },
+            textShadowColor: 'rgba(0,0,0,0.5)',
+            textShadowBlur: 4,
             formatter: (value) => value > 3 ? value.toFixed(1) + '%' : ''
           }
         }

@@ -1,15 +1,15 @@
-##**AMBER SWARTZENTRUBER**##
-##Professional Portfolio##
+**AMBER SWARTZENTRUBER**
+Professional Portfolio
 Data | Research | Tech | Presentation
 
-###Current Project###
+Current Project:
 
 **Arrest Stats**
 June 2026 - Present
 In active development, demo available at ./DATA
 Custom data pipeline source code can be viewed at http://github.com/amberajs/arrest_stats
 
-###Selected Works###
+Selected Works:
 
 **Debian Net Installation**
 March 2026

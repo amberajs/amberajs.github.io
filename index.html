@@ -14,13 +14,12 @@
     body, html {
       height: 100%;
       width: 100%;
-      overflow: hidden; /* Lock screen so everything fits on one computer screen */
+      overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
       background: #f9f9f9;
       color: #222;
     }
 
-    /* 2x2 Grid Container */
     .grid-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -30,7 +29,6 @@
       position: relative;
     }
 
-    /* Floating Center Hub */
     .center-hub {
       position: absolute;
       top: 50%;
@@ -38,30 +36,36 @@
       transform: translate(-50%, -50%);
       z-index: 20;
       background: #ffffff;
-      padding: 24px 28px;
-      border-radius: 10px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      padding: 24px 32px;
+      border-radius: 12px;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
       border: 1px solid #eaeaea;
       text-align: center;
-      max-width: 440px;
-      width: 90%;
+      max-width: 400px;
+      width: 85%;
       pointer-events: auto;
     }
 
     .center-hub h1 {
-      font-size: 1.6rem;
-      border-bottom: 3px solid #000;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.85rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #000;
+      border-bottom: 2px solid #000;
       padding-bottom: 6px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
-    .center-hub p {
-      font-size: 0.85rem;
-      line-height: 1.4;
+    .center-hub p.subtitle {
+      font-size: 0.9rem;
+      font-weight: 500;
+      line-height: 1.3;
       color: #555;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
-    /* Quadrant Styling */
     .quadrant {
       position: relative;
       display: flex;
@@ -75,7 +79,6 @@
       transition: background 0.3s ease;
     }
 
-    /* Default View inside Quadrant */
     .quad-label-container {
       text-align: center;
       transition: opacity 0.3s ease, transform 0.3s ease;
@@ -96,7 +99,6 @@
       font-weight: 500;
     }
 
-    /* Hover Details Overlay */
     .quad-details {
       position: absolute;
       inset: 0;
@@ -114,17 +116,18 @@
     }
 
     .quadrant:hover .quad-details,
-    .quadrant:focus-within .quad-details {
+    .quadrant:focus-within .quad-details,
+    .quadrant.active .quad-details {
       opacity: 1;
       pointer-events: auto;
     }
 
-    .quadrant:hover .quad-label-container {
+    .quadrant:hover .quad-label-container,
+    .quadrant.active .quad-label-container {
       opacity: 0.15;
       transform: scale(0.95);
     }
 
-    /* Content Styling within Overlays */
     .quad-details h3 {
       font-size: 1.25rem;
       margin-bottom: 4px;
@@ -177,7 +180,6 @@
       background-color: #0056b3;
     }
 
-    /* Mobile Fallback adjustments */
     @media (max-width: 768px) {
       body, html {
         overflow: auto;
@@ -216,19 +218,15 @@
 
   <div class="grid-container">
 
-    <!-- Center Floating Info Card -->
     <header class="center-hub">
       <h1>Amber Swartzentruber</h1>
-      <p>
-        Qualitative Analysis | Database Refinement | Independent Research | Pattern Recognition | Written Communication
-      </p>
+      <p class="subtitle">Data &amp; Research Analyst</p>
     </header>
 
-    <!-- Quadrant 1: DATA -->
-    <section class="quadrant">
+    <section class="quadrant" id="data">
       <div class="quad-label-container">
         <div class="quad-category">Data</div>
-        <div class="quad-subtext">Arrest Stats</div>
+        <div class="quad-subtext">Custom Built Data Pipeline</div>
       </div>
       <div class="quad-details">
         <h3>Arrest Stats</h3>
@@ -243,13 +241,12 @@
         </div>
         <p>
           Actively developing a full-stack project that will consist of an ELT data pipeline and front-end application with a goal of making local arrest metrics more accessible to the public.
-          <span class="tags">SQL/PostgreSQL | Version Control (Github) | Python | Web Scraping</span>
+          <span class="tags">SQL/PostgreSQL | Version Control (Github) | Python | Web Scraping | Database Refinement</span>
         </p>
       </div>
     </section>
 
-    <!-- Quadrant 2: TECH -->
-    <section class="quadrant">
+    <section class="quadrant" id="tech">
       <div class="quad-label-container">
         <div class="quad-category">Tech</div>
         <div class="quad-subtext">Debian Net-Installation</div>
@@ -269,8 +266,7 @@
       </div>
     </section>
 
-    <!-- Quadrant 3: RESEARCH -->
-    <section class="quadrant">
+    <section class="quadrant" id="research">
       <div class="quad-label-container">
         <div class="quad-category">Research</div>
         <div class="quad-subtext">Legal Case Study</div>
@@ -285,13 +281,12 @@
         </div>
         <p>
           Reviewed and organized over 2,000 pages of court records. Identified key inconsistencies, reconstructed event timelines, and highlighted procedural concerns relevant to appeal strategy.
-          <span class="tags">Legal Research | Document Management | Open-Source Intelligence (OSINT)</span>
+          <span class="tags">Pattern Recognition | Legal Research | Document Management | Open-Source Intelligence (OSINT) | Written Communication</span>
         </p>
       </div>
     </section>
 
-    <!-- Quadrant 4: PRESENTATION -->
-    <section class="quadrant">
+    <section class="quadrant" id="presentation">
       <div class="quad-label-container">
         <div class="quad-category">Presentation</div>
         <div class="quad-subtext">Ancestry eBook</div>
@@ -306,12 +301,28 @@
         </div>
         <p>
           Expanded minimal initial family information into a 60-page eBook with historical records, photographs, and custom graphics. The final version of this project before redactions also contained audiobook narration.
-          <span class="tags">Historical Research | Pedigree Reconstruction | Graphic Design (Canva)</span>
+          <span class="tags">Historical Research | Pedigree Reconstruction | Graphic Design (Canva) | Qualitative Analysis</span>
         </p>
       </div>
     </section>
 
   </div>
+
+  <script>
+    function openTargetQuadrant() {
+      const hash = window.location.hash.replace('#', '').toLowerCase();
+      document.querySelectorAll('.quadrant').forEach(q => q.classList.remove('active'));
+      if (hash) {
+        const target = document.getElementById(hash);
+        if (target) {
+          target.classList.add('active');
+        }
+      }
+    }
+
+    window.addEventListener('load', openTargetQuadrant);
+    window.addEventListener('hashchange', openTargetQuadrant);
+  </script>
 
 </body>
 </html>

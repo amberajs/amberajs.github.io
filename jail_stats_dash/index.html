@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>County Jail Population Snapshot</title>
+  <title>Analysis of Fayette County Detention Center Population Snapshot</title>
 
   <script src="https://cdn.jsdelivr.net/npm/jstat@latest/dist/jstat.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -17,6 +17,7 @@
       --primary: #1864ab;
       --primary-bg: #e7f5ff;
       --text: #212529;
+      --muted-link: #6c757d;
     }
 
     body {
@@ -32,25 +33,42 @@
       margin: 0 auto;
     }
 
-    .nav-header {
+    /* Top Links styling (Header Requirement 4) */
+    .top-links {
       display: flex;
-      gap: 1.5rem;
-      margin-bottom: 1rem;
-      font-weight: 600;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      font-size: 0.85rem; /* Matching smallest font size on page */
     }
 
-    .nav-header a {
-      color: var(--primary);
+    .top-links a {
+      color: var(--muted-link); /* Different shade/color */
       text-decoration: none;
+      font-weight: 500;
     }
 
-    .nav-header a:hover {
+    .top-links a:hover {
       text-decoration: underline;
     }
 
-    h1 {
-      margin-top: 0;
+    /* Header Title styling (Header Requirement 2 & 3) */
+    .header-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .header-section h1 {
+      margin: 0 0 0.4rem 0;
       color: var(--primary);
+      font-size: 2.2rem; /* Increased size so it stands out */
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .header-subtitle {
+      font-size: 0.9rem; /* Smaller letters */
+      color: #495057;
+      margin: 0;
     }
 
     .tab-nav {
@@ -139,12 +157,12 @@
       flex-direction: column;
       gap: 0.4rem;
       flex: 1;
-      min-width: 220px;
+      min-width: 280px;
     }
 
     label {
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
     }
 
     select {
@@ -155,30 +173,18 @@
       background: white;
     }
 
+    /* Tab 1 Interactive Layout Container */
     .pie-interactive-wrapper {
-      text-align: center;
       margin-bottom: 1.5rem;
-    }
-
-    .pie-question {
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-    }
-
-    .pie-click-prompt {
-      font-weight: 600;
-      color: var(--primary);
-      margin-bottom: 1rem;
-      cursor: pointer;
     }
 
     .charts-row-container {
       display: flex;
       justify-content: center;
-      align-items: center;
-      gap: 1.5rem;
-      transition: all 0.5s ease-in-out;
+      align-items: flex-start;
+      gap: 2rem;
+      position: relative;
+      min-height: 380px;
     }
 
     .chart-box {
@@ -187,19 +193,78 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
-      transition: all 0.5s ease-in-out;
+      transition: transform 0.6s ease-in-out, opacity 0.6s ease-in-out;
     }
 
-    .chart-box.hidden {
-      display: none;
+    /* Unclicked state: Chart 1 on right, question on left */
+    .chart-box#chartBox1 {
+      position: absolute;
+      right: 50px;
+      top: 0;
+      z-index: 2;
+    }
+
+    .question-overlay {
+      position: absolute;
+      left: 50px;
+      top: 20px;
+      width: 320px;
+      text-align: center;
+      z-index: 1;
       opacity: 0;
-      transform: translateX(50px);
+      transform: translateY(-20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
     }
 
-    .chart-box.visible {
-      display: flex;
+    /* Animation: Descending cloud effect when dropdown selected (Requirement 13) */
+    .question-overlay.descend-active {
       opacity: 1;
-      transform: translateX(0);
+      transform: translateY(0);
+    }
+
+    .pie-question-text {
+      font-size: 1.05rem;
+      font-weight: 600;
+      line-height: 1.4;
+      white-space: pre-line;
+      color: var(--text);
+    }
+
+    /* Clicked state: Chart 1 slides left over question (Requirement 10) */
+    .pie-interactive-wrapper.clicked .chart-box#chartBox1 {
+      transform: translateX(-380px);
+    }
+
+    /* Requirement 10: question text wrapped under pie chart */
+    .pie-interactive-wrapper.clicked .chart-box#chartBox1 .pie-question-under {
+      display: block;
+    }
+
+    .pie-question-under {
+      display: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      line-height: 1.35;
+      margin-top: 10px;
+      white-space: pre-line;
+      color: var(--text);
+    }
+
+    /* Chart 2 materializes on right (Requirement 11 & 12) */
+    .chart-box#chartBox2 {
+      position: absolute;
+      right: 50px;
+      top: 0;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+      transform: scale(0.92);
+    }
+
+    .pie-interactive-wrapper.clicked .chart-box#chartBox2 {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
     }
 
     .chart-container {
@@ -209,31 +274,29 @@
       cursor: pointer;
     }
 
-    .meta-sources {
-      margin-top: 1rem;
-      font-size: 0.95rem;
-      display: none;
+    /* Sources and Sample Sizes below each chart (Requirement 11) */
+    .chart-meta-info {
+      margin-top: 0.8rem;
+      font-size: 0.85rem;
+      color: #495057;
       text-align: center;
     }
 
-    .meta-sources.visible {
-      display: block;
-    }
-
-    .meta-sources a {
+    .chart-meta-info a {
       color: var(--primary);
       text-decoration: none;
     }
 
-    .meta-sources a:hover {
+    .chart-meta-info a:hover {
       text-decoration: underline;
     }
 
+    /* Stats Summary formatting & Spacing (Requirement 9) */
     .stats-summary {
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
-      padding: 1rem 0;
-      margin-top: 1rem;
+      padding: 1.2rem 0;
+      margin-top: 1.5rem;
       margin-bottom: 1.5rem;
       display: none;
       text-align: center;
@@ -243,17 +306,25 @@
       display: block;
     }
 
+    /* Requirement 9: Spacing between stats */
     .stats-values {
       font-weight: bold;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.8rem;
+      font-size: 1.05rem;
+    }
+
+    .stat-item {
+      display: inline-block;
+      margin: 0 1.2rem; /* Added generous space between elements */
     }
 
     .table-toggle {
       font-weight: 600;
       cursor: pointer;
       user-select: none;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.8rem;
       display: inline-block;
+      color: var(--primary);
     }
 
     .table-container {
@@ -287,12 +358,6 @@
       background-color: #e9ecef;
     }
 
-    .integrity-banner {
-      font-size: 0.85rem;
-      color: #6c757d;
-      margin-bottom: 1rem;
-    }
-
     .arrow-up {
       color: #2b8a3e;
       font-size: 0.85em;
@@ -309,76 +374,89 @@
 <body>
 
 <div class="container">
-  <div class="nav-header">
-    <a href="https://amberajs.github.io" target="_blank" rel="noopener noreferrer">back to amberajs portfolio</a>
-    <a href="https://github.com/amberajs/arrest_stats/" target="_blank" rel="noopener noreferrer">view source code</a>
+  <!-- Top Links Header (Header Requirement 4) -->
+  <div class="top-links">
+    <a href="https://amberajs.github.io" target="_blank" rel="noopener noreferrer">&#8592; amberajs portfolio</a>
+    <a href="https://github.com/amberajs/arrest_stats/" target="_blank" rel="noopener noreferrer">view source code &#8594;</a>
   </div>
 
-  <h1>County Jail Population Snapshot</h1>
-  <div id="integrityBanner" class="integrity-banner">Loading snapshot_data.json...</div>
+  <!-- Header Section (Header Requirements 1, 2, & 3) -->
+  <div class="header-section">
+    <h1>Analysis of Fayette County Detention Center Population Snapshot</h1>
+    <p class="header-subtitle">Snapshot contains every FCDC inmate at a single point in time during 2026.</p>
+  </div>
 
+  <!-- Tab Navigation Bar -->
   <div class="tab-nav">
-    <button class="tab-btn active" onclick="switchTab('raceTab', this)">Race Population Comparisons</button>
-    <button class="tab-btn" onclick="switchTab('matrixTab', this)">Snapshot Crosstabs & Chi-Square</button>
+    <!-- Requirement 4: Compare Population Data -->
+    <button class="tab-btn active" onclick="switchTab('raceTab', this)">Compare Population Data</button>
+    <!-- Requirement 7: Qualitative Relationships -->
+    <button class="tab-btn" onclick="switchTab('matrixTab', this)">Qualitative Relationships</button>
   </div>
 
+  <!-- TAB 1 CONTENT -->
   <div id="raceTab" class="tab-content active">
     <div class="card">
       <div class="controls">
         <div class="control-group">
-          <label for="raceGroup1">Observed Population</label>
-          <select id="raceGroup1"></select>
-        </div>
-        <div class="control-group">
-          <label for="raceGroup2">Baseline Population</label>
+          <!-- Requirement 5: Compare Fayette County Detention Center to... -->
+          <label for="raceGroup2">Compare Fayette County Detention Center to...</label>
+          <!-- Requirement 1 & 2: Single dropdown menu -->
           <select id="raceGroup2"></select>
         </div>
       </div>
 
-      <div class="pie-interactive-wrapper">
-        <div class="pie-question" id="pieQuestionText">
-          What would the racial distribution of Fayette County Detention Center look like if it was representative of Fayette County Population?
-        </div>
-        <div class="pie-click-prompt" id="pieClickPrompt" onclick="revealSecondChart()">
-          Click the pie chart below to find out!
-        </div>
+      <div class="pie-interactive-wrapper" id="pieInteractiveWrapper">
+        <div class="charts-row-container">
+          <!-- Floating question (Requirement 6, 13) -->
+          <div class="question-overlay" id="questionOverlay">
+            <div class="pie-question-text" id="pieQuestionText"></div>
+          </div>
 
-        <div class="charts-row-container" id="chartsRowContainer">
+          <!-- FCDC Pie Chart Box -->
           <div class="chart-box" id="chartBox1">
             <div class="chart-container" onclick="revealSecondChart()">
               <canvas id="chart1"></canvas>
             </div>
+            <!-- Question text wrapped under circle after click (Requirement 10) -->
+            <div class="pie-question-under" id="pieQuestionUnder"></div>
+            <div class="chart-meta-info" id="meta1" style="display: none;">
+              Sample Size: <span id="sampleSize1">0</span><br>
+              <a id="sourceLink1" href="#" target="_blank" rel="noopener noreferrer">View Snapshot Data</a>
+            </div>
           </div>
-          <div class="chart-box hidden" id="chartBox2">
+
+          <!-- Target Benchmark Pie Chart Box (Requirement 11, 12) -->
+          <div class="chart-box" id="chartBox2">
             <div class="chart-container">
               <canvas id="chart2"></canvas>
             </div>
-          </div>
-        </div>
-
-        <div class="meta-sources" id="metaSources">
-          <div>
-            <strong>Observed Source:</strong> <a id="sourceLink1" href="#" target="_blank" rel="noopener noreferrer">View Data</a> (N = <span id="sampleSize1">0</span>)
-            &nbsp;|&nbsp;
-            <strong>Baseline Source:</strong> <a id="sourceLink2" href="#" target="_blank" rel="noopener noreferrer">View Data</a> (N = <span id="sampleSize2">0</span>)
+            <div class="chart-meta-info" id="meta2" style="display: none;">
+              Sample Size: <span id="sampleSize2">0</span><br>
+              <a id="sourceLink2" href="#" target="_blank" rel="noopener noreferrer">View Benchmark Source</a>
+            </div>
           </div>
         </div>
       </div>
 
+      <!-- Statistics & Chi-Square Summary (Requirement 9) -->
       <div class="stats-summary" id="statsSummary">
         <div class="stats-values">
-          x² = <span id="raceStatChi2">0.000</span> | p-value = <span id="raceStatPValue">1.0000</span>
+          <span class="stat-item">χ² = <span id="raceStatChi2">0.000</span></span>
+          <span class="stat-item">p-value = <span id="raceStatPValue">1.0000</span></span>
         </div>
-        <div id="raceStatStatement"></div>
+        <div id="raceStatStatement" style="padding: 0 1rem;"></div>
       </div>
 
+      <!-- Table Toggle & Section (Requirement 8) -->
       <div>
-        <div class="table-toggle" id="tableToggleBtn" onclick="toggleTable()">&#10095; table data</div>
+        <div class="table-toggle" id="tableToggleBtn" onclick="toggleTable()">Table Data</div>
         <div class="table-container" id="raceMatrixContainer" style="display: none;"></div>
       </div>
     </div>
   </div>
 
+  <!-- TAB 2 CONTENT -->
   <div id="matrixTab" class="tab-content">
     <div class="card">
       <div class="controls">
@@ -424,18 +502,19 @@
   let isRevealed = false;
   let isTableOpen = false;
 
+  // Requirement 14: Softened pie chart color palette
   const colorMap = {
-    "White": "#1E3A8A",
-    "Black": "#D97706",
-    "Hispanic": "#059669",
-    "Other": "#4B5563"
+    "White": "#5C7CFA",    // Soft Indigo
+    "Black": "#FF922B",    // Soft Warm Amber
+    "Hispanic": "#38D9A9", // Soft Mint Emerald
+    "Other": "#ADB5BD"     // Soft Muted Slate
   };
 
   const sourceRepoBase = "https://github.com/amberajs/arrest_stats/blob/main/data/original_sources/";
 
   const benchmarks = {
     bm_fayette_inc: {
-      name: "Fayette County Detention Center Population",
+      name: "Fayette County Detention Center",
       probs: { "Black": 0, "Hispanic": 0, "White": 0, "Other": 0 },
       counts: { "Black": 0, "Hispanic": 0, "White": 0, "Other": 0 },
       totalN: 0,
@@ -447,48 +526,40 @@
       totalN: 323725,
       sourceFile: sourceRepoBase + "FayetteCo_ACSDT5Y2024.B03002-Data.csv"
     },
-    bm_ky_inc: {
-      name: "Kentucky Detention Center Population",
-      probs: { "Black": 0.2200, "Hispanic": 0.0200, "White": 0.7400, "Other": 0.0200 },
-      totalN: 20000,
-      sourceFile: sourceRepoBase + "KY_DOC_2025_Annual_Report_Final.pdf"
-    },
     bm_ky_pop: {
       name: "Kentucky Population",
       probs: { "Black": 0.0755, "Hispanic": 0.0500, "White": 0.8155, "Other": 0.0205 },
       totalN: 4534824,
       sourceFile: sourceRepoBase + "KY_ACSDT5Y2024.B03002-Data.csv"
     },
-    bm_us_inc: {
-      name: "United States Detention Center Population",
-      probs: { "Black": 0.4974, "Hispanic": 0.2051, "White": 0.1077, "Other": 0.1897 },
-      totalN: 1200000,
-      sourceFile: sourceRepoBase + "US_cpus23st.pdf"
+    bm_ky_inc: {
+      name: "Kentucky Incarcerated Population",
+      probs: { "Black": 0.2200, "Hispanic": 0.0200, "White": 0.7400, "Other": 0.0200 },
+      totalN: 20000,
+      sourceFile: sourceRepoBase + "KY_DOC_2025_Annual_Report_Final.pdf"
     },
     bm_us_pop: {
       name: "United States Population",
       probs: { "Black": 0.1191, "Hispanic": 0.1934, "White": 0.5739, "Other": 0.0711 },
       totalN: 334922499,
       sourceFile: sourceRepoBase + "US_ACSDT5Y2024.B03002-Data.csv"
+    },
+    bm_us_inc: {
+      name: "United States Incarcerated Population",
+      probs: { "Black": 0.4974, "Hispanic": 0.2051, "White": 0.1077, "Other": 0.1897 },
+      totalN: 1200000,
+      sourceFile: sourceRepoBase + "US_cpus23st.pdf"
     }
   };
 
-  const ALL_RACE_GROUPS = {
-    "fayette_inc": { label: "Fayette County Detention Center Population", key: "bm_fayette_inc" },
-    "fayette_pop": { label: "Fayette County Population", key: "bm_fayette_pop" },
-    "ky_inc": { label: "Kentucky Detention Center Population", key: "bm_ky_inc" },
-    "ky_pop": { label: "Kentucky Population", key: "bm_ky_pop" },
-    "us_inc": { label: "United States Detention Center Population", key: "bm_us_inc" },
-    "us_pop": { label: "United States Population", key: "bm_us_pop" }
-  };
-
-  const BASELINE_GROUPS = {
-    "fayette_pop": ALL_RACE_GROUPS["fayette_pop"],
-    "ky_inc": ALL_RACE_GROUPS["ky_inc"],
-    "ky_pop": ALL_RACE_GROUPS["ky_pop"],
-    "us_inc": ALL_RACE_GROUPS["us_inc"],
-    "us_pop": ALL_RACE_GROUPS["us_pop"]
-  };
+  // Requirement 1: Exactly 5 items in the single dropdown
+  const BASELINE_GROUPS = [
+    { id: "fayette_pop", label: "Fayette County Population", key: "bm_fayette_pop" },
+    { id: "ky_pop", label: "Kentucky Population", key: "bm_ky_pop" },
+    { id: "ky_inc", label: "Kentucky Incarcerated Population", key: "bm_ky_inc" },
+    { id: "us_pop", label: "United States Population", key: "bm_us_pop" },
+    { id: "us_inc", label: "United States Incarcerated Population", key: "bm_us_inc" }
+  ];
 
   const variableMap = {
     "age": "Age",
@@ -560,8 +631,7 @@
     benchmarks.bm_fayette_inc.totalN = totalN;
   }
 
-  function getGroupData(groupId) {
-    const bmKey = ALL_RACE_GROUPS[groupId].key;
+  function getGroupData(bmKey) {
     const bm = benchmarks[bmKey];
     return {
       name: bm.name,
@@ -573,44 +643,46 @@
   }
 
   function initRaceTabDropdowns() {
-    const sel1 = document.getElementById('raceGroup1');
     const sel2 = document.getElementById('raceGroup2');
-
-    sel1.innerHTML = '';
     sel2.innerHTML = '';
 
-    Object.entries(ALL_RACE_GROUPS).forEach(([id, obj]) => {
-      sel1.add(new Option(obj.label, id));
+    BASELINE_GROUPS.forEach(obj => {
+      sel2.add(new Option(obj.label, obj.key));
     });
 
-    Object.entries(BASELINE_GROUPS).forEach(([id, obj]) => {
-      sel2.add(new Option(obj.label, id));
-    });
+    sel2.value = "bm_fayette_pop";
 
-    sel1.value = "fayette_inc";
-    sel2.value = "fayette_pop";
-
-    sel1.addEventListener('change', () => {
-      updateQuestionText();
-      updateRaceComparison();
-    });
     sel2.addEventListener('change', () => {
       updateQuestionText();
       updateRaceComparison();
+      triggerQuestionDescend();
     });
 
     updateQuestionText();
+    triggerQuestionDescend();
   }
 
+  /* Requirement 13: Floating cloud descend animation */
+  function triggerQuestionDescend() {
+    const overlay = document.getElementById('questionOverlay');
+    overlay.classList.remove('descend-active');
+    void overlay.offsetWidth; // Reflow reset
+    overlay.classList.add('descend-active');
+  }
+
+  /* Requirement 6 & 10: Formatting the question text */
   function updateQuestionText() {
     const sel2 = document.getElementById('raceGroup2');
-    const selectedText = sel2.options[sel2.selectedIndex].text;
-    const sel1 = document.getElementById('raceGroup1');
-    const obsText = sel1.options[sel1.selectedIndex].text;
-    document.getElementById('pieQuestionText').innerText =
-      `What would the racial distribution of ${obsText} look like if it was representative of ${selectedText}?`;
+    const selectedLabel = sel2.options[sel2.selectedIndex].text;
+
+    const formattedQuestion = 
+      `What might the racial\ndistribution of Fayette County\nDetention Center look like if it were\nmore representative of ${selectedLabel}?\nClick on the pie chart to find out.`;
+
+    document.getElementById('pieQuestionText').innerText = formattedQuestion;
+    document.getElementById('pieQuestionUnder').innerText = formattedQuestion;
   }
 
+  /* Requirement 14: Softened edges & colors */
   function renderPieChart(canvasId, chartInstance, groupData) {
     const labels = ["White", "Black", "Hispanic", "Other"];
     const data = labels.map(l => (groupData.probs[l] || 0) * 100);
@@ -628,7 +700,9 @@
         labels: labels,
         datasets: [{
           data: data,
-          backgroundColor: bgColors
+          backgroundColor: bgColors,
+          borderWidth: 2,
+          borderColor: '#ffffff' // Smooth subtle border softening
         }]
       },
       options: {
@@ -636,7 +710,7 @@
         maintainAspectRatio: false,
         plugins: {
           datalabels: {
-            color: '#fff',
+            color: '#ffffff',
             font: { weight: 'bold', size: 12 },
             formatter: (value) => value > 3 ? value.toFixed(1) + '%' : ''
           }
@@ -645,36 +719,38 @@
     });
   }
 
+  /* Requirement 10, 11, 12: Revealing charts & executing slide animations */
   function revealSecondChart() {
     if (!isRevealed) {
       isRevealed = true;
-      document.getElementById('chartBox2').classList.remove('hidden');
-      document.getElementById('chartBox2').classList.add('visible');
-      document.getElementById('metaSources').classList.add('visible');
+      document.getElementById('pieInteractiveWrapper').classList.add('clicked');
+      document.getElementById('questionOverlay').style.display = 'none';
+
+      document.getElementById('meta1').style.display = 'block';
+      document.getElementById('meta2').style.display = 'block';
       document.getElementById('statsSummary').classList.add('visible');
-      document.getElementById('pieClickPrompt').style.display = 'none';
     }
   }
 
+  /* Requirement 8: Toggle Table Data display */
   function toggleTable() {
     isTableOpen = !isTableOpen;
     const container = document.getElementById('raceMatrixContainer');
     const btn = document.getElementById('tableToggleBtn');
     if (isTableOpen) {
       container.style.display = 'block';
-      btn.innerHTML = '&#128065; table data';
+      btn.innerText = 'Table Data';
     } else {
       container.style.display = 'none';
-      btn.innerHTML = '&#10095; table data';
+      btn.innerText = 'Table Data';
     }
   }
 
   function updateRaceComparison() {
-    const id1 = document.getElementById('raceGroup1').value;
-    const id2 = document.getElementById('raceGroup2').value;
+    const sel2Key = document.getElementById('raceGroup2').value;
 
-    const g1 = getGroupData(id1);
-    const g2 = getGroupData(id2);
+    const g1 = getGroupData("bm_fayette_inc");
+    const g2 = getGroupData(sel2Key);
 
     chart1Instance = renderPieChart('chart1', chart1Instance, g1);
     chart2Instance = renderPieChart('chart2', chart2Instance, g2);
@@ -745,10 +821,11 @@
     }
     document.getElementById('raceStatStatement').innerText = stmt;
 
+    /* Requirement 8: Render missing table data */
     let html = `<table>
       <thead>
         <tr>
-          <th></th>
+          <th>Race</th>
           <th>Observed</th>
           <th>Expected</th>
           <th>Difference</th>
@@ -895,19 +972,13 @@
 
       updateFayetteIncStats();
 
-      const totalN = rawData.length;
-
-      document.getElementById('integrityBanner').innerText = 
-        `Loaded snapshot N = ${totalN} inmates`;
-
       initRaceTabDropdowns();
       initTab2Dropdowns();
 
       updateRaceComparison();
       updateDashboard();
     } catch (err) {
-      document.getElementById('integrityBanner').innerText = 
-        `Error loading snapshot_data.json: ${err.message}.`;
+      console.error("Data load failed:", err);
     }
   }
 

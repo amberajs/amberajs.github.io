@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Amber Swartzentruber | Portfolio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body, html {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #fafafa;
+      color: #111111;
+    }
+
+    .page-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    .top-header {
+      width: 100%;
+      padding: 24px 20px 18px 20px;
+      background: #ffffff;
+      border-bottom: 1px solid #e5e5e5;
+      text-align: center;
+      z-index: 30;
+      flex-shrink: 0;
+    }
+
+    .top-header h1 {
+      font-family: 'Cinzel', Georgia, serif;
+      font-size: 1.75rem;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #000000;
+      line-height: 1.2;
+      margin-bottom: 4px;
+    }
+
+    .top-header p.subtitle {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      letter-spacing: 1px;
+      color: #222222;
+    }
+
+    .columns-container {
+      display: flex;
+      flex: 1;
+      width: 100%;
+      height: calc(100vh - 85px);
+      overflow: hidden;
+    }
+
+    .column {
+      position: relative;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-right: 1px solid #e5e5e5;
+      background: #ffffff;
+      padding: 32px 24px;
+      overflow: hidden;
+      transition: flex 0.4s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.3s ease;
+      cursor: pointer;
+    }
+
+    .column:last-child {
+      border-right: none;
+    }
+
+    .columns-container:hover .column {
+      flex: 0.85;
+    }
+
+    .columns-container .column:hover,
+    .column.active {
+      flex: 1.6;
+      background: #fcfcfc;
+    }
+
+    .col-label-container {
+      text-align: center;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .col-category {
+      font-size: 1.1rem;
+      font-weight: 500;
+      text-transform: none;
+      color: #000000;
+      margin-bottom: 6px;
+    }
+
+    .col-project-name {
+      font-size: 0.92rem;
+      font-weight: 400;
+      color: #222222;
+      transition: font-weight 0.2s ease, color 0.2s ease;
+    }
+
+    .column:hover .col-project-name,
+    .column.active .col-project-name {
+      font-weight: 700;
+      color: #000000;
+    }
+
+    .col-details {
+      position: absolute;
+      inset: 0;
+      padding: 36px 28px;
+      background: rgba(255, 255, 255, 0.98);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 10;
+    }
+
+    .column:hover .col-details,
+    .column:focus-within .col-details,
+    .column.active .col-details {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .column:hover .col-label-container,
+    .column.active .col-label-container {
+      opacity: 0.1;
+      transform: scale(0.95);
+    }
+
+    .col-details h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #000000;
+      margin-bottom: 4px;
+    }
+
+    .col-details .date {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #666666;
+      margin-bottom: 16px;
+    }
+
+    .col-details p {
+      font-size: 0.88rem;
+      line-height: 1.55;
+      font-weight: 400;
+      color: #222222;
+      max-width: 380px;
+      margin-bottom: 16px;
+    }
+
+    .col-details .tags {
+      display: block;
+      font-size: 0.8rem;
+      font-style: italic;
+      color: #555555;
+      margin-top: 10px;
+      border-top: 1px solid #eeeeee;
+      padding-top: 10px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
+    .btn-link {
+      display: inline-block;
+      padding: 8px 16px;
+      background-color: #111111;
+      color: #ffffff !important;
+      text-decoration: none;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn-link:hover {
+      background-color: #333333;
+    }
+
+    @media (max-width: 768px) {
+      body, html {
+        overflow: auto;
+      }
+      .page-container {
+        height: auto;
+      }
+      .columns-container {
+        flex-direction: column;
+        height: auto;
+      }
+      .column {
+        min-height: 280px;
+        border-right: none;
+        border-bottom: 1px solid #e5e5e5;
+        padding: 32px 20px;
+      }
+      .column:hover {
+        flex: 1;
+      }
+      .col-details {
+        opacity: 1;
+        position: relative;
+        background: transparent;
+        pointer-events: auto;
+        padding: 0;
+      }
+      .col-label-container {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="page-container">
+
+    <header class="top-header">
+      <h1>AMBER SWARTZENTRUBER</h1>
+      <p class="subtitle">Data &amp; Research Analyst</p>
+    </header>
+
+    <main class="columns-container">
+
+      <section class="column" id="data">
+        <div class="col-label-container">
+          <div class="col-category">Data</div>
+          <div class="col-project-name">Arrest Stats</div>
+        </div>
+        <div class="col-details">
+          <h3>Arrest Stats</h3>
+          <div class="date">June 2026 - Present</div>
+          <div class="btn-group">
+            <a href="https://amberajs.github.io/DATA" target="_blank" class="btn-link">
+              View Demo
+            </a>
+            <a href="http://github.com/amberajs/arrest_stats" target="_blank" class="btn-link">
+              View Source Code
+            </a>
+          </div>
+          <p>
+            Actively developing a full-stack project that will consist of an ELT data pipeline and front-end application with a goal of making local arrest metrics more accessible to the public.
+            <span class="tags">SQL/PostgreSQL | Version Control (Github) | Python | Web Scraping | Database Refinement</span>
+          </p>
+        </div>
+      </section>
+
+      <section class="column" id="research">
+        <div class="col-label-container">
+          <div class="col-category">Research</div>
+          <div class="col-project-name">Legal Case Study</div>
+        </div>
+        <div class="col-details">
+          <h3>Legal Case Study</h3>
+          <div class="date">October 2025</div>
+          <div class="btn-group">
+            <a href="https://amberajs.github.io/RESEARCH" target="_blank" class="btn-link">
+              View
+            </a>
+          </div>
+          <p>
+            Reviewed and organized over 2,000 pages of court records. Identified key inconsistencies, reconstructed event timelines, and highlighted procedural concerns relevant to appeal strategy.
+            <span class="tags">Pattern Recognition | Legal Research | Document Management | Open-Source Intelligence (OSINT) | Written Communication</span>
+          </p>
+        </div>
+      </section>
+
+      <section class="column" id="presentation">
+        <div class="col-label-container">
+          <div class="col-category">Presentation</div>
+          <div class="col-project-name">Ancestry eBook</div>
+        </div>
+        <div class="col-details">
+          <h3>Ancestry eBook</h3>
+          <div class="date">December 2025</div>
+          <div class="btn-group">
+            <a href="https://amberajs.github.io/PRESENTATION" target="_blank" class="btn-link">
+              View
+            </a>
+          </div>
+          <p>
+            Expanded minimal initial family information into a 60-page eBook with historical records, photographs, and custom graphics. The final version of this project before redactions also contained audiobook narration.
+            <span class="tags">Historical Research | Pedigree Reconstruction | Graphic Design (Canva) | Qualitative Analysis</span>
+          </p>
+        </div>
+      </section>
+
+      <section class="column" id="tech">
+        <div class="col-label-container">
+          <div class="col-category">Tech</div>
+          <div class="col-project-name">Debian Net-Installation</div>
+        </div>
+        <div class="col-details">
+          <h3>Lightweight Debian Net-Installation</h3>
+          <div class="date">March 2026</div>
+          <div class="btn-group">
+            <a href="https://amberajs.github.io/TECH" target="_blank" class="btn-link">
+              View
+            </a>
+          </div>
+          <p>
+            Installed lightweight Debian 13.4 on a Chromebook n22, configured networking and users, and maintained a timestamped installation log.
+            <span class="tags">Operating System Deployment (Linux) | Network Configuration | Technical Troubleshooting</span>
+          </p>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <script>
+    function openTargetColumn() {
+      const hash = window.location.hash.replace('#', '').toLowerCase();
+      document.querySelectorAll('.column').forEach(c => c.classList.remove('active'));
+      if (hash) {
+        const target = document.getElementById(hash);
+        if (target) {
+          target.classList.add('active');
+        }
+      }
+    }
+
+    window.addEventListener('load', openTargetColumn);
+    window.addEventListener('hashchange', openTargetColumn);
+  </script>
+
+</body>
+</html>

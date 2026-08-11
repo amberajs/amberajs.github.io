@@ -7,6 +7,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/jstat@latest/dist/jstat.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 
   <style>
     :root {
@@ -154,40 +155,77 @@
       background: white;
     }
 
-    .charts-row {
-      display: flex;
-      gap: 1.5rem;
+    .pie-interactive-wrapper {
+      text-align: center;
       margin-bottom: 1.5rem;
-      flex-wrap: wrap;
+    }
+
+    .pie-question {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .pie-click-prompt {
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 1rem;
+      cursor: pointer;
+    }
+
+    .charts-row-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1.5rem;
+      transition: all 0.5s ease-in-out;
     }
 
     .chart-box {
-      flex: 1;
-      min-width: 280px;
+      width: 320px;
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
+      transition: all 0.5s ease-in-out;
+    }
+
+    .chart-box.hidden {
+      display: none;
+      opacity: 0;
+      transform: translateX(50px);
+    }
+
+    .chart-box.visible {
+      display: flex;
+      opacity: 1;
+      transform: translateX(0);
     }
 
     .chart-container {
-      width: 100%;
-      max-width: 320px;
+      width: 320px;
       height: 320px;
       position: relative;
+      cursor: pointer;
     }
 
-    .chart-meta {
-      margin-top: 0.5rem;
+    .meta-sources {
+      margin-top: 1rem;
       font-size: 0.95rem;
+      display: none;
+      text-align: center;
     }
 
-    .chart-meta a {
+    .meta-sources.visible {
+      display: block;
+    }
+
+    .meta-sources a {
       color: var(--primary);
       text-decoration: none;
     }
 
-    .chart-meta a:hover {
+    .meta-sources a:hover {
       text-decoration: underline;
     }
 
@@ -195,12 +233,27 @@
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
       padding: 1rem 0;
+      margin-top: 1rem;
       margin-bottom: 1.5rem;
+      display: none;
+      text-align: center;
+    }
+
+    .stats-summary.visible {
+      display: block;
     }
 
     .stats-values {
       font-weight: bold;
       margin-bottom: 0.5rem;
+    }
+
+    .table-toggle {
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      margin-bottom: 0.5rem;
+      display: inline-block;
     }
 
     .table-container {
@@ -210,7 +263,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 1rem;
+      margin-top: 0.5rem;
       font-size: 0.95rem;
     }
 
@@ -239,6 +292,18 @@
       color: #6c757d;
       margin-bottom: 1rem;
     }
+
+    .arrow-up {
+      color: #2b8a3e;
+      font-size: 0.85em;
+      margin-left: 2px;
+    }
+
+    .arrow-down {
+      color: #c92a2a;
+      font-size: 0.85em;
+      margin-left: 2px;
+    }
   </style>
 </head>
 <body>
@@ -261,44 +326,56 @@
     <div class="card">
       <div class="controls">
         <div class="control-group">
-          <label for="raceGroup1">Dropdown 1 (Group 1 / Observed):</label>
+          <label for="raceGroup1">Observed Population</label>
           <select id="raceGroup1"></select>
         </div>
         <div class="control-group">
-          <label for="raceGroup2">Dropdown 2 (Group 2 / Baseline):</label>
+          <label for="raceGroup2">Baseline Population</label>
           <select id="raceGroup2"></select>
         </div>
       </div>
 
-      <div class="charts-row">
-        <div class="chart-box">
-          <div class="chart-container">
-            <canvas id="chart1"></canvas>
+      <div class="pie-interactive-wrapper">
+        <div class="pie-question" id="pieQuestionText">
+          What would the racial distribution of Fayette County Detention Center look like if it was representative of Fayette County Population?
+        </div>
+        <div class="pie-click-prompt" id="pieClickPrompt" onclick="revealSecondChart()">
+          Click the pie chart below to find out!
+        </div>
+
+        <div class="charts-row-container" id="chartsRowContainer">
+          <div class="chart-box" id="chartBox1">
+            <div class="chart-container" onclick="revealSecondChart()">
+              <canvas id="chart1"></canvas>
+            </div>
           </div>
-          <div class="chart-meta">
-            <div>Sample size: <span id="sampleSize1">0</span></div>
-            <div>Source: <a id="sourceLink1" href="#" target="_blank" rel="noopener noreferrer">View Data</a></div>
+          <div class="chart-box hidden" id="chartBox2">
+            <div class="chart-container">
+              <canvas id="chart2"></canvas>
+            </div>
           </div>
         </div>
-        <div class="chart-box">
-          <div class="chart-container">
-            <canvas id="chart2"></canvas>
-          </div>
-          <div class="chart-meta">
-            <div>Sample size: <span id="sampleSize2">0</span></div>
-            <div>Source: <a id="sourceLink2" href="#" target="_blank" rel="noopener noreferrer">View Data</a></div>
+
+        <div class="meta-sources" id="metaSources">
+          <div>
+            <strong>Observed Source:</strong> <a id="sourceLink1" href="#" target="_blank" rel="noopener noreferrer">View Data</a> (N = <span id="sampleSize1">0</span>)
+            &nbsp;|&nbsp;
+            <strong>Baseline Source:</strong> <a id="sourceLink2" href="#" target="_blank" rel="noopener noreferrer">View Data</a> (N = <span id="sampleSize2">0</span>)
           </div>
         </div>
       </div>
 
-      <div class="stats-summary">
+      <div class="stats-summary" id="statsSummary">
         <div class="stats-values">
           x² = <span id="raceStatChi2">0.000</span> | p-value = <span id="raceStatPValue">1.0000</span>
         </div>
         <div id="raceStatStatement"></div>
       </div>
 
-      <div class="table-container" id="raceMatrixContainer"></div>
+      <div>
+        <div class="table-toggle" id="tableToggleBtn" onclick="toggleTable()">&#10095; table data</div>
+        <div class="table-container" id="raceMatrixContainer" style="display: none;"></div>
+      </div>
     </div>
   </div>
 
@@ -344,50 +421,52 @@
   let rawData = [];
   let chart1Instance = null;
   let chart2Instance = null;
+  let isRevealed = false;
+  let isTableOpen = false;
 
   const colorMap = {
-    "Black": "orange",
-    "Hispanic": "yellow",
-    "White": "purple",
-    "Other": "green"
+    "White": "#1E3A8A",
+    "Black": "#D97706",
+    "Hispanic": "#059669",
+    "Other": "#4B5563"
   };
 
   const sourceRepoBase = "https://github.com/amberajs/arrest_stats/blob/main/data/original_sources/";
 
   const benchmarks = {
     bm_fayette_inc: {
-      name: "Fayette Incarcerated (Snapshot Data)",
+      name: "Fayette County Detention Center Population",
       probs: { "Black": 0, "Hispanic": 0, "White": 0, "Other": 0 },
       counts: { "Black": 0, "Hispanic": 0, "White": 0, "Other": 0 },
       totalN: 0,
-      sourceFile: sourceRepoBase
+      sourceFile: "https://raw.githubusercontent.com/amberajs/arrest_stats/main/data/snapshot_data.json"
     },
     bm_fayette_pop: {
-      name: "Fayette Population Data",
+      name: "Fayette County Population",
       probs: { "Black": 0.1439, "Hispanic": 0.0952, "White": 0.6675, "Other": 0.0467 },
       totalN: 323725,
       sourceFile: sourceRepoBase + "FayetteCo_ACSDT5Y2024.B03002-Data.csv"
     },
     bm_ky_inc: {
-      name: "KY Incarcerated Data",
+      name: "Kentucky Detention Center Population",
       probs: { "Black": 0.2200, "Hispanic": 0.0200, "White": 0.7400, "Other": 0.0200 },
       totalN: 20000,
       sourceFile: sourceRepoBase + "KY_DOC_2025_Annual_Report_Final.pdf"
     },
     bm_ky_pop: {
-      name: "KY Population Data",
+      name: "Kentucky Population",
       probs: { "Black": 0.0755, "Hispanic": 0.0500, "White": 0.8155, "Other": 0.0205 },
       totalN: 4534824,
       sourceFile: sourceRepoBase + "KY_ACSDT5Y2024.B03002-Data.csv"
     },
     bm_us_inc: {
-      name: "US Incarcerated Data",
+      name: "United States Detention Center Population",
       probs: { "Black": 0.4974, "Hispanic": 0.2051, "White": 0.1077, "Other": 0.1897 },
       totalN: 1200000,
       sourceFile: sourceRepoBase + "US_cpus23st.pdf"
     },
     bm_us_pop: {
-      name: "US Population Data",
+      name: "United States Population",
       probs: { "Black": 0.1191, "Hispanic": 0.1934, "White": 0.5739, "Other": 0.0711 },
       totalN: 334922499,
       sourceFile: sourceRepoBase + "US_ACSDT5Y2024.B03002-Data.csv"
@@ -395,12 +474,20 @@
   };
 
   const ALL_RACE_GROUPS = {
-    "fayette_inc": { label: "Fayette Incarcerated (Snapshot Data)", key: "bm_fayette_inc" },
-    "fayette_pop": { label: "Fayette Population Data", key: "bm_fayette_pop" },
-    "ky_inc": { label: "KY Incarcerated Data", key: "bm_ky_inc" },
-    "ky_pop": { label: "KY Population Data", key: "bm_ky_pop" },
-    "us_inc": { label: "US Incarcerated Data", key: "bm_us_inc" },
-    "us_pop": { label: "US Population Data", key: "bm_us_pop" }
+    "fayette_inc": { label: "Fayette County Detention Center Population", key: "bm_fayette_inc" },
+    "fayette_pop": { label: "Fayette County Population", key: "bm_fayette_pop" },
+    "ky_inc": { label: "Kentucky Detention Center Population", key: "bm_ky_inc" },
+    "ky_pop": { label: "Kentucky Population", key: "bm_ky_pop" },
+    "us_inc": { label: "United States Detention Center Population", key: "bm_us_inc" },
+    "us_pop": { label: "United States Population", key: "bm_us_pop" }
+  };
+
+  const BASELINE_GROUPS = {
+    "fayette_pop": ALL_RACE_GROUPS["fayette_pop"],
+    "ky_inc": ALL_RACE_GROUPS["ky_inc"],
+    "ky_pop": ALL_RACE_GROUPS["ky_pop"],
+    "us_inc": ALL_RACE_GROUPS["us_inc"],
+    "us_pop": ALL_RACE_GROUPS["us_pop"]
   };
 
   const variableMap = {
@@ -424,7 +511,7 @@
   function switchTab(tabId, element) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    
+
     document.getElementById(tabId).classList.add('active');
     element.classList.add('active');
   }
@@ -432,7 +519,7 @@
   function normalizeRace(rawVal) {
     if (!rawVal) return 'Other';
     const str = String(rawVal).trim().toLowerCase();
-    
+
     if (str === 'white') return 'White';
     if (str === 'black') return 'Black';
     if (str === 'hispanic') return 'Hispanic';
@@ -494,18 +581,38 @@
 
     Object.entries(ALL_RACE_GROUPS).forEach(([id, obj]) => {
       sel1.add(new Option(obj.label, id));
+    });
+
+    Object.entries(BASELINE_GROUPS).forEach(([id, obj]) => {
       sel2.add(new Option(obj.label, id));
     });
 
     sel1.value = "fayette_inc";
     sel2.value = "fayette_pop";
 
-    sel1.addEventListener('change', updateRaceComparison);
-    sel2.addEventListener('change', updateRaceComparison);
+    sel1.addEventListener('change', () => {
+      updateQuestionText();
+      updateRaceComparison();
+    });
+    sel2.addEventListener('change', () => {
+      updateQuestionText();
+      updateRaceComparison();
+    });
+
+    updateQuestionText();
+  }
+
+  function updateQuestionText() {
+    const sel2 = document.getElementById('raceGroup2');
+    const selectedText = sel2.options[sel2.selectedIndex].text;
+    const sel1 = document.getElementById('raceGroup1');
+    const obsText = sel1.options[sel1.selectedIndex].text;
+    document.getElementById('pieQuestionText').innerText =
+      `What would the racial distribution of ${obsText} look like if it was representative of ${selectedText}?`;
   }
 
   function renderPieChart(canvasId, chartInstance, groupData) {
-    const labels = ["Black", "Hispanic", "White", "Other"];
+    const labels = ["White", "Black", "Hispanic", "Other"];
     const data = labels.map(l => (groupData.probs[l] || 0) * 100);
     const bgColors = labels.map(l => colorMap[l]);
 
@@ -516,6 +623,7 @@
     const ctx = document.getElementById(canvasId).getContext('2d');
     return new Chart(ctx, {
       type: 'pie',
+      plugins: [ChartDataLabels],
       data: {
         labels: labels,
         datasets: [{
@@ -525,9 +633,40 @@
       },
       options: {
         responsive: true,
-        maintainAspectRatio: false
+        maintainAspectRatio: false,
+        plugins: {
+          datalabels: {
+            color: '#fff',
+            font: { weight: 'bold', size: 12 },
+            formatter: (value) => value > 3 ? value.toFixed(1) + '%' : ''
+          }
+        }
       }
     });
+  }
+
+  function revealSecondChart() {
+    if (!isRevealed) {
+      isRevealed = true;
+      document.getElementById('chartBox2').classList.remove('hidden');
+      document.getElementById('chartBox2').classList.add('visible');
+      document.getElementById('metaSources').classList.add('visible');
+      document.getElementById('statsSummary').classList.add('visible');
+      document.getElementById('pieClickPrompt').style.display = 'none';
+    }
+  }
+
+  function toggleTable() {
+    isTableOpen = !isTableOpen;
+    const container = document.getElementById('raceMatrixContainer');
+    const btn = document.getElementById('tableToggleBtn');
+    if (isTableOpen) {
+      container.style.display = 'block';
+      btn.innerHTML = '&#128065; table data';
+    } else {
+      container.style.display = 'none';
+      btn.innerHTML = '&#10095; table data';
+    }
   }
 
   function updateRaceComparison() {
@@ -546,19 +685,32 @@
     document.getElementById('sourceLink1').href = g1.sourceFile;
     document.getElementById('sourceLink2').href = g2.sourceFile;
 
-    const categories = ["Black", "Hispanic", "White", "Other"];
+    const categories = ["White", "Black", "Hispanic", "Other"];
     const baseN = g1.totalN || 1000;
 
     let chiSquare = 0;
     const details = [];
 
-    categories.forEach(cat => {
+    let rawExpCounts = categories.map(cat => (g2.probs[cat] || 0) * baseN);
+    let floorExpCounts = rawExpCounts.map(v => Math.floor(v));
+    let remainderSum = baseN - floorExpCounts.reduce((a, b) => a + b, 0);
+
+    let remainders = rawExpCounts.map((v, i) => ({ index: i, rem: v - floorExpCounts[i] }));
+    remainders.sort((a, b) => b.rem - a.rem);
+
+    for (let i = 0; i < remainderSum; i++) {
+      floorExpCounts[remainders[i].index]++;
+    }
+
+    categories.forEach((cat, idx) => {
       const p1 = g1.probs[cat] || 0;
       const p2 = g2.probs[cat] || 0;
-      const obsCount = g1.counts ? g1.counts[cat] : Math.floor(p1 * baseN);
+      const obsCount = g1.counts ? g1.counts[cat] : Math.round(p1 * baseN);
+      const obsPct = baseN > 0 ? (obsCount / baseN) * 100 : 0;
+      const expCount = floorExpCounts[idx];
       const expPct = p2 * 100;
-      const expCount = Math.floor(p2 * baseN);
-      const diff = obsCount - expCount;
+      const diffCount = obsCount - expCount;
+      const diffPct = obsPct - expPct;
 
       const contrib = expCount > 0 ? Math.pow(obsCount - expCount, 2) / expCount : 0;
       chiSquare += contrib;
@@ -566,13 +718,13 @@
       details.push({
         category: cat,
         obsCount: obsCount,
-        expPct: expPct,
+        obsPct: obsPct,
         expCount: expCount,
-        diff: diff
+        expPct: expPct,
+        diffCount: diffCount,
+        diffPct: diffPct
       });
     });
-
-    details.sort((a, b) => b.obsCount - a.obsCount);
 
     const df = 3;
     let pValue = 1.0;
@@ -593,42 +745,34 @@
     }
     document.getElementById('raceStatStatement').innerText = stmt;
 
-    const totalObs = details.reduce((sum, d) => sum + d.obsCount, 0);
-    const totalExpPct = details.reduce((sum, d) => sum + d.expPct, 0);
-    const totalExp = details.reduce((sum, d) => sum + d.expCount, 0);
-    const totalDiff = totalObs - totalExp;
-
     let html = `<table>
       <thead>
         <tr>
-          <th>Race Category</th>
-          <th>Gr1.Obs</th>
-          <th>Gr2.Exp%</th>
-          <th>Exp#.Gr1</th>
-          <th>Row Total</th>
+          <th></th>
+          <th>Observed</th>
+          <th>Expected</th>
+          <th>Difference</th>
         </tr>
       </thead>
       <tbody>`;
 
     details.forEach(row => {
-      const diffStr = row.diff < 0 ? `(${Math.abs(row.diff)})` : `${row.diff}`;
+      let arrowHtml = '';
+      if (row.diffCount > 0) {
+        arrowHtml = `<span class="arrow-up">&#9650;</span>`;
+      } else if (row.diffCount < 0) {
+        arrowHtml = `<span class="arrow-down">&#9660;</span>`;
+      }
+
       html += `<tr>
         <th>${row.category}</th>
-        <td>${row.obsCount.toLocaleString()}</td>
-        <td>${row.expPct.toFixed(2)}%</td>
-        <td>${row.expCount.toLocaleString()}</td>
-        <td>${diffStr}</td>
+        <td>${row.obsCount.toLocaleString()} (${row.obsPct.toFixed(1)}%)</td>
+        <td>${row.expCount.toLocaleString()} (${row.expPct.toFixed(1)}%)</td>
+        <td>${row.diffCount} (${Math.abs(row.diffPct).toFixed(1)}%)${arrowHtml}</td>
       </tr>`;
     });
 
-    const totalDiffStr = totalDiff < 0 ? `(${Math.abs(totalDiff)})` : `${totalDiff}`;
-    html += `<tr>
-      <th class="total-cell">Column Total</th>
-      <td class="total-cell">${totalObs.toLocaleString()}</td>
-      <td class="total-cell">${totalExpPct.toFixed(2)}%</td>
-      <td class="total-cell">${totalExp.toLocaleString()}</td>
-      <td class="total-cell">${totalDiffStr}</td>
-    </tr></tbody></table>`;
+    html += `</tbody></table>`;
 
     document.getElementById('raceMatrixContainer').innerHTML = html;
   }
@@ -644,7 +788,7 @@
       selectRow.add(new Option(label, key));
       selectCol.add(new Option(label, key));
     });
-    
+
     selectRow.value = "race";
     selectCol.value = "has_exp_rel";
 
@@ -681,7 +825,7 @@
         totalN++;
       }
     });
-    
+
     const rowTotals = {};
     const colTotals = {};
 
@@ -758,7 +902,7 @@
 
       initRaceTabDropdowns();
       initTab2Dropdowns();
-      
+
       updateRaceComparison();
       updateDashboard();
     } catch (err) {

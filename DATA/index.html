@@ -423,35 +423,35 @@
     bm_fayette_pop: {
       name: "Fayette County Population",
       probs: { "Black": 0.1439, "Hispanic": 0.0952, "White": 0.6675, "Other": 0.0467 },
-      counts: bm.counts || null,
+      counts: null,
       totalN: 323725,
       sourceFile: sourceRepoBase + "FayetteCo_ACSDT5Y2024.B03002-Data.csv"
     },
     bm_ky_pop: {
       name: "Kentucky Population",
       probs: { "Black": 0.0755, "Hispanic": 0.0500, "White": 0.8155, "Other": 0.0205 },
-      counts: bm.counts || null,
+      counts: null,
       totalN: 4534824,
       sourceFile: sourceRepoBase + "KY_ACSDT5Y2024.B03002-Data.csv"
     },
     bm_ky_inc: {
       name: "Kentucky Incarcerated Population",
       probs: { "Black": 0.2200, "Hispanic": 0.0200, "White": 0.7400, "Other": 0.0200 },
-      counts: bm.counts || null,
+      counts: null,
       totalN: 20000,
       sourceFile: sourceRepoBase + "KY_DOC_2025_Annual_Report_Final.pdf"
     },
     bm_us_pop: {
       name: "United States Population",
       probs: { "Black": 0.1191, "Hispanic": 0.1934, "White": 0.5739, "Other": 0.0711 },
-      counts: bm.counts || null,
+      counts: null,
       totalN: 334922499,
       sourceFile: sourceRepoBase + "US_ACSDT5Y2024.B03002-Data.csv"
     },
     bm_us_inc: {
       name: "United States Incarcerated Population",
       probs: { "Black": 0.4974, "Hispanic": 0.2051, "White": 0.1077, "Other": 0.1897 },
-      counts: bm.counts || null,
+      counts: null,
       totalN: 1200000,
       sourceFile: sourceRepoBase + "US_cpus23st.pdf"
     }
@@ -624,7 +624,7 @@
     return gradient;
   }
 
-  function renderPieChart(canvasId, groupData) {
+  function renderPieChart(canvasId, groupData, titleText = '') {
     const labels = ["White", "Black", "Hispanic", "Other"];
     const data = labels.map(l => (groupData.probs[l] || 0) * 100);
 
@@ -649,7 +649,7 @@
         maintainAspectRatio: false,
         plugins: {
           title: {
-          display: true,
+          display: !!titleText,
           text: titleText,
           font: { size: 14, weight: 'bold' },
           padding: { top: 10, bottom: 10 }

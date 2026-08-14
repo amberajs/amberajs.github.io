@@ -668,30 +668,32 @@
     const g2 = getGroupData(sel2Key);
 
     const categories = ["White", "Black", "Hispanic", "Other"];
-    const baseN = g1.totalN || 1000;
+    const baseN = g1.totalN || 0;
+
+    if (baseN === 0) return;
 
     let chiSquare = 0;
     const details = [];
 
     const rawExpCounts = categories.map(cat => (g2.probs[cat] || 0) * baseN);
     const floorExpCounts = rawExpCounts.map(v => Math.floor(v));
-    const remainderSum = baseN - floorExpCounts.reduce((a, b) => a + b, 0);
+    let remainderSum = baseN - floorExpCounts.reduce((a, b) => a + b, 0);
 
     const remainders = rawExpCounts.map((v, i) => ({ index: i, rem: v - floorExpCounts[i] }));
     remainders.sort((a, b) => b.rem - a.rem);
 
-    for (let i = 0; i < remainderSum; i++) {
-      floorExpCounts[remainders[i].index]++;
-    }
+    for (let i = 0; i < remainderSum && i < remainders.length; i++) {
+    floorExpCounts[remainders[i].index]++;
+  }
 
     categories.forEach((cat, idx) => {
       const p1 = g1.probs[cat] || 0;
       const p2 = g2.probs[cat] || 0;
 
-      const obsCount = g1.counts ? g1.counts[cat] : Math.round(p1 * baseN);
+      const obsCount = g1.counts ? (g1.counts[cat] || 0) : Math.round(p1 * baseN);
       const obsPct = p1 * 100;
 
-      const expCount = Math.round(p2 * baseN);
+      const expCount = floorExpCounts[idx];
       const expPct = p2 * 100;
 
       const diffCount = obsCount - expCount;

@@ -583,11 +583,7 @@
 
     sel2.addEventListener('change', () => {
       if (sel2.value) {
-        if (hasBeenRevealed) {
-          appState = 3;
-        } else {
-          appState = 2;
-        }
+        appState = 3;
         renderTab1Layout();
       }
     });
@@ -617,27 +613,6 @@
       `;
       chart1Instance = renderPieChart('chart1', getGroupData("bm_fayette_inc"));
 
-    } else if (appState === 2) {
-      bottomSection.style.display = 'none';
-      wrapper.innerHTML = `
-        <div class="split-grid">
-          <div class="half-column">
-            <div class="question-left-aligned">
-              What might the racial distribution of Fayette County Detention Center look like if it were more representative of ${selectedLabel}?<br><br>
-              Click on the pie chart to find out!
-            </div>
-          </div>
-          <div class="half-column">
-            <div class="chart-box">
-              <div class="chart-container clickable" onclick="handlePieClick()">
-                <canvas id="chart1"></canvas>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-      chart1Instance = renderPieChart('chart1', getGroupData("bm_fayette_inc"));
-
     } else if (appState >= 3) {
       bottomSection.style.display = 'block';
       wrapper.innerHTML = `
@@ -645,6 +620,7 @@
           <div class="half-column">
             <div class="chart-box">
               <div class="chart-container">
+                <h3>Fayette County Detention Center</h3>
                 <canvas id="chart1"></canvas>
               </div>
               <div class="chart-meta-info">
@@ -655,6 +631,7 @@
           <div class="half-column">
             <div class="chart-box">
               <div class="chart-container">
+                <h3>${getGroupData(sel2.value).toLocaleString()}</h3>
                 <canvas id="chart2"></canvas>
               </div>
               <div class="chart-meta-info">
@@ -679,14 +656,6 @@
         container.style.display = 'none';
         toggleBtn.innerHTML = '&gt; view data table';
       }
-    }
-  }
-
-  function handlePieClick() {
-    if (appState === 2) {
-      hasBeenRevealed = true;
-      appState = 3;
-      renderTab1Layout();
     }
   }
 

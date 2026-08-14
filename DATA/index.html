@@ -620,7 +620,6 @@
           <div class="half-column">
             <div class="chart-box">
               <div class="chart-container">
-                <h3>Fayette County Detention Center</h3>
                 <canvas id="chart1"></canvas>
               </div>
               <div class="chart-meta-info">
@@ -631,7 +630,6 @@
           <div class="half-column">
             <div class="chart-box">
               <div class="chart-container">
-                <h3>${getGroupData(sel2.value).toLocaleString()}</h3>
                 <canvas id="chart2"></canvas>
               </div>
               <div class="chart-meta-info">
@@ -651,7 +649,7 @@
       const toggleBtn = document.getElementById('tableToggleBtn');
       if (appState === 4) {
         container.style.display = 'block';
-        toggleBtn.innerHTML = 'v view data table';
+        toggleBtn.innerHTML = 'view data table';
       } else {
         container.style.display = 'none';
         toggleBtn.innerHTML = '&gt; view data table';
@@ -678,6 +676,7 @@
   function renderPieChart(canvasId, groupData) {
     const labels = ["White", "Black", "Hispanic", "Other"];
     const data = labels.map(l => (groupData.probs[l] || 0) * 100);
+    const title =  getGroupData(sel2.value).name.toLocaleString();
 
     const ctx = document.getElementById(canvasId).getContext('2d');
     const bgColors = labels.map(l => create3DGradient(ctx, colorMap[l].inner, colorMap[l].outer));
@@ -699,6 +698,9 @@
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
+          selectedLabel: {
+            display: true
+          }
           datalabels: {
             display: false
           }

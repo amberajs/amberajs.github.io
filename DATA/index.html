@@ -466,7 +466,7 @@
   ];
 
   const variableMap = {
-    "age": "Age",
+    "age_bin": "Age",
     "race": "Race",
     "sex": "Sex",
     "days_served": "Days Served",
@@ -776,10 +776,11 @@
     const colKey = document.getElementById('varCol').value;
     runCrosstab(rowKey, colKey);
   }
-
+  
   function runCrosstab(rowKey, colKey) {
-    const rawRowCats = [...new Set(rawData.map(d => rowKey === 'race' ? normalizeRace(d.race) : String(d[rowKey] || 'Unrecorded')))];
-    const rawColCats = [...new Set(rawData.map(d => colKey === 'race' ? normalizeRace(d.race) : String(d[colKey] || 'Unrecorded')))];
+    const getValue = (d, key) => key === 'age_bin' ? (d.age_bin || d.age) : (key === 'bmi_bin' ? (d.bmi_bin || d.bmi) : d[key]);
+    const rawRowCats = [...new Set(rawData.map(d => rowKey === 'race' ? normalizeRace(d.race) : String(getValue(d, rowKey) || 'Unrecorded')))];
+    const rawColCats = [...new Set(rawData.map(d => colKey === 'race' ? normalizeRace(d.race) : String(getValue(d, colKey) || 'Unrecorded')))];
 
     const rowCats = sortCategories(rowKey, rawRowCats);
     const colCats = sortCategories(colKey, rawColCats);
@@ -792,8 +793,8 @@
 
     let totalN = 0;
     rawData.forEach(d => {
-      const rVal = rowKey === 'race' ? normalizeRace(d.race) : String(d[rowKey] || 'Unrecorded');
-      const cVal = colKey === 'race' ? normalizeRace(d.race) : String(d[colKey] || 'Unrecorded');
+      const rVal = rowKey === 'race' ? normalizeRace(d.race) : String(getValue(d, rowKey) || 'Unrecorded');
+      const cVal = colKey === 'race' ? normalizeRace(d.race) : String(getValue(d, colKey) || 'Unrecorded');
       if (matrix[rVal] && matrix[rVal][cVal] !== undefined) {
         matrix[rVal][cVal]++;
         totalN++;
@@ -859,7 +860,8 @@
   fetch("https://raw.githubusercontent.com/amberajs/arrest_stats/main/data/snapshot_data.json")
     .then(res => res.json())
     .then(data => {
-      rawData = data;
+      const payload = Array.isArray(data) ? data[0] : data;
+      rawData = payload.json_build_object ? payload.json_build_object.records : data;
       updateFayetteIncStats();
       initRaceTabDropdowns();
       initTab2Dropdowns();

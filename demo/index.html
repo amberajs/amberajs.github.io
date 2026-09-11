@@ -1,1 +1,295 @@
-<div class='tableauPlaceholder' id='viz1788926672308' style='position: relative'><noscript><a href='#'><img alt='Dashboard 1 ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;de&#47;demo_view&#47;Dashboard1&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='demo_view&#47;Dashboard1' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;de&#47;demo_view&#47;Dashboard1&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div>                <script type='text/javascript'>                    var divElement = document.getElementById('viz1788926672308');                    var vizElement = divElement.getElementsByTagName('object')[0];                    if ( divElement.offsetWidth > 800 ) { vizElement.style.width='100%';vizElement.style.height=(divElement.offsetWidth*0.75)+'px';} else if ( divElement.offsetWidth > 500 ) { vizElement.style.width='100%';vizElement.style.height=(divElement.offsetWidth*0.75)+'px';} else { vizElement.style.width='100%';vizElement.style.height='1477px';}                     var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';                    vizElement.parentNode.insertBefore(scriptElement, vizElement);                </script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fayette County Incarceration Disparity Explorer</title>
+  
+  <!-- Tableau JS API -->
+  <script type="text/javascript" src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
+
+  <style>
+    :root {
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --text-color: #1a1a1a;
+      --border-color: #ccc;
+      --bg-gray: #f8f9fa;
+    }
+
+    body {
+      font-family: var(--font-family);
+      margin: 0;
+      padding: 24px;
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .hero-container {
+      max-width: 900px;
+      width: 100%;
+    }
+
+    .sentence-builder {
+      font-size: 1.35rem;
+      line-height: 1.8;
+      margin-bottom: 24px;
+      background: var(--bg-gray);
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .sentence-builder select {
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 4px 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background-color: #ffffff;
+      color: #0056b3;
+      cursor: pointer;
+    }
+
+    .dynamic-val {
+      font-weight: 700;
+      color: #d9381e;
+      border-bottom: 2px dashed #d9381e;
+      padding: 0 4px;
+    }
+
+    .dynamic-target {
+      font-weight: 600;
+      color: #2b6cb0;
+      border-bottom: 1px solid #2b6cb0;
+    }
+
+    /* Heatmap Grid & Overlay Layout*/
+    .heatmap-layout {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      grid-template-rows: 110px 1fr;
+      gap: 8px;
+      width: 100%;
+      max-width: 850px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .corner-spacer {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    /* Top Rotated Labels Header */
+    .top-labels {
+      grid-column: 2;
+      grid-row: 1;
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-end;
+      padding-bottom: 8px;
+    }
+
+    .top-labels .label {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    /* Left Row Axis Labels */
+    .side-labels {
+      grid-column: 1;
+      grid-row: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      padding-right: 12px;
+      text-align: right;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .side-labels .gender-group {
+      display: flex;
+      flex-direction: column;
+      height: 50%;
+      justify-content: center;
+      border-right: 3px solid #333;
+      padding-right: 8px;
+    }
+
+    /* Embedded Tableau Canvas Wrapper */
+    .tableau-wrapper {
+      grid-column: 2;
+      grid-row: 2;
+      position: relative;
+      width: 100%;
+      min-height: 420px;
+    }
+
+    #tableauViz {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero-container">
+  <!-- Interactive Dynamic Sentence -->
+  <div class="sentence-builder">
+    On 
+    <select id="dateSelect">
+      <option value="2026-09-03" selected>September 3, 2026</option>
+    </select> 
+    in Fayette County, Kentucky:<br/>
+    A/An 
+    <select id="ageSelect">
+      <option value="18-24">18–24</option>
+      <option value="25-34">25–34</option>
+      <option value="35-44">35–44</option>
+      <option value="45-54">45–54</option>
+      <option value="55-64">55–64</option>
+      <option value="65+">65+</option>
+    </select> 
+    year old 
+    <select id="raceSelect">
+      <option value="Black">Black</option>
+      <option value="Hispanic">Hispanic</option>
+      <option value="White">White</option>
+      <option value="Other">Other</option>
+    </select> 
+    <select id="sexSelect">
+      <option value="Female">Female</option>
+      <option value="Male" selected>Male</option>
+    </select> 
+    was <span id="multiplier" class="dynamic-val">1.0x</span> 
+    more likely to be incarcerated at FCDC than a/an 
+    <span id="targetDemographic" class="dynamic-target">average person.</span>.
+  </div>
+
+  <!-- Heatmap & Overlay Grid -->
+  <div class="heatmap-layout">
+    <div class="corner-spacer"></div>
+
+    <!-- Rotated Column Headers -->
+    <div class="top-labels">
+      <div class="label">18–24</div>
+      <div class="label">25–34</div>
+      <div class="label">35–44</div>
+      <div class="label">45–54</div>
+      <div class="label">55–64</div>
+      <div class="label">65+</div>
+      <div class="label" style="font-weight: 800;">ALL</div>
+    </div>
+
+    <!-- Side Row Headers -->
+    <div class="side-labels">
+      <div class="gender-group">
+        <span>Female</span>
+      </div>
+      <div class="gender-group">
+        <span>Male</span>
+      </div>
+    </div>
+
+    <!-- Embedded Tableau Viz Container -->
+    <div class="tableau-wrapper">
+      <div id="tableauViz"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let viz, workbook, activeSheet;
+
+  const vizUrl = "https://public.tableau.com/views/demo_view/Dashboard2?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link";
+
+  function initViz() {
+    const containerDiv = document.getElementById("tableauViz");
+    const options = {
+      hideTabs: true,
+      hideToolbar: true,
+      onFirstInteractive: function () {
+        workbook = viz.getWorkbook();
+        activeSheet = workbook.getActiveSheet();
+        
+        // Listen to mark selection events (hover/click)
+        viz.addEventListener(tableau.TableauEventName.MARKS_SELECTION, onMarkSelection);
+      }
+    };
+
+    viz = new tableau.Viz(containerDiv, vizUrl, options);
+  }
+
+  // Handle updates when drop-downs are changed manually
+  function updateTableauParameters() {
+    if (!workbook) return;
+
+    const age = document.getElementById("ageSelect").value;
+    const race = document.getElementById("raceSelect").value;
+    const sex = document.getElementById("sexSelect").value;
+    const date = document.getElementById("dateSelect").value;
+
+    // Apply native parameter updates to Tableau
+    workbook.changeParameterValueAsync("Param_Age", age);
+    workbook.changeParameterValueAsync("Param_Race", race);
+    workbook.changeParameterValueAsync("Param_Sex", sex);
+    workbook.changeParameterValueAsync("Param_Date", date);
+  }
+
+  // Event handler for interactive cell hovers/clicks
+  function onMarkSelection(marksEvent) {
+    return marksEvent.getMarksAsync().then(function (marks) {
+      if (marks.length === 0) {
+        // Reset to default "ALL" state if mouse leaves/clears selection
+        document.getElementById("multiplier").innerText = "1.0x";
+        document.getElementById("targetDemographic").innerText = "average person";
+        return;
+      }
+
+      const pairs = marks[0].getPairs();
+      let hoveredVal = "1.0x";
+      let hoveredDemo = "";
+
+      let hAge = "", hRace = "", hSex = "";
+
+      // Loop through data dimensions attached to marks/tooltip
+      pairs.forEach(function (pair) {
+        if (pair.fieldName === "Disparity_Ratio") {
+          hoveredVal = parseFloat(pair.formattedValue).toFixed(1) + "x";
+        }
+        if (pair.fieldName === "Age_Group") hAge = pair.formattedValue;
+        if (pair.fieldName === "Race") hRace = pair.formattedValue;
+        if (pair.fieldName === "Sex") hSex = pair.formattedValue;
+      });
+
+      // Format target demographic description string dynamically
+      if (hAge === "ALL" && !hRace && !hSex) {
+        hoveredDemo = "average person";
+      } else {
+        hoveredDemo = `${hAge !== 'ALL' ? hAge + ' year old ' : ''}${hRace || ''} ${hSex || 'person'}`.trim();
+      }
+
+      document.getElementById("multiplier").innerText = hoveredVal;
+      document.getElementById("targetDemographic").innerText = hoveredDemo;
+    });
+  }
+
+  // Attach event listeners to sentence parameter dropdowns
+  document.getElementById("ageSelect").addEventListener("change", updateTableauParameters);
+  document.getElementById("raceSelect").addEventListener("change", updateTableauParameters);
+  document.getElementById("sexSelect").addEventListener("change", updateTableauParameters);
+  document.getElementById("dateSelect").addEventListener("change", updateTableauParameters);
+
+  // Initialize Tableau Viz on DOM load
+  document.addEventListener("DOMContentLoaded", initViz);
+</script>
+
+</body>
+</html>

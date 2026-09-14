@@ -1,3 +1,45 @@
+The goal of this setup is to create a seamless, hybrid user experience where HTML/CSS handles the external layout, labels, and reference-selection controls, while an embedded Tableau viz purely renders the color-coded heatmap data cells.
+
+When a user selects a reference demographic using the dropdowns in the top sentence, those selections update parameters in Tableau to recalculate all cell values. Conversely, when a user hovers over or selects any specific cell in the heatmap grid, Tableau fires a mark-selection event back to the web page, dynamically updating the target demographic and calculated multiplier text in the top sentence in real time.
+
+---
+
+### Part 1: Required Tableau Changes
+
+To align Tableau's output with your HTML layout and ensure event listeners function properly, configure the workbook as follows:
+
+1. **Remove Native Headers & Titles:**
+* Hide row headers (Sex, Race) and column headers (Age Groups) on all worksheets placed on the dashboard.
+* Hide all worksheet titles, borders, gridlines, axis lines, and legends so that only clean color-filled marks remain.
+
+
+2. **Match Grid Layout Dimensions:**
+* Structurally, your reference image comprises four separate mark blocks arranged around a central grid:
+* **Top Area:** A single horizontal row sheet broken into columns by Age Group.
+* **Left Area:** A single vertical column sheet divided into 2 sections (Female top, Male bottom).
+* **Right Area:** A vertical sheet organized by Race.
+* **Center Area:** Main grid organized by Sex (rows), Race (sub-rows), and Age Groups (columns).
+
+
+* Ensure fixed row and column padding/margins across all container sheets in Tableau so that cells map 1:1 with your CSS grid overlays.
+
+
+3. **Expose Marks Data to the JS API:**
+* Ensure every worksheet in your Tableau Dashboard includes `[Age_Group]`, `[Race]`, `[Sex]`, and `[Disparity_Ratio]` on the **Detail** or **Tooltip** card. The `tableau.js` API can only retrieve dimensions and measures exposed on the mark shelf during `MARKS_SELECTION` events.
+
+
+4. **Disable Default Tooltips (Recommended):**
+* Turn off Tableau's native hover tooltips (`Worksheet > Tooltip > Uncheck "Show tooltips"`) so that hover feedback is handled exclusively by the dynamic HTML sentence above.
+
+
+
+---
+
+### Part 2: Required HTML & CSS Code Changes
+
+To integrate the Right (Race) labels, align grid areas cleanly, and properly bind hover events, update your HTML code as follows:
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,12 +69,12 @@
     }
 
     .hero-container {
-      max-width: 900px;
+      max-width: 950px;
       width: 100%;
     }
 
     .sentence-builder {
-      font-size: 1.35rem;
+      font-size: 1.25rem;
       line-height: 1.8;
       margin-bottom: 24px;
       background: var(--bg-gray);
@@ -42,7 +84,7 @@
     }
 
     .sentence-builder select {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 600;
       padding: 4px 8px;
       border: 1px solid var(--border-color);
@@ -65,14 +107,14 @@
       border-bottom: 1px solid #2b6cb0;
     }
 
-    /* Heatmap Grid & Overlay Layout*/
+    /* 3x2 Grid Layout matching attached screenshot */
     .heatmap-layout {
       display: grid;
-      grid-template-columns: 100px 1fr;
-      grid-template-rows: 110px 1fr;
-      gap: 8px;
+      grid-template-columns: 110px 1fr 120px;
+      grid-template-rows: 90px 1fr;
+      gap: 12px;
       width: 100%;
-      max-width: 850px;
+      max-width: 900px;
       margin: 0 auto;
       position: relative;
     }
@@ -82,45 +124,65 @@
       grid-row: 1;
     }
 
-    /* Top Rotated Labels Header */
+    /* Top Rotated Age Labels Header */
     .top-labels {
       grid-column: 2;
       grid-row: 1;
-      display: flex;
-      justify-content: space-around;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
       align-items: flex-end;
-      padding-bottom: 8px;
+      padding-bottom: 4px;
     }
 
     .top-labels .label {
       writing-mode: vertical-rl;
       transform: rotate(180deg);
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       text-align: left;
       white-space: nowrap;
+      justify-self: center;
     }
 
-    /* Left Row Axis Labels */
-    .side-labels {
+    /* Left Side Sex Labels */
+    .side-labels-left {
       grid-column: 1;
       grid-row: 2;
       display: flex;
       flex-direction: column;
       justify-content: space-around;
-      padding-right: 12px;
       text-align: right;
       font-weight: 600;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
 
-    .side-labels .gender-group {
+    .side-labels-left .gender-group {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      height: 48%;
+      border-right: 3px solid #333;
+      padding-right: 10px;
+    }
+
+    /* Right Side Race Labels */
+    .side-labels-right {
+      grid-column: 3;
+      grid-row: 2;
       display: flex;
       flex-direction: column;
-      height: 50%;
-      justify-content: center;
-      border-right: 3px solid #333;
-      padding-right: 8px;
+      justify-content: space-around;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.85rem;
+      border-left: 3px solid #333;
+      padding-left: 10px;
+    }
+
+    .side-labels-right .race-label {
+      display: flex;
+      align-items: center;
+      height: 23%;
     }
 
     /* Embedded Tableau Canvas Wrapper */
@@ -129,7 +191,7 @@
       grid-row: 2;
       position: relative;
       width: 100%;
-      min-height: 420px;
+      min-height: 450px;
     }
 
     #tableauViz {
@@ -170,14 +232,14 @@
     </select> 
     was <span id="multiplier" class="dynamic-val">1.0x</span> 
     more likely to be incarcerated at FCDC than a/an 
-    <span id="targetDemographic" class="dynamic-target">average person.</span>.
+    <span id="targetDemographic" class="dynamic-target">average person</span>.
   </div>
 
   <!-- Heatmap & Overlay Grid -->
   <div class="heatmap-layout">
     <div class="corner-spacer"></div>
 
-    <!-- Rotated Column Headers -->
+    <!-- Rotated Column Headers (Top: Age Groups) -->
     <div class="top-labels">
       <div class="label">18–24</div>
       <div class="label">25–34</div>
@@ -188,25 +250,29 @@
       <div class="label" style="font-weight: 800;">ALL</div>
     </div>
 
-    <!-- Side Row Headers -->
-    <div class="side-labels">
-      <div class="gender-group">
-        <span>Female</span>
-      </div>
-      <div class="gender-group">
-        <span>Male</span>
-      </div>
+    <!-- Left Row Headers (Sex) -->
+    <div class="side-labels-left">
+      <div class="gender-group"><span>Female</span></div>
+      <div class="gender-group"><span>Male</span></div>
     </div>
 
     <!-- Embedded Tableau Viz Container -->
     <div class="tableau-wrapper">
       <div id="tableauViz"></div>
     </div>
+
+    <!-- Right Row Headers (Race) -->
+    <div class="side-labels-right">
+      <div class="race-label"><span>Black</span></div>
+      <div class="race-label"><span>Hispanic</span></div>
+      <div class="race-label"><span>White</span></div>
+      <div class="race-label"><span>Other</span></div>
+    </div>
   </div>
 </div>
 
 <script>
-  let viz, workbook, activeSheet;
+  let viz, workbook;
 
   const vizUrl = "https://public.tableau.com/views/demo_view/Dashboard2?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link";
 
@@ -217,9 +283,6 @@
       hideToolbar: true,
       onFirstInteractive: function () {
         workbook = viz.getWorkbook();
-        activeSheet = workbook.getActiveSheet();
-        
-        // Listen to mark selection events (hover/click)
         viz.addEventListener(tableau.TableauEventName.MARKS_SELECTION, onMarkSelection);
       }
     };
@@ -227,7 +290,6 @@
     viz = new tableau.Viz(containerDiv, vizUrl, options);
   }
 
-  // Handle updates when drop-downs are changed manually
   function updateTableauParameters() {
     if (!workbook) return;
 
@@ -236,18 +298,15 @@
     const sex = document.getElementById("sexSelect").value;
     const date = document.getElementById("dateSelect").value;
 
-    // Apply native parameter updates to Tableau
     workbook.changeParameterValueAsync("Param_Age", age);
     workbook.changeParameterValueAsync("Param_Race", race);
     workbook.changeParameterValueAsync("Param_Sex", sex);
     workbook.changeParameterValueAsync("Param_Date", date);
   }
 
-  // Event handler for interactive cell hovers/clicks
   function onMarkSelection(marksEvent) {
     return marksEvent.getMarksAsync().then(function (marks) {
       if (marks.length === 0) {
-        // Reset to default "ALL" state if mouse leaves/clears selection
         document.getElementById("multiplier").innerText = "1.0x";
         document.getElementById("targetDemographic").innerText = "average person";
         return;
@@ -255,25 +314,26 @@
 
       const pairs = marks[0].getPairs();
       let hoveredVal = "1.0x";
-      let hoveredDemo = "";
-
       let hAge = "", hRace = "", hSex = "";
 
-      // Loop through data dimensions attached to marks/tooltip
       pairs.forEach(function (pair) {
-        if (pair.fieldName === "Disparity_Ratio") {
+        const field = pair.fieldName.toLowerCase();
+        if (field.includes("disparity_ratio") || field.includes("ratio") || field.includes("multiplier")) {
           hoveredVal = parseFloat(pair.formattedValue).toFixed(1) + "x";
         }
-        if (pair.fieldName === "Age_Group") hAge = pair.formattedValue;
-        if (pair.fieldName === "Race") hRace = pair.formattedValue;
-        if (pair.fieldName === "Sex") hSex = pair.formattedValue;
+        if (field.includes("age")) hAge = pair.formattedValue;
+        if (field.includes("race")) hRace = pair.formattedValue;
+        if (field.includes("sex") || field.includes("gender")) hSex = pair.formattedValue;
       });
 
-      // Format target demographic description string dynamically
-      if (hAge === "ALL" && !hRace && !hSex) {
+      let hoveredDemo = "";
+      if ((!hAge || hAge === "ALL") && !hRace && !hSex) {
         hoveredDemo = "average person";
       } else {
-        hoveredDemo = `${hAge !== 'ALL' ? hAge + ' year old ' : ''}${hRace || ''} ${hSex || 'person'}`.trim();
+        const ageStr = (hAge && hAge !== 'ALL') ? `${hAge} year old ` : '';
+        const raceStr = hRace ? `${hRace} ` : '';
+        const sexStr = hSex || 'person';
+        hoveredDemo = `${ageStr}${raceStr}${sexStr}`.trim();
       }
 
       document.getElementById("multiplier").innerText = hoveredVal;
@@ -281,15 +341,15 @@
     });
   }
 
-  // Attach event listeners to sentence parameter dropdowns
   document.getElementById("ageSelect").addEventListener("change", updateTableauParameters);
   document.getElementById("raceSelect").addEventListener("change", updateTableauParameters);
   document.getElementById("sexSelect").addEventListener("change", updateTableauParameters);
   document.getElementById("dateSelect").addEventListener("change", updateTableauParameters);
 
-  // Initialize Tableau Viz on DOM load
   document.addEventListener("DOMContentLoaded", initViz);
 </script>
 
 </body>
 </html>
+
+```

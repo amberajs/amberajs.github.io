@@ -232,18 +232,22 @@
 <script>
   let viz, workbook;
 
-  const vizUrl = "https://public.tableau.com/views/demo_17890907558550/Dashboard3?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link";
-
+  const vizUrl = "https://public.tableau.com/views/demo_17890907558550/Dashboard3?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link&:embed=y&:render=true&:device=desktop";
+  
   function initViz() {
-    const containerDiv = document.getElementById("tableauViz");
-    const options = {
-      hideTabs: true,
-      hideToolbar: true,
-      onFirstInteractive: function () {
-        workbook = viz.getWorkbook();
-        viz.addEventListener(tableau.TableauEventName.MARKS_SELECTION, onMarkSelection);
-      }
-    };
+  const containerDiv = document.getElementById("tableauViz");
+  const options = {
+    hideTabs: true,
+    hideToolbar: true,
+    device: "desktop",
+    onFirstInteractive: function () {
+      workbook = viz.getWorkbook();
+      viz.addEventListener(tableau.TableauEventName.MARKS_SELECTION, onMarkSelection);
+    }
+  };
+
+  viz = new tableau.Viz(containerDiv, vizUrl, options);
+}
 
     viz = new tableau.Viz(containerDiv, vizUrl, options);
   }

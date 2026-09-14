@@ -1,45 +1,3 @@
-The goal of this setup is to create a seamless, hybrid user experience where HTML/CSS handles the external layout, labels, and reference-selection controls, while an embedded Tableau viz purely renders the color-coded heatmap data cells.
-
-When a user selects a reference demographic using the dropdowns in the top sentence, those selections update parameters in Tableau to recalculate all cell values. Conversely, when a user hovers over or selects any specific cell in the heatmap grid, Tableau fires a mark-selection event back to the web page, dynamically updating the target demographic and calculated multiplier text in the top sentence in real time.
-
----
-
-### Part 1: Required Tableau Changes
-
-To align Tableau's output with your HTML layout and ensure event listeners function properly, configure the workbook as follows:
-
-1. **Remove Native Headers & Titles:**
-* Hide row headers (Sex, Race) and column headers (Age Groups) on all worksheets placed on the dashboard.
-* Hide all worksheet titles, borders, gridlines, axis lines, and legends so that only clean color-filled marks remain.
-
-
-2. **Match Grid Layout Dimensions:**
-* Structurally, your reference image comprises four separate mark blocks arranged around a central grid:
-* **Top Area:** A single horizontal row sheet broken into columns by Age Group.
-* **Left Area:** A single vertical column sheet divided into 2 sections (Female top, Male bottom).
-* **Right Area:** A vertical sheet organized by Race.
-* **Center Area:** Main grid organized by Sex (rows), Race (sub-rows), and Age Groups (columns).
-
-
-* Ensure fixed row and column padding/margins across all container sheets in Tableau so that cells map 1:1 with your CSS grid overlays.
-
-
-3. **Expose Marks Data to the JS API:**
-* Ensure every worksheet in your Tableau Dashboard includes `[Age_Group]`, `[Race]`, `[Sex]`, and `[Disparity_Ratio]` on the **Detail** or **Tooltip** card. The `tableau.js` API can only retrieve dimensions and measures exposed on the mark shelf during `MARKS_SELECTION` events.
-
-
-4. **Disable Default Tooltips (Recommended):**
-* Turn off Tableau's native hover tooltips (`Worksheet > Tooltip > Uncheck "Show tooltips"`) so that hover feedback is handled exclusively by the dynamic HTML sentence above.
-
-
-
----
-
-### Part 2: Required HTML & CSS Code Changes
-
-To integrate the Right (Race) labels, align grid areas cleanly, and properly bind hover events, update your HTML code as follows:
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -351,5 +309,3 @@ To integrate the Right (Race) labels, align grid areas cleanly, and properly bin
 
 </body>
 </html>
-
-```

@@ -79,30 +79,39 @@
 <body>
 
 <div class="hero-layout">
-    <div class="sentence-card">
-        On <strong>September 8th, 2026</strong> in Fayette County, Kentucky:<br>
-        A/An 
-        <select id="ageSelect" class="inline-select" onchange="updateParam('Select Reference Age', this.value)">
-            <option value="35-44" selected>35-44</option>
-            <option value="18-24">18-24</option>
-            <option value="25-34">25-34</option>
-            <option value="45-54">45-54</option>
-            <option value="55-64">55-64</option>
-            <option value="65+">65+</option>
-        </select> 
-        year old 
-        <select id="raceSelect" class="inline-select" onchange="updateParam('Select Reference Race', this.value)">
-            <option value="WHITE" selected>White</option>
-            <option value="BLACK">Black</option>
-            <option value="HISPANIC">Hispanic</option>
-            <option value="OTHER">Other</option>
-        </select> 
-        <select id="sexSelect" class="inline-select" onchange="updateParam('Select Reference Sex', this.value)">
-            <option value="M" selected>male</option>
-            <option value="F">female</option>
-        </select> 
-        was <span id="rriDisplay" class="rri-badge">(click a cell)</span> times as likely to be incarcerated at FCDC than <span id="targetDemographic" style="color:#38bdf8; font-weight:700;">the selected cell</span>.
-    </div>
+    
+<div>
+    On <strong>September 8th, 2026</strong> in Fayette County, Kentucky:<br />
+    A/An 
+    
+    <select>
+        <option value="18-24" selected="">18-24</option>
+        <option value="25-34">25-34</option>
+        <option value="35-44">35-44</option>
+        <option value="45-54">45-54</option>
+        <option value="55-64">55-64</option>
+        <option value="65+">65+</option>
+        <option value="ALL">no selection</option>
+    </select> 
+    year old 
+
+    
+    <select>
+        <option value="BLACK">black</option>
+        <option value="HISPANIC">hispanic</option>
+        <option value="WHITE" selected="">white</option>
+        <option value="OTHER">multiracial/other</option>
+        <option value="ALL">no selection</option>
+    </select> 
+
+    
+    <select>
+        <option value="ALL">person</option>
+        <option value="M" selected="">man</option>
+        <option value="F">woman</option>
+    </select> 
+    was <span>(click a cell)</span> times as likely to be incarcerated at FCDC than <span>the selected cell</span>.
+</div>
 
     <!-- Embedded Tableau Heatmap -->
     <div class="tableau-wrapper">
@@ -113,25 +122,7 @@
 <!-- Tableau JS API -->
 <script type="text/javascript" src="https://public.tableau.com/javascripts/api/viz_v1.js"></script>
 <script>
-    var viz, workbook;
-
-    function initViz() {
-        var containerDiv = document.getElementById("vizContainer"),
-            // Replace with your published Tableau Public URL
-            url = "https://public.tableau.com/views/demo_view/Dashboard1",
-            options = {
-                hideTabs: true,
-                hideToolbar: true,
-                width: "100%",
-                height: "100%",
-                onFirstInteractive: function () {
-                    workbook = viz.getWorkbook();
-                    viz.addEventListener(tableau.TableauEventName.MARKS_SELECTION, onMarkSelection);
-                }
-            };
-        
-        viz = new tableau.Viz(containerDiv, url, options);
-    }
+    var viz, workbook; function initViz() { var containerDiv = document.getElementById("vizContainer"), url = "https://public.tableau.com/views/demo\_view/Dashboard1", options = { hideTabs: true, hideToolbar: true, width: "100%", height: "100%", // Pre-load Tableau parameters to match HTML pre-selected defaults "Select Reference Age": "18-24", "Select Reference Race": "WHITE", "Select Reference Sex": "M", onFirstInteractive: function () { workbook = viz.getWorkbook(); viz.addEventListener(tableau.TableauEventName.MARKS\_SELECTION, onMarkSelection); } }; viz = new tableau.Viz(containerDiv, url, options); } // Function triggered when user changes any dropdown menu function updateTableauParam(paramName, value) { if (workbook) { workbook.changeParameterValueAsync(paramName, value) .then(function() { console.log(paramName + " updated to: " + value); }) .catch(function(err) { console.error("Error updating " + paramName + ": ", err); }); } }
 
     // Pass HTML dropdown selections directly into Tableau Parameters
     function updateParam(paramName, value) {

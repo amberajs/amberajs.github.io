@@ -21,19 +21,44 @@
             flex-direction: column;
             width: 100vw;
             height: 100vh;
-            padding: 15px 20px;
+            padding: 10px 20px 15px 20px;
             box-sizing: border-box;
         }
 
-        /* Expanded font size and padding to fill top card */
+        /* Navigation Bar across top */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex: 0 0 auto;
+            padding: 4px 6px 10px 6px;
+            font-size: 0.85rem;
+        }
+
+        .top-nav a {
+            color: #a3a3a3;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .top-nav a:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+
+        .top-nav .nav-center {
+            color: #737373;
+            cursor: default;
+        }
+
         .sentence-card {
             flex: 0 0 auto;
             background: #1a1a1a;
             border: 1px solid #333333;
             border-radius: 8px;
-            padding: 22px 28px;
+            padding: 20px 24px;
             text-align: center;
-            font-size: clamp(1.3rem, 2.8vh, 2rem);
+            font-size: clamp(1.2rem, 2.6vh, 1.8rem);
             line-height: 1.6;
             color: #ffffff;
             margin-bottom: 12px;
@@ -134,7 +159,6 @@
             text-shadow: 0px 0px 4px #000000, 0px 0px 8px #000000;
         }
 
-        /* Label mappings for 11 columns */
         .col-1 { grid-column: 1 / span 1; grid-row: 1; }
         .col-2 { grid-column: 2 / span 1; grid-row: 1; }
         .col-3 { grid-column: 3 / span 1; grid-row: 1; }
@@ -162,6 +186,18 @@
 
 <div class="hero-layout">
     
+    <div class="top-nav">
+        <div class="nav-left">
+            <a href="https://amberajs.github.io">&lt; back to amberajs portfolio</a>
+        </div>
+        <div class="nav-center">
+            view data
+        </div>
+        <div class="nav-right">
+            <a href="http://github.com/amberajs/arrest_stats/" target="_blank">view source code &gt;</a>
+        </div>
+    </div>
+
     <div class="sentence-card">
         On <strong>September 8th, 2026</strong> in Fayette County, Kentucky:<br />
         A/An 
@@ -190,7 +226,7 @@
             <option value="M" selected>man</option>
             <option value="F">woman</option>
         </select> 
-        was <span id="rriDisplay" class="rri-badge white">1.0x</span> as likely to be incarcerated at Fayette County Detention Center than <span id="targetDemographic">the average person</span>.
+        <span id="disparitySentencePhrase">was <span id="rriDisplay" class="rri-badge white">1.0x</span> more likely<br />to be</span> incarcerated at Fayette County Detention Center than <span id="targetDemographic">the average person</span>.
     </div>
 
     <div class="tableau-wrapper">
@@ -262,28 +298,27 @@
         }
     }
 
-    function setBadgeValue(numericValueStr) {
-        var badgeEl = document.getElementById("rriDisplay");
+    function updateDisparityPhrase(numericValueStr) {
+        var phraseEl = document.getElementById("disparitySentencePhrase");
         if (!numericValueStr) return;
 
         var num = parseFloat(numericValueStr.toString().replace(/[^0-9.]/g, ''));
-        if (isNaN(num)) {
-            badgeEl.innerText = numericValueStr;
-            return;
-        }
+        if (isNaN(num)) return;
 
-        badgeEl.innerText = num.toFixed(1) + "x";
-
-        // Red when > 1.0, white when <= 1.0
+        // Apply conditional sentence structure and coloring based on n relative to 1
         if (num > 1.0) {
-            badgeEl.className = "rri-badge red";
+            var valStr = num.toFixed(1) + "x";
+            phraseEl.innerHTML = 'was <span id="rriDisplay" class="rri-badge red">' + valStr + '</span> more likely<br />to be';
+        } else if (num < 1.0) {
+            var invertedVal = 1.0 / num;
+            var valStr = invertedVal.toFixed(1) + "x";
+            phraseEl.innerHTML = 'was <span id="rriDisplay" class="rri-badge white">' + valStr + '</span> less likely<br />to be';
         } else {
-            badgeEl.className = "rri-badge white";
+            phraseEl.innerHTML = 'had <span id="rriDisplay" class="rri-badge white">equal</span> likelihood<br />of being';
         }
     }
 
     function formatDemographicString(age, race, sex, colIdx, rowIdx) {
-        // Average cell detection by coordinates: (6, 1), (6, 8), (5, 8), (7, 8)
         if ((colIdx === 6 && rowIdx === 1) || 
             (colIdx === 6 && rowIdx === 8) || 
             (colIdx === 5 && rowIdx === 8) || 
@@ -335,9 +370,6 @@
 
     function onMarkSelection(marksEvent) {
         var ws = marksEvent.getWorksheet();
-        
-        // Immediately trigger clear to avoid Tableau selection dimming latency
-        ws.clearSelectedMarksAsync();
 
         marksEvent.getMarksAsync().then(function (marks) {
             if (!marks || marks.length === 0) return;
@@ -362,11 +394,13 @@
             }
 
             if (rriVal) {
-                setBadgeValue(rriVal);
+                updateDisparityPhrase(rriVal);
             }
             
             var formattedDemo = formatDemographicString(ageStr, raceStr, sexStr, colIdx, rowIdx);
             document.getElementById("targetDemographic").innerText = formattedDemo;
+
+            ws.clearSelectedMarksAsync();
         });
     }
 

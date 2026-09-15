@@ -11,7 +11,6 @@
   <style>
     :root {
       --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      --text-color: #ffffff;
     }
 
     * {
@@ -20,57 +19,59 @@
       padding: 0;
     }
 
+    /* Black background covering the entire desktop viewport */
     body {
       font-family: var(--font-family);
-      background-color: #121212;
-      color: var(--text-color);
+      background-color: #000000;
+      width: 100vw;
+      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
-      overflow: hidden;
+      overflow: hidden; /* Guarantees zero vertical/horizontal scrolling */
     }
 
-    /* Hero Canvas: Exactly 1500x1000 (3:2 Aspect Ratio) */
-    .hero-container {
-      width: 1500px;
-      height: 1000px;
-      background-color: #000000; /* Black side borders (150px left, 150px right) */
-      display: grid;
-      /* Columns: 150px (Left Black) | 1200px (Center) | 150px (Right Black) */
-      grid-template-columns: 150px 1200px 150px;
-      /* Rows: 200px (Sentence Area: R2-R3) | 800px (Heatmap Area: R4-R11) */
-      grid-template-rows: 200px 800px;
-      /* Automatically scale to fit user screen while preserving 1500x1000 proportion */
-      max-width: 100vw;
-      max-height: 100vh;
-      aspect-ratio: 3 / 2;
+    /* 
+      12:10 ASPECT RATIO CONTENT CONTAINER
+      Anchored strictly to Viewport Height (vh) to guarantee no height overflow.
+    */
+    .content-container {
+      height: 94vh; /* Max height under browser bar */
+      width: calc(94vh * (12 / 10)); /* Maintains exact 12:10 proportion */
+      max-width: 96vw; /* Fallback for ultra-narrow screens */
+      max-height: calc(96vw * (10 / 12));
+      display: flex;
+      flex-direction: column;
+      margin: 0 auto;
+      position: relative;
     }
 
-    /* Gray Area (Sentence Builder) covering Rows 2-3 across Columns E-O (1200x200) */
+    /* 
+      GRAY SENTENCE BUILDER AREA (2/10 = 20% Height)
+    */
     .sentence-builder-container {
-      grid-column: 2;
-      grid-row: 1;
+      height: 20%;
+      width: 100%;
       background-color: #808080;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 0 2vw;
       border-radius: 4px 4px 0 0;
     }
 
     .sentence-builder {
-      font-size: 1.4rem;
-      line-height: 1.6;
+      font-size: clamp(0.85rem, 1.4vh, 1.25rem);
+      line-height: 1.4;
       color: #000000;
       text-align: center;
       font-weight: 500;
     }
 
     .sentence-builder select {
-      font-size: 1.2rem;
+      font-size: clamp(0.8rem, 1.2vh, 1.05rem);
       font-weight: 700;
-      padding: 4px 8px;
+      padding: 0.15em 0.4em;
       border: 1px solid #333333;
       border-radius: 4px;
       background-color: #ffffff;
@@ -91,49 +92,56 @@
       border-bottom: 1px solid #1d4ed8;
     }
 
-    /* Heatmap Overlay Area (1200x800) */
+    /* 
+      HEATMAP GRID AREA (8/10 = 80% Height)
+    */
     .heatmap-grid {
-      grid-column: 2;
-      grid-row: 2;
-      width: 1200px;
-      height: 800px;
+      height: 80%;
+      width: 100%;
       display: grid;
-      /* Exactly 11 columns matching Tableau heatmap structure */
+      /* Exactly 11 columns matching Tableau heatmap structure (Columns E through O) */
       grid-template-columns: repeat(11, 1fr);
-      /* 8 Rows matching R4 through R11 */
+      /* Exactly 8 rows (Rows 4 through 11) */
       grid-template-rows: repeat(8, 1fr);
       position: relative;
       background-color: #ffffff;
     }
 
-    /* Tableau Visualization exact placement (1200x800) */
+    /* Embedded Tableau Canvas Layer */
     .tableau-wrapper {
       grid-column: 1 / span 11;
       grid-row: 1 / span 8;
       width: 100%;
       height: 100%;
       z-index: 1;
+      position: relative;
+      overflow: hidden;
     }
 
     #tableauViz {
-      width: 1200px;
-      height: 800px;
+      width: 100% !important;
+      height: 100% !important;
     }
 
-    /* HTML Overlay Cell Styling */
+    /* 
+      HTML OVERLAY CELL STYLING
+      Utilizes CSS place-items: center for precise cell alignment.
+    */
     .cell-label {
       z-index: 2;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: grid;
+      place-items: center; /* Ensures exact horizontal and vertical centering */
+      width: 100%;
+      height: 100%;
       font-weight: 800;
-      font-size: 1.1rem;
+      font-size: clamp(0.75rem, 1.5vh, 1.15rem);
+      line-height: 1;
       color: #000000;
-      pointer-events: none; /* Allows clicks to pass through to Tableau viz */
+      pointer-events: none; /* Allows mouse clicks/hover to hit Tableau viz below */
       user-select: none;
     }
 
-    /* Grid Alignments for HTML-rendered labels */
+    /* Grid Mapping for Bold HTML Overlay Labels */
     /* Row 4 Header Labels */
     .lbl-E4 { grid-column: 1; grid-row: 1; }
     .lbl-F4 { grid-column: 2; grid-row: 1; }
@@ -156,15 +164,16 @@
     .lbl-J10 { grid-column: 6; grid-row: 7; }
 
     /* Row 11 Average Label */
-    .lbl-J11 { grid-column: 6; grid-row: 8; font-size: 1.0rem; font-weight: 900; }
+    .lbl-J11 { grid-column: 6; grid-row: 8; font-size: clamp(0.65rem, 1.2vh, 0.95rem); font-weight: 900; }
 
   </style>
 </head>
 <body>
 
-<div class="hero-container">
+<!-- Scalable 12:10 Content Box -->
+<div class="content-container">
 
-  <!-- Gray Sentence Area (Cells E2-O3 | 1200x200) -->
+  <!-- Gray Sentence Area (2/10 Height) -->
   <div class="sentence-builder-container">
     <div class="sentence-builder">
       On 
@@ -198,10 +207,10 @@
     </div>
   </div>
 
-  <!-- Heatmap & Overlay Grid (Cells E4-O11 | 1200x800) -->
+  <!-- Heatmap & Overlay Grid Area (8/10 Height) -->
   <div class="heatmap-grid">
     
-    <!-- Tableau Embed Layer -->
+    <!-- Embedded Tableau Layer -->
     <div class="tableau-wrapper">
       <div id="tableauViz"></div>
     </div>
@@ -236,16 +245,15 @@
 <script>
   let viz, workbook;
 
-  const vizUrl = "https://public.tableau.com/views/demo_17890907558550/Dashboard4?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link&:embed=y&:render=true&:device=desktop"; 
+  const vizUrl = "https://public.tableau.com/views/demo_17890907558550/Dashboard4?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link&:embed=y&:render=true"; 
   
   function initViz() {
     const containerDiv = document.getElementById("tableauViz");
     const options = {
       hideTabs: true,
       hideToolbar: true,
-      width: "1200px",
-      height: "800px",
-      device: "desktop",
+      width: "100%",
+      height: "100%",
       onFirstInteractive: function () {
         workbook = viz.getWorkbook();
         viz.addEventListener(tableau.TableauEventName.MARKS_SELECTION, onMarkSelection);

@@ -11,41 +11,66 @@
   <style>
     :root {
       --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      --text-color: #1a1a1a;
-      --border-color: #ccc;
-      --bg-gray: #f8f9fa;
+      --text-color: #ffffff;
+      --border-color: #333333;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
       font-family: var(--font-family);
-      margin: 0;
-      padding: 24px;
+      background-color: #121212;
       color: var(--text-color);
       display: flex;
-      flex-direction: column;
+      justify-content: center;
       align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
     }
 
+    /* Hero Canvas: Enforces strict 3:2 Aspect Ratio matching grid B2:R11 */
     .hero-container {
-      max-width: 950px;
-      width: 100%;
+      width: 100vw;
+      max-width: 1200px;
+      aspect-ratio: 3 / 2;
+      background-color: #000000; /* Black area (B2-D11 & P2-R11) */
+      display: grid;
+      /* Columns: B-D (3cols), E-O (11cols), P-R (3cols) */
+      grid-template-columns: 3fr 11fr 3fr;
+      /* Rows: Row 2-3 (2rows), Rows 4-11 (8rows) */
+      grid-template-rows: 2fr 8fr;
+      padding: 10px;
+    }
+
+    /* Gray Area (Sentence Builder) covering Rows 2-3 across Columns E-O */
+    .sentence-builder-container {
+      grid-column: 2;
+      grid-row: 1;
+      background-color: #808080; /* Gray area */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      border-radius: 4px 4px 0 0;
     }
 
     .sentence-builder {
-      font-size: 1.25rem;
-      line-height: 1.8;
-      margin-bottom: 24px;
-      background: var(--bg-gray);
-      padding: 20px;
-      border-radius: 8px;
-      border: 1px solid #e2e8f0;
+      font-size: 1.1rem;
+      line-height: 1.5;
+      color: #000;
+      text-align: center;
+      font-weight: 500;
     }
 
     .sentence-builder select {
-      font-size: 1.05rem;
-      font-weight: 600;
-      padding: 4px 8px;
-      border: 1px solid var(--border-color);
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border: 1px solid #333;
       border-radius: 4px;
       background-color: #ffffff;
       color: #0056b3;
@@ -54,200 +79,173 @@
 
     .dynamic-val {
       font-weight: 700;
-      color: #d9381e;
-      border-bottom: 2px dashed #d9381e;
+      color: #b91c1c;
+      border-bottom: 2px dashed #b91c1c;
       padding: 0 4px;
     }
 
     .dynamic-target {
-      font-weight: 600;
-      color: #2b6cb0;
-      border-bottom: 1px solid #2b6cb0;
+      font-weight: 700;
+      color: #1d4ed8;
+      border-bottom: 1px solid #1d4ed8;
     }
 
-    /* 3x2 Grid Layout matching attached screenshot */
-    .heatmap-layout {
-      display: grid;
-      grid-template-columns: 110px 1fr 120px;
-      grid-template-rows: 90px 1fr;
-      gap: 12px;
-      width: 100%;
-      max-width: 900px;
-      margin: 0 auto;
-      position: relative;
-    }
-
-    .corner-spacer {
-      grid-column: 1;
-      grid-row: 1;
-    }
-
-    /* Top Rotated Age Labels Header */
-    .top-labels {
+    /* Heatmap Overlay Area (Rows 4-11, Columns E-O) */
+    .heatmap-grid {
       grid-column: 2;
-      grid-row: 1;
+      grid-row: 2;
       display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      align-items: flex-end;
-      padding-bottom: 4px;
+      /* Exactly 11 columns (E to O) */
+      grid-template-columns: repeat(11, 1fr);
+      /* Exactly 8 rows (Row 4 to Row 11) */
+      grid-template-rows: repeat(8, 1fr);
+      position: relative;
+      background-color: #ffffff;
     }
 
-    .top-labels .label {
-      writing-mode: vertical-rl;
-      transform: rotate(180deg);
-      font-weight: 600;
-      font-size: 0.85rem;
-      text-align: left;
-      white-space: nowrap;
-      justify-self: center;
-    }
-
-    /* Left Side Sex Labels */
-    .side-labels-left {
-      grid-column: 1;
-      grid-row: 2;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-around;
-      text-align: right;
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-
-    .side-labels-left .gender-group {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      height: 48%;
-      border-right: 3px solid #333;
-      padding-right: 10px;
-    }
-
-    /* Right Side Race Labels */
-    .side-labels-right {
-      grid-column: 3;
-      grid-row: 2;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-around;
-      text-align: left;
-      font-weight: 600;
-      font-size: 0.85rem;
-      border-left: 3px solid #333;
-      padding-left: 10px;
-    }
-
-    .side-labels-right .race-label {
-      display: flex;
-      align-items: center;
-      height: 23%;
-    }
-
-    /* Embedded Tableau Canvas Wrapper */
+    /* Tableau Visualization exact placement underneath HTML overlay labels */
     .tableau-wrapper {
-      grid-column: 2;
-      grid-row: 2;
-      position: relative;
+      grid-column: 1 / span 11;
+      grid-row: 1 / span 8;
       width: 100%;
-      min-height: 450px;
+      height: 100%;
+      z-index: 1;
     }
 
     #tableauViz {
       width: 100%;
       height: 100%;
     }
+
+    /* HTML Overlay Cell Styling */
+    .cell-label {
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: #000000;
+      pointer-events: none; /* Allows clicks to pass through to Tableau viz */
+      user-select: none;
+    }
+
+    /* Specific Grid Alignments for HTML-rendered labels */
+    /* Row 4 Header Labels */
+    .lbl-E4 { grid-column: 1; grid-row: 1; }
+    .lbl-F4 { grid-column: 2; grid-row: 1; }
+    .lbl-G4 { grid-column: 3; grid-row: 1; }
+    .lbl-H4 { grid-column: 4; grid-row: 1; }
+    .lbl-I4 { grid-column: 5; grid-row: 1; }
+    .lbl-J4 { grid-column: 6; grid-row: 1; }
+    .lbl-K4 { grid-column: 7; grid-row: 1; }
+    .lbl-L4 { grid-column: 8; grid-row: 1; }
+    .lbl-M4 { grid-column: 9; grid-row: 1; }
+    .lbl-N4 { grid-column: 10; grid-row: 1; }
+    .lbl-O4 { grid-column: 11; grid-row: 1; }
+
+    /* Column J Age Labels (Rows 5 to 10) */
+    .lbl-J5 { grid-column: 6; grid-row: 2; }
+    .lbl-J6 { grid-column: 6; grid-row: 3; }
+    .lbl-J7 { grid-column: 6; grid-row: 4; }
+    .lbl-J8 { grid-column: 6; grid-row: 5; }
+    .lbl-J9 { grid-column: 6; grid-row: 6; }
+    .lbl-J10 { grid-column: 6; grid-row: 7; }
+
+    /* Row 11 Average Label */
+    .lbl-J11 { grid-column: 6; grid-row: 8; font-size: 0.95rem; }
+
   </style>
 </head>
 <body>
 
 <div class="hero-container">
-  <!-- Interactive Dynamic Sentence -->
-  <div class="sentence-builder">
-    On 
-    <select id="dateSelect">
-      <option value="2026-09-03" selected>September 3, 2026</option>
-    </select> 
-    in Fayette County, Kentucky:<br/>
-    A/An 
-    <select id="ageSelect">
-      <option value="18-24">18–24</option>
-      <option value="25-34">25–34</option>
-      <option value="35-44">35–44</option>
-      <option value="45-54">45–54</option>
-      <option value="55-64">55–64</option>
-      <option value="65+">65+</option>
-    </select> 
-    year old 
-    <select id="raceSelect">
-      <option value="Black">Black</option>
-      <option value="Hispanic">Hispanic</option>
-      <option value="White">White</option>
-      <option value="Other">Other</option>
-    </select> 
-    <select id="sexSelect">
-      <option value="Female">Female</option>
-      <option value="Male" selected>Male</option>
-    </select> 
-    was <span id="multiplier" class="dynamic-val">1.0x</span> 
-    more likely to be incarcerated at FCDC than a/an 
-    <span id="targetDemographic" class="dynamic-target">average person</span>.
+
+  <!-- Gray Sentence Area (Cells E2-O3) -->
+  <div class="sentence-builder-container">
+    <div class="sentence-builder">
+      On 
+      <select id="dateSelect">
+        <option value="2026-09-03" selected>September 3, 2026</option>
+      </select> 
+      in Fayette County, Kentucky:<br/>
+      A/An 
+      <select id="ageSelect">
+        <option value="18-24">18–24</option>
+        <option value="25-34">25–34</option>
+        <option value="35-44">35–44</option>
+        <option value="45-54">45–54</option>
+        <option value="55-64">55–64</option>
+        <option value="65+">65+</option>
+      </select> 
+      year old 
+      <select id="raceSelect">
+        <option value="Black">Black</option>
+        <option value="Hispanic">Hispanic</option>
+        <option value="White">White</option>
+        <option value="Other">Other</option>
+      </select> 
+      <select id="sexSelect">
+        <option value="Female">Female</option>
+        <option value="Male" selected>Male</option>
+      </select> 
+      was <span id="multiplier" class="dynamic-val">1.0x</span> 
+      more likely to be incarcerated at FCDC than a/an 
+      <span id="targetDemographic" class="dynamic-target">average person</span>.
+    </div>
   </div>
 
-  <!-- Heatmap & Overlay Grid -->
-  <div class="heatmap-layout">
-    <div class="corner-spacer"></div>
-
-    <!-- Rotated Column Headers (Top: Age Groups) -->
-    <div class="top-labels">
-      <div class="label">18–24</div>
-      <div class="label">25–34</div>
-      <div class="label">35–44</div>
-      <div class="label">45–54</div>
-      <div class="label">55–64</div>
-      <div class="label">65+</div>
-      <div class="label" style="font-weight: 800;">ALL</div>
-    </div>
-
-    <!-- Left Row Headers (Sex) -->
-    <div class="side-labels-left">
-      <div class="gender-group"><span>Female</span></div>
-      <div class="gender-group"><span>Male</span></div>
-    </div>
-
-    <!-- Embedded Tableau Viz Container -->
+  <!-- Heatmap & Overlay Grid (Cells E4-O11) -->
+  <div class="heatmap-grid">
+    
+    <!-- Tableau Embed Layer -->
     <div class="tableau-wrapper">
       <div id="tableauViz"></div>
     </div>
 
-    <!-- Right Row Headers (Race) -->
-    <div class="side-labels-right">
-      <div class="race-label"><span>Black</span></div>
-      <div class="race-label"><span>Hispanic</span></div>
-      <div class="race-label"><span>White</span></div>
-      <div class="race-label"><span>Other</span></div>
-    </div>
+    <!-- Bold Header Labels Layer (Row 4) -->
+    <div class="cell-label lbl-E4">O</div>
+    <div class="cell-label lbl-F4">W</div>
+    <div class="cell-label lbl-G4">H</div>
+    <div class="cell-label lbl-H4">B</div>
+    <div class="cell-label lbl-I4">F</div>
+    <div class="cell-label lbl-J4">AVG</div>
+    <div class="cell-label lbl-K4">M</div>
+    <div class="cell-label lbl-L4">B</div>
+    <div class="cell-label lbl-M4">H</div>
+    <div class="cell-label lbl-N4">W</div>
+    <div class="cell-label lbl-O4">O</div>
+
+    <!-- Bold Column J Labels (Rows 5-10) -->
+    <div class="cell-label lbl-J5">18-24</div>
+    <div class="cell-label lbl-J6">25-34</div>
+    <div class="cell-label lbl-J7">35-44</div>
+    <div class="cell-label lbl-J8">45-54</div>
+    <div class="cell-label lbl-J9">55-64</div>
+    <div class="cell-label lbl-J10">65+</div>
+
+    <!-- Bold Bottom Label (Row 11) -->
+    <div class="cell-label lbl-J11">AVERAGE</div>
+
   </div>
 </div>
 
 <script>
   let viz, workbook;
 
-  const vizUrl = "https://public.tableau.com/views/demo_17890907558550/Dashboard4?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link&:embed=y&:render=true&:device=desktop";
+  const vizUrl = "https://public.tableau.com/views/demo_17890907558550/Dashboard4?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link&:embed=y&:render=true&:device=desktop"; 
   
   function initViz() {
-  const containerDiv = document.getElementById("tableauViz");
-  const options = {
-    hideTabs: true,
-    hideToolbar: true,
-    device: "desktop",
-    onFirstInteractive: function () {
-      workbook = viz.getWorkbook();
-      viz.addEventListener(tableau.TableauEventName.MARKS_SELECTION, onMarkSelection);
-    }
-  };
-
-  viz = new tableau.Viz(containerDiv, vizUrl, options);
-}
+    const containerDiv = document.getElementById("tableauViz");
+    const options = {
+      hideTabs: true,
+      hideToolbar: true,
+      device: "desktop",
+      onFirstInteractive: function () {
+        workbook = viz.getWorkbook();
+        viz.addEventListener(tableau.TableauEventName.MARKS_SELECTION, onMarkSelection);
+      }
+    };
 
     viz = new tableau.Viz(containerDiv, vizUrl, options);
   }
@@ -313,3 +311,4 @@
 
 </body>
 </html>
+

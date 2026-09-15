@@ -189,7 +189,7 @@
 </div>
 
 <!-- Official Tableau JavaScript API -->
-<script type="text/javascript" src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
+<script type="text/javascript" src="https://public.tableau.com/views/demo_17890907558550/Dashboard4?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link"></script>
 
 <script>
     var viz, workbook;
@@ -277,6 +277,15 @@
     }
 
     function onMarkSelection(marksEvent) {
+        function onMarkSelection(marksEvent) {
+        return marksEvent.getMarksAsync().then(function (marks) {
+        if (marks.length === 0) return;
+
+        var pairs = marks[0].getPairs();
+
+        viz.getWorkbook().getActiveSheet().clearSelectedMarksAsync();
+    });
+}
         return marksEvent.getMarksAsync().then(function (marks) {
             if (marks.length === 0) {
                 document.getElementById("rriDisplay").innerText = "(click a cell)";

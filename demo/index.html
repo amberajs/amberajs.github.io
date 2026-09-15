@@ -9,69 +9,58 @@
   <script type="text/javascript" src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
 
   <style>
-    :root {
-      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
 
-    /* Black background covering the entire desktop viewport */
     body {
-      font-family: var(--font-family);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: #000000;
       width: 100vw;
       height: 100vh;
+      overflow: hidden; /* Prevents scrollbars entirely */
       display: flex;
       justify-content: center;
       align-items: center;
-      overflow: hidden; /* Guarantees zero vertical/horizontal scrolling */
     }
 
     /* 
-      12:10 ASPECT RATIO CONTENT CONTAINER
-      Anchored strictly to Viewport Height (vh) to guarantee no height overflow.
+      1200x1000 Fixed Frame (12:10 Ratio: 200px Top Sentence + 800px Heatmap)
+      Scaled dynamically via JS to fit any desktop screen height perfectly.
     */
-    .content-container {
-      height: 94vh; /* Max height under browser bar */
-      width: calc(94vh * (12 / 10)); /* Maintains exact 12:10 proportion */
-      max-width: 96vw; /* Fallback for ultra-narrow screens */
-      max-height: calc(96vw * (10 / 12));
+    #scaler {
+      width: 1200px;
+      height: 1000px;
+      transform-origin: center center;
       display: flex;
       flex-direction: column;
-      margin: 0 auto;
-      position: relative;
     }
 
-    /* 
-      GRAY SENTENCE BUILDER AREA (2/10 = 20% Height)
-    */
-    .sentence-builder-container {
-      height: 20%;
-      width: 100%;
+    /* Sentence Area: 1200x200 */
+    .sentence-container {
+      width: 1200px;
+      height: 200px;
       background-color: #808080;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 0 2vw;
-      border-radius: 4px 4px 0 0;
+      padding: 20px;
     }
 
     .sentence-builder {
-      font-size: clamp(0.85rem, 1.4vh, 1.25rem);
-      line-height: 1.4;
+      font-size: 24px;
+      line-height: 1.5;
       color: #000000;
       text-align: center;
-      font-weight: 500;
+      font-weight: 600;
     }
 
     .sentence-builder select {
-      font-size: clamp(0.8rem, 1.2vh, 1.05rem);
+      font-size: 22px;
       font-weight: 700;
-      padding: 0.15em 0.4em;
+      padding: 4px 8px;
       border: 1px solid #333333;
       border-radius: 4px;
       background-color: #ffffff;
@@ -92,57 +81,46 @@
       border-bottom: 1px solid #1d4ed8;
     }
 
-    /* 
-      HEATMAP GRID AREA (8/10 = 80% Height)
-    */
+    /* Heatmap Grid Area: 1200x800 */
     .heatmap-grid {
-      height: 80%;
-      width: 100%;
+      width: 1200px;
+      height: 800px;
       display: grid;
-      /* Exactly 11 columns matching Tableau heatmap structure (Columns E through O) */
       grid-template-columns: repeat(11, 1fr);
-      /* Exactly 8 rows (Rows 4 through 11) */
       grid-template-rows: repeat(8, 1fr);
       position: relative;
       background-color: #ffffff;
     }
 
-    /* Embedded Tableau Canvas Layer */
+    /* Tableau Layer (1200x800) */
     .tableau-wrapper {
       grid-column: 1 / span 11;
       grid-row: 1 / span 8;
-      width: 100%;
-      height: 100%;
+      width: 1200px;
+      height: 800px;
       z-index: 1;
-      position: relative;
-      overflow: hidden;
     }
 
     #tableauViz {
-      width: 100% !important;
-      height: 100% !important;
+      width: 1200px !important;
+      height: 800px !important;
     }
 
-    /* 
-      HTML OVERLAY CELL STYLING
-      Utilizes CSS place-items: center for precise cell alignment.
-    */
+    /* Overlay Labels Layer */
     .cell-label {
       z-index: 2;
       display: grid;
-      place-items: center; /* Ensures exact horizontal and vertical centering */
+      place-items: center;
       width: 100%;
       height: 100%;
       font-weight: 800;
-      font-size: clamp(0.75rem, 1.5vh, 1.15rem);
-      line-height: 1;
+      font-size: 20px;
       color: #000000;
-      pointer-events: none; /* Allows mouse clicks/hover to hit Tableau viz below */
+      pointer-events: none; /* Clicks pass through to Tableau */
       user-select: none;
     }
 
     /* Grid Mapping for Bold HTML Overlay Labels */
-    /* Row 4 Header Labels */
     .lbl-E4 { grid-column: 1; grid-row: 1; }
     .lbl-F4 { grid-column: 2; grid-row: 1; }
     .lbl-G4 { grid-column: 3; grid-row: 1; }
@@ -155,7 +133,6 @@
     .lbl-N4 { grid-column: 10; grid-row: 1; }
     .lbl-O4 { grid-column: 11; grid-row: 1; }
 
-    /* Column J Age Labels (Rows 5 to 10) */
     .lbl-J5 { grid-column: 6; grid-row: 2; }
     .lbl-J6 { grid-column: 6; grid-row: 3; }
     .lbl-J7 { grid-column: 6; grid-row: 4; }
@@ -163,18 +140,14 @@
     .lbl-J9 { grid-column: 6; grid-row: 6; }
     .lbl-J10 { grid-column: 6; grid-row: 7; }
 
-    /* Row 11 Average Label */
-    .lbl-J11 { grid-column: 6; grid-row: 8; font-size: clamp(0.65rem, 1.2vh, 0.95rem); font-weight: 900; }
-
+    .lbl-J11 { grid-column: 6; grid-row: 8; font-size: 18px; font-weight: 900; }
   </style>
 </head>
 <body>
 
-<!-- Scalable 12:10 Content Box -->
-<div class="content-container">
-
-  <!-- Gray Sentence Area (2/10 Height) -->
-  <div class="sentence-builder-container">
+<div id="scaler">
+  <!-- Sentence Builder (200px) -->
+  <div class="sentence-container">
     <div class="sentence-builder">
       On 
       <select id="dateSelect">
@@ -207,15 +180,13 @@
     </div>
   </div>
 
-  <!-- Heatmap & Overlay Grid Area (8/10 Height) -->
+  <!-- Heatmap & Overlay Grid (800px) -->
   <div class="heatmap-grid">
-    
-    <!-- Embedded Tableau Layer -->
     <div class="tableau-wrapper">
       <div id="tableauViz"></div>
     </div>
 
-    <!-- Bold Header Labels Layer (Row 4) -->
+    <!-- Headers (Row 4) -->
     <div class="cell-label lbl-E4">O</div>
     <div class="cell-label lbl-F4">W</div>
     <div class="cell-label lbl-G4">H</div>
@@ -228,7 +199,7 @@
     <div class="cell-label lbl-N4">W</div>
     <div class="cell-label lbl-O4">O</div>
 
-    <!-- Bold Column J Labels (Rows 5-10) -->
+    <!-- Age Groups (Rows 5-10) -->
     <div class="cell-label lbl-J5">18-24</div>
     <div class="cell-label lbl-J6">25-34</div>
     <div class="cell-label lbl-J7">35-44</div>
@@ -236,36 +207,52 @@
     <div class="cell-label lbl-J9">55-64</div>
     <div class="cell-label lbl-J10">65+</div>
 
-    <!-- Bold Bottom Label (Row 11) -->
+    <!-- Bottom Average (Row 11) -->
     <div class="cell-label lbl-J11">AVERAGE</div>
-
   </div>
 </div>
 
 <script>
-  let viz, workbook;
+  // Auto-scaler: Scales the 1200x1000 block uniformly to fit below the browser bar
+  function scaleToFit() {
+    const scaler = document.getElementById('scaler');
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
 
+    // Calculate scale factor for height and width
+    const scaleX = windowWidth / 1200;
+    const scaleY = windowHeight / 1000;
+    
+    // Choose smaller factor to ensure full fit without scrolling
+    const scale = Math.min(scaleX, scaleY) * 0.96; // 0.96 provides 2% safety margin
+
+    scaler.style.transform = `scale(${scale})`;
+  }
+
+  window.addEventListener('resize', scaleToFit);
+  window.addEventListener('DOMContentLoaded', scaleToFit);
+
+  // Tableau JS API Setup
+  let viz, workbook;
   const vizUrl = "https://public.tableau.com/views/demo_17890907558550/Dashboard4?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link&:embed=y&:render=true"; 
-  
+
   function initViz() {
     const containerDiv = document.getElementById("tableauViz");
     const options = {
       hideTabs: true,
       hideToolbar: true,
-      width: "100%",
-      height: "100%",
+      width: "1200px",
+      height: "800px",
       onFirstInteractive: function () {
         workbook = viz.getWorkbook();
         viz.addEventListener(tableau.TableauEventName.MARKS_SELECTION, onMarkSelection);
       }
     };
-
     viz = new tableau.Viz(containerDiv, vizUrl, options);
   }
 
   function updateTableauParameters() {
     if (!workbook) return;
-
     const age = document.getElementById("ageSelect").value;
     const race = document.getElementById("raceSelect").value;
     const sex = document.getElementById("sexSelect").value;

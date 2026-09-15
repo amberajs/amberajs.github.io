@@ -84,7 +84,7 @@
         A/An 
         
         <select class="inline-select" onchange="updateParam('Select Reference Age', this.value)">
-            <option value="18-24" selected="">18-24</option>
+            <option value="18-24" selected>18-24</option>
             <option value="25-34">25-34</option>
             <option value="35-44">35-44</option>
             <option value="45-54">45-54</option>
@@ -97,14 +97,14 @@
         <select class="inline-select" onchange="updateParam('Select Reference Race', this.value)">
             <option value="BLACK">black</option>
             <option value="HISPANIC">hispanic</option>
-            <option value="WHITE" selected="">white</option>
+            <option value="WHITE" selected>white</option>
             <option value="OTHER">multiracial/other</option>
             <option value="ALL">no selection</option>
         </select> 
 
         <select class="inline-select" onchange="updateParam('Select Reference Sex', this.value)">
             <option value="ALL">person</option>
-            <option value="M" selected="">man</option>
+            <option value="M" selected>man</option>
             <option value="F">woman</option>
         </select> 
         was <span id="rriDisplay" class="rri-badge">(click a cell)</span> times as likely to be incarcerated at FCDC than <span id="targetDemographic">the selected cell</span>.
@@ -116,30 +116,28 @@
     </div>
 </div>
 
-<!-- Official Tableau JS API Library -->
+<!-- Official Tableau JavaScript API -->
 <script type="text/javascript" src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
 
 <script>
     var viz, workbook;
 
     function initViz() {
-        var containerDiv = document.getElementById("vizContainer");
-
-        var url = "https://public.tableau.com/views/demo_17890907558550/Dashboard4?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link";
-        
-        var options = {
-            hideTabs: true,
-            hideToolbar: true,
-            width: "100%",
-            height: "100%",
-            "Select Reference Age": "18-24",
-            "Select Reference Race": "WHITE",
-            "Select Reference Sex": "M",
-            onFirstInteractive: function () {
-                workbook = viz.getWorkbook();
-                viz.addEventListener(tableau.TableauEventName.MARKS_SELECTION, onMarkSelection);
-            }
-        };
+        var containerDiv = document.getElementById("vizContainer"),
+            url = "https://public.tableau.com/views/demo_17890907558550/Dashboard4",
+            options = {
+                hideTabs: true,
+                hideToolbar: true,
+                width: "100%",
+                height: "100%",
+                "Select Reference Age": "18-24",
+                "Select Reference Race": "WHITE",
+                "Select Reference Sex": "M",
+                onFirstInteractive: function () {
+                    workbook = viz.getWorkbook();
+                    viz.addEventListener(tableau.TableauEventName.MARKS_SELECTION, onMarkSelection);
+                }
+            };
 
         viz = new tableau.Viz(containerDiv, url, options);
     }
@@ -169,20 +167,22 @@
             var raceStr = "", sexStr = "", ageStr = "";
 
             for (var i = 0; i < pairs.length; i++) {
-                var name = pairs[i].fieldName.toUpperCase();
-                if (name.includes("RRI") || name.includes("INDEX")) {
-                    rriVal = pairs[i].formattedValue;
+                var fieldName = pairs[i].fieldName.toUpperCase();
+                var formattedVal = pairs[i].formattedValue;
+
+                if (fieldName.includes("RRI") || fieldName.includes("INDEX")) {
+                    rriVal = formattedVal;
                 }
-                if (name.includes("RACE")) raceStr = pairs[i].formattedValue;
-                if (name.includes("SEX")) sexStr = pairs[i].formattedValue;
-                if (name.includes("AGE")) ageStr = pairs[i].formattedValue;
+                if (fieldName.includes("RACE")) raceStr = formattedVal;
+                if (fieldName.includes("SEX")) sexStr = formattedVal;
+                if (fieldName.includes("AGE")) ageStr = formattedVal;
             }
 
             if (rriVal) {
                 document.getElementById("rriDisplay").innerText = rriVal + "x";
-                if (raceStr || ageStr || sexStr) {
-                    document.getElementById("targetDemographic").innerText = (ageStr + " " + raceStr + " " + sexStr).trim();
-                }
+            }
+            if (raceStr || ageStr || sexStr) {
+                document.getElementById("targetDemographic").innerText = (ageStr + " " + raceStr + " " + sexStr).trim().toLowerCase();
             }
         });
     }

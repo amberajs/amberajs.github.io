@@ -102,21 +102,21 @@
             pointer-events: none;
             z-index: 10;
             font-family: "Courier New", Courier, monospace, monospace;
-            color: #ffffff;            /* Changed text color to crisp white */
+            color: #ffffff;
             font-weight: 800;
-            font-size: clamp(0.85rem, 1.4vh, 1.2rem); /* Increased font size */
+            font-size: clamp(0.85rem, 1.4vh, 1.2rem);
         
-            /* Align grid padding precisely to match Tableau inner padding */
+            /* 11 equal columns, 8 equal rows */
             display: grid;
-            grid-template-columns: repeat(5, 1fr) 2fr repeat(5, 1fr);
+            grid-template-columns: repeat(11, 1fr);
             grid-template-rows: repeat(8, 1fr);
-            gap: 0;                    /* Removed gap so labels line up exact to cells */
-            padding: 0;                /* Removed padding to fit edge-to-edge with the canvas */
+            gap: 0;
+            padding: 0;
             box-sizing: border-box;
         }
         
         .label-item {
-            background: transparent;   /* Removed background shade color completely */
+            background: transparent;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -125,23 +125,26 @@
             overflow: hidden;
             text-overflow: ellipsis;
             padding: 0 2px;
-            text-shadow: 0px 0px 4px #000000, 0px 0px 8px #000000; /* Subtle shadow to keep text readable against dark/light cells */
+            text-shadow: 0px 0px 4px #000000, 0px 0px 8px #000000;
         }
+        
         /* T-Shape Position Definitions */
+        /* Top Horizontal Row: Row 1 across columns 1 through 11 */
         .col-1 { grid-column: 1; grid-row: 1; }
         .col-2 { grid-column: 2; grid-row: 1; }
         .col-3 { grid-column: 3; grid-row: 1; }
         .col-4 { grid-column: 4; grid-row: 1; }
         .col-5 { grid-column: 5; grid-row: 1; }
         
-        .intersect-avg { grid-column: 6; grid-row: 1; }
-
+        .intersect-avg { grid-column: 6; grid-row: 1; } /* Center column (6 of 11) */
+        
         .col-7 { grid-column: 7; grid-row: 1; }
         .col-8 { grid-column: 8; grid-row: 1; }
         .col-9 { grid-column: 9; grid-row: 1; }
         .col-10 { grid-column: 10; grid-row: 1; }
         .col-11 { grid-column: 11; grid-row: 1; }
-
+        
+        /* Center Vertical Column: Column 6 (Rows 2 through 8) */
         .age-18-24 { grid-column: 6; grid-row: 2; }
         .age-25-34 { grid-column: 6; grid-row: 3; }
         .age-35-44 { grid-column: 6; grid-row: 4; }

@@ -31,44 +31,47 @@
       overflow: hidden;
     }
 
-    /* Hero Canvas: Enforces strict 3:2 Aspect Ratio matching grid B2:R11 */
+    /* Hero Canvas: Exactly 1500x1000 (3:2 Aspect Ratio) */
     .hero-container {
-      width: 100vw;
-      max-width: 3000px;
-      aspect-ratio: 3 / 2;
-      background-color: #000000; /* Black area (B2-D11 & P2-R11) */
+      width: 1500px;
+      height: 1000px;
+      background-color: #000000; /* Black side borders (150px left, 150px right) */
       display: grid;
-      grid-template-columns: 2fr 13fr 2fr;
-      grid-template-rows: 2.5fr 7.5fr;
-      padding: 8px;
+      /* Columns: 150px (Left Black) | 1200px (Center) | 150px (Right Black) */
+      grid-template-columns: 150px 1200px 150px;
+      /* Rows: 200px (Sentence Area: R2-R3) | 800px (Heatmap Area: R4-R11) */
+      grid-template-rows: 200px 800px;
+      /* Automatically scale to fit user screen while preserving 1500x1000 proportion */
+      max-width: 100vw;
+      max-height: 100vh;
+      aspect-ratio: 3 / 2;
     }
 
-    /* Gray Area (Sentence Builder) covering Rows 2-3 across Columns E-O equivalent */
+    /* Gray Area (Sentence Builder) covering Rows 2-3 across Columns E-O (1200x200) */
     .sentence-builder-container {
       grid-column: 2;
       grid-row: 1;
-      background-color: #808080; /* Gray area */
+      background-color: #808080;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 8px 16px;
-      border-radius: 4px;
-      margin-bottom: 4px;
+      padding: 20px;
+      border-radius: 4px 4px 0 0;
     }
 
     .sentence-builder {
-      font-size: 1.05rem;
-      line-height: 1.4;
-      color: #000;
+      font-size: 1.4rem;
+      line-height: 1.6;
+      color: #000000;
       text-align: center;
       font-weight: 500;
     }
 
     .sentence-builder select {
-      font-size: 0.95rem;
+      font-size: 1.2rem;
       font-weight: 700;
-      padding: 2px 6px;
-      border: 1px solid #333;
+      padding: 4px 8px;
+      border: 1px solid #333333;
       border-radius: 4px;
       background-color: #ffffff;
       color: #0056b3;
@@ -88,20 +91,22 @@
       border-bottom: 1px solid #1d4ed8;
     }
 
-    /* Heatmap Overlay Area (Rows 4-11, Columns E-O) */
+    /* Heatmap Overlay Area (1200x800) */
     .heatmap-grid {
       grid-column: 2;
       grid-row: 2;
+      width: 1200px;
+      height: 800px;
       display: grid;
       /* Exactly 11 columns matching Tableau heatmap structure */
       grid-template-columns: repeat(11, 1fr);
-      /* Row 4 (headers) + 7 rows for data (Rows 5-11) */
-      grid-template-rows: 35px repeat(7, 1fr);
+      /* 8 Rows matching R4 through R11 */
+      grid-template-rows: repeat(8, 1fr);
       position: relative;
       background-color: #ffffff;
     }
 
-    /* Tableau Visualization exact placement underneath HTML overlay labels */
+    /* Tableau Visualization exact placement (1200x800) */
     .tableau-wrapper {
       grid-column: 1 / span 11;
       grid-row: 1 / span 8;
@@ -111,8 +116,8 @@
     }
 
     #tableauViz {
-      width: 100%;
-      height: 100%;
+      width: 1200px;
+      height: 800px;
     }
 
     /* HTML Overlay Cell Styling */
@@ -122,24 +127,13 @@
       align-items: center;
       justify-content: center;
       font-weight: 800;
-      font-size: 0.9rem;
+      font-size: 1.1rem;
       color: #000000;
       pointer-events: none; /* Allows clicks to pass through to Tableau viz */
       user-select: none;
     }
 
-    .header-label {
-      background-color: rgba(255, 255, 255, 0.85);
-      border-bottom: 1px solid #ccc;
-      font-size: 0.85rem;
-    }
-
-    .row-label {
-      background-color: rgba(255, 255, 255, 0.85);
-      font-size: 0.85rem;
-    }
-
-    /* Specific Grid Alignments for HTML-rendered labels */
+    /* Grid Alignments for HTML-rendered labels */
     /* Row 4 Header Labels */
     .lbl-E4 { grid-column: 1; grid-row: 1; }
     .lbl-F4 { grid-column: 2; grid-row: 1; }
@@ -154,15 +148,15 @@
     .lbl-O4 { grid-column: 11; grid-row: 1; }
 
     /* Column J Age Labels (Rows 5 to 10) */
-    .lbl-J5 { grid-column: 6; grid-row: 3; }
-    .lbl-J6 { grid-column: 6; grid-row: 4; }
-    .lbl-J7 { grid-column: 6; grid-row: 5; }
-    .lbl-J8 { grid-column: 6; grid-row: 6; }
-    .lbl-J9 { grid-column: 6; grid-row: 7; }
-    .lbl-J10 { grid-column: 6; grid-row: 8; }
+    .lbl-J5 { grid-column: 6; grid-row: 2; }
+    .lbl-J6 { grid-column: 6; grid-row: 3; }
+    .lbl-J7 { grid-column: 6; grid-row: 4; }
+    .lbl-J8 { grid-column: 6; grid-row: 5; }
+    .lbl-J9 { grid-column: 6; grid-row: 6; }
+    .lbl-J10 { grid-column: 6; grid-row: 7; }
 
     /* Row 11 Average Label */
-    .lbl-J11 { grid-column: 6; grid-row: 9; font-size: 0.8rem; font-weight: 900; }
+    .lbl-J11 { grid-column: 6; grid-row: 8; font-size: 1.0rem; font-weight: 900; }
 
   </style>
 </head>
@@ -170,14 +164,14 @@
 
 <div class="hero-container">
 
-  <!-- Gray Sentence Area (Cells E2-O3 equivalent) -->
+  <!-- Gray Sentence Area (Cells E2-O3 | 1200x200) -->
   <div class="sentence-builder-container">
     <div class="sentence-builder">
       On 
       <select id="dateSelect">
         <option value="2026-09-03" selected>September 3, 2026</option>
       </select> 
-      in Fayette County, Kentucky: 
+      in Fayette County, Kentucky:<br/>
       A/An 
       <select id="ageSelect">
         <option value="18-24">18–24</option>
@@ -204,7 +198,7 @@
     </div>
   </div>
 
-  <!-- Heatmap & Overlay Grid (Cells E4-O11) -->
+  <!-- Heatmap & Overlay Grid (Cells E4-O11 | 1200x800) -->
   <div class="heatmap-grid">
     
     <!-- Tableau Embed Layer -->
@@ -213,28 +207,28 @@
     </div>
 
     <!-- Bold Header Labels Layer (Row 4) -->
-    <div class="cell-label header-label lbl-E4">O</div>
-    <div class="cell-label header-label lbl-F4">W</div>
-    <div class="cell-label header-label lbl-G4">H</div>
-    <div class="cell-label header-label lbl-H4">B</div>
-    <div class="cell-label header-label lbl-I4">F</div>
-    <div class="cell-label header-label lbl-J4">AVG</div>
-    <div class="cell-label header-label lbl-K4">M</div>
-    <div class="cell-label header-label lbl-L4">B</div>
-    <div class="cell-label header-label lbl-M4">H</div>
-    <div class="cell-label header-label lbl-N4">W</div>
-    <div class="cell-label header-label lbl-O4">O</div>
+    <div class="cell-label lbl-E4">O</div>
+    <div class="cell-label lbl-F4">W</div>
+    <div class="cell-label lbl-G4">H</div>
+    <div class="cell-label lbl-H4">B</div>
+    <div class="cell-label lbl-I4">F</div>
+    <div class="cell-label lbl-J4">AVG</div>
+    <div class="cell-label lbl-K4">M</div>
+    <div class="cell-label lbl-L4">B</div>
+    <div class="cell-label lbl-M4">H</div>
+    <div class="cell-label lbl-N4">W</div>
+    <div class="cell-label lbl-O4">O</div>
 
     <!-- Bold Column J Labels (Rows 5-10) -->
-    <div class="cell-label row-label lbl-J5">18-24</div>
-    <div class="cell-label row-label lbl-J6">25-34</div>
-    <div class="cell-label row-label lbl-J7">35-44</div>
-    <div class="cell-label row-label lbl-J8">45-54</div>
-    <div class="cell-label row-label lbl-J9">55-64</div>
-    <div class="cell-label row-label lbl-J10">65+</div>
+    <div class="cell-label lbl-J5">18-24</div>
+    <div class="cell-label lbl-J6">25-34</div>
+    <div class="cell-label lbl-J7">35-44</div>
+    <div class="cell-label lbl-J8">45-54</div>
+    <div class="cell-label lbl-J9">55-64</div>
+    <div class="cell-label lbl-J10">65+</div>
 
     <!-- Bold Bottom Label (Row 11) -->
-    <div class="cell-label row-label lbl-J11">AVERAGE</div>
+    <div class="cell-label lbl-J11">AVERAGE</div>
 
   </div>
 </div>
@@ -249,6 +243,8 @@
     const options = {
       hideTabs: true,
       hideToolbar: true,
+      width: "1200px",
+      height: "800px",
       device: "desktop",
       onFirstInteractive: function () {
         workbook = viz.getWorkbook();

@@ -58,7 +58,7 @@
             border-radius: 8px;
             padding: 20px 24px;
             text-align: center;
-            font-size: clamp(1.2rem, 2.6vh, 1.8rem);
+            font-size: clamp(1.1rem, 2.4vh, 1.7rem);
             line-height: 1.6;
             color: #ffffff;
             margin-bottom: 12px;
@@ -200,9 +200,9 @@
 
     <div class="sentence-card">
         On <strong>September 8th, 2026</strong> in Fayette County, Kentucky:<br />
-        A/An 
+        <span id="subjectPrefix">An</span> 
         
-        <select class="inline-select" onchange="updateParam('Select Reference Age', this.value)">
+        <select id="selectAge" class="inline-select" onchange="handleDropdownChange('Select Reference Age', this.value)">
             <option value="18-24" selected>18-24</option>
             <option value="25-34">25-34</option>
             <option value="35-44">35-44</option>
@@ -211,9 +211,9 @@
             <option value="65+">65+</option>
             <option value="ALL">no selection</option>
         </select> 
-        year old 
+        <span id="ageSuffix">year old</span>
 
-        <select class="inline-select" onchange="updateParam('Select Reference Race', this.value)">
+        <select id="selectRace" class="inline-select" onchange="handleDropdownChange('Select Reference Race', this.value)">
             <option value="BLACK">black</option>
             <option value="HISPANIC">hispanic</option>
             <option value="WHITE" selected>white</option>
@@ -221,7 +221,7 @@
             <option value="ALL">no selection</option>
         </select> 
 
-        <select class="inline-select" onchange="updateParam('Select Reference Sex', this.value)">
+        <select id="selectSex" class="inline-select" onchange="handleDropdownChange('Select Reference Sex', this.value)">
             <option value="ALL">person</option>
             <option value="M" selected>man</option>
             <option value="F">woman</option>
@@ -262,6 +262,7 @@
 
 <script>
     var viz, workbook;
+    var lastSelectedCell = { col: 6, row: 1 }; // Store active cell selection
 
     function initViz() {
         var containerDiv = document.getElementById("vizContainer"),
@@ -283,18 +284,42 @@
                 onFirstInteractive: function () {
                     workbook = viz.getWorkbook();
                     viz.addEventListener(tableau.TableauEventName.MARKS_SELECTION, onMarkSelection);
+                    updateDropdownSubjectPrefix();
                 }
             };
 
         viz = new tableau.Viz(containerDiv, url, options);
     }
 
-    function updateParam(paramName, value) {
+    function handleDropdownChange(paramName, value) {
         if (workbook) {
             workbook.changeParameterValueAsync(paramName, value)
+                .then(function() {
+                    updateDropdownSubjectPrefix();
+                })
                 .catch(function(err) {
                     console.error("Error updating parameter: ", err);
                 });
+        } else {
+            updateDropdownSubjectPrefix();
+        }
+    }
+
+    function updateDropdownSubjectPrefix() {
+        var ageVal = document.getElementById("selectAge").value;
+        var prefixEl = document.getElementById("subjectPrefix");
+        var ageSuffixEl = document.getElementById("ageSuffix");
+
+        if (ageVal === "ALL") {
+            prefixEl.innerText = "A";
+            ageSuffixEl.style.display = "none";
+        } else {
+            ageSuffixEl.style.display = "inline";
+            if (ageVal === "18-24") {
+                prefixEl.innerText = "An";
+            } else {
+                prefixEl.innerText = "A";
+            }
         }
     }
 
@@ -305,7 +330,6 @@
         var num = parseFloat(numericValueStr.toString().replace(/[^0-9.]/g, ''));
         if (isNaN(num)) return;
 
-        // Apply conditional sentence structure and coloring based on n relative to 1
         if (num > 1.0) {
             var valStr = num.toFixed(1) + "x";
             phraseEl.innerHTML = 'was <span id="rriDisplay" class="rri-badge red">' + valStr + '</span> more likely<br />to be';
@@ -318,54 +342,57 @@
         }
     }
 
-    function formatDemographicString(age, race, sex, colIdx, rowIdx) {
-        if ((colIdx === 6 && rowIdx === 1) || 
-            (colIdx === 6 && rowIdx === 8) || 
-            (colIdx === 5 && rowIdx === 8) || 
-            (colIdx === 7 && rowIdx === 8)) {
+    function buildCellDemographicPhrase(col, row) {
+        // Special override cases: (6, 1) and (5-7, 8) strictly mean person
+        if ((col === 6 && row === 1) || (row === 8 && col >= 5 && col <= 7)) {
             return "the average person";
         }
 
-        var ageVal = (age || "").toString().trim();
-        var raceVal = (race || "").toString().trim().toLowerCase();
-        var sexVal = (sex || "").toString().trim().toLowerCase();
-
-        var isAvgText = (!ageVal && !raceVal && !sexVal) || 
-                         ageVal.toLowerCase().includes("avg") || 
-                         raceVal.includes("avg") || 
-                         sexVal.includes("avg") ||
-                         ageVal.toLowerCase().includes("average") || 
-                         raceVal.includes("average");
-
-        if (isAvgText) {
-            return "the average person";
+        // 1. Determine Gender/Person Noun
+        var sexNoun = "";
+        if (col >= 1 && col <= 5 && row >= 1 && row <= 7) {
+            sexNoun = "woman";
+        } else if (col >= 7 && col <= 11 && row >= 1 && row <= 7) {
+            sexNoun = "man";
+        } else if ((row === 8 && (col < 5 || col > 7)) || (col === 6 && row >= 1 && row <= 7)) {
+            sexNoun = "person";
         }
 
-        var sexNoun = "person";
-        if (sexVal === "m" || sexVal === "male" || sexVal === "man") sexNoun = "man";
-        else if (sexVal === "f" || sexVal === "female" || sexVal === "woman") sexNoun = "woman";
-
+        // 2. Determine Race Noun
         var raceNoun = "";
-        if (raceVal.includes("black")) raceNoun = "black";
-        else if (raceVal.includes("white")) raceNoun = "white";
-        else if (raceVal.includes("hispanic")) raceNoun = "hispanic";
-        else if (raceVal.includes("other") || raceVal.includes("multi")) raceNoun = "multiracial";
+        if (col === 1 || col === 11) raceNoun = "multiracial";
+        else if (col === 2 || col === 10) raceNoun = "white";
+        else if (col === 3 || col === 9) raceNoun = "hispanic";
+        else if (col === 4 || col === 8) raceNoun = "black";
 
+        // 3. Determine Age Range (only for row 2 to 7)
         var ageNoun = "";
-        if (ageVal && !ageVal.toLowerCase().includes("all") && !ageVal.toLowerCase().includes("none")) {
-            ageNoun = ageVal + " year old";
+        if (row >= 2 && row <= 7) {
+            var ageMap = {
+                2: "18-24",
+                3: "25-34",
+                4: "35-44",
+                5: "45-54",
+                6: "55-64",
+                7: "65+"
+            };
+            if (ageMap[row]) {
+                ageNoun = ageMap[row] + " year old";
+            }
         }
 
-        var firstWord = ageNoun || raceNoun || sexNoun;
-        var startsWithVowel = /^[aeiou]/i.test(firstWord);
-        var article = startsWithVowel ? "an" : "a";
-
+        // 4. Construct Sentence Phrase & Article
         var parts = [];
         if (ageNoun) parts.push(ageNoun);
         if (raceNoun) parts.push(raceNoun);
-        parts.push(sexNoun);
+        if (sexNoun) parts.push(sexNoun);
 
-        return article + " " + parts.join(" ");
+        if (!ageNoun) {
+            return "the average " + parts.join(" ");
+        } else {
+            var article = (row === 2) ? "an" : "a"; // Row 2 is 18-24 ("an")
+            return article + " " + parts.join(" ");
+        }
     }
 
     function onMarkSelection(marksEvent) {
@@ -376,7 +403,6 @@
 
             var pairs = marks[0].getPairs();
             var rriVal = null;
-            var raceStr = "", sexStr = "", ageStr = "";
             var colIdx = null, rowIdx = null;
 
             for (var i = 0; i < pairs.length; i++) {
@@ -386,19 +412,23 @@
                 if (fieldName.includes("RRI") || fieldName.includes("INDEX")) {
                     rriVal = formattedVal;
                 }
-                if (fieldName.includes("RACE")) raceStr = formattedVal;
-                if (fieldName.includes("SEX")) sexStr = formattedVal;
-                if (fieldName.includes("AGE")) ageStr = formattedVal;
-                if (fieldName.includes("COLUMN") || fieldName.includes("X")) colIdx = parseInt(formattedVal, 10);
-                if (fieldName.includes("ROW") || fieldName.includes("Y")) rowIdx = parseInt(formattedVal, 10);
+                if (fieldName.includes("COLUMN") || fieldName === "X" || fieldName.includes("COL")) {
+                    colIdx = parseInt(formattedVal, 10);
+                }
+                if (fieldName.includes("ROW") || fieldName === "Y") {
+                    rowIdx = parseInt(formattedVal, 10);
+                }
             }
 
             if (rriVal) {
                 updateDisparityPhrase(rriVal);
             }
             
-            var formattedDemo = formatDemographicString(ageStr, raceStr, sexStr, colIdx, rowIdx);
-            document.getElementById("targetDemographic").innerText = formattedDemo;
+            if (colIdx !== null && rowIdx !== null) {
+                lastSelectedCell = { col: colIdx, row: rowIdx };
+                var formattedDemo = buildCellDemographicPhrase(colIdx, rowIdx);
+                document.getElementById("targetDemographic").innerText = formattedDemo;
+            }
 
             ws.clearSelectedMarksAsync();
         });

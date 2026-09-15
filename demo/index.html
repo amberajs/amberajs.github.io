@@ -304,42 +304,40 @@
         return article + " " + parts.join(" ");
     }
 
-    function onMarkSelection(marksEvent) {
-        return marksEvent.getMarksAsync().then(function (marks) {
-            if (marks.length === 0) {
-                document.getElementById("rriDisplay").innerText = "(click a cell)";
-                document.getElementById("targetDemographic").innerText = "the average person";
-                return;
+  function onMarkSelection(marksEvent) {
+    return marksEvent.getMarksAsync().then(function (marks) {
+        if (marks.length === 0) {
+            document.getElementById("rriDisplay").innerText = "(click a cell)";
+            document.getElementById("targetDemographic").innerText = "the average person";
+            return;
+        }
+
+        var pairs = marks[0].getPairs();
+        var rriVal = null;
+        var raceStr = "", sexStr = "", ageStr = "";
+
+        for (var i = 0; i < pairs.length; i++) {
+            var fieldName = pairs[i].fieldName.toUpperCase();
+            var formattedVal = pairs[i].formattedValue;
+
+            if (fieldName.includes("RRI") || fieldName.includes("INDEX")) {
+                rriVal = formattedVal;
             }
+            if (fieldName.includes("RACE")) raceStr = formattedVal;
+            if (fieldName.includes("SEX")) sexStr = formattedVal;
+            if (fieldName.includes("AGE")) ageStr = formattedVal;
+        }
 
-            var pairs = marks[0].getPairs();
-            var rriVal = null;
-            var raceStr = "", sexStr = "", ageStr = "";
+        if (rriVal) {
+            document.getElementById("rriDisplay").innerText = rriVal + "x";
+        }
+        
+        var formattedDemo = formatDemographicString(ageStr, raceStr, sexStr);
+        document.getElementById("targetDemographic").innerText = formattedDemo;
 
-            for (var i = 0; i < pairs.length; i++) {
-                var fieldName = pairs[i].fieldName.toUpperCase();
-                var formattedVal = pairs[i].formattedValue;
-
-                if (fieldName.includes("RRI") || fieldName.includes("INDEX")) {
-                    rriVal = formattedVal;
-                }
-                if (fieldName.includes("RACE")) raceStr = formattedVal;
-                if (fieldName.includes("SEX")) sexStr = formattedVal;
-                if (fieldName.includes("AGE")) ageStr = formattedVal;
-            }
-
-            if (rriVal) {
-                document.getElementById("rriDisplay").innerText = rriVal + "x";
-            }
-            
-            var formattedDemo = formatDemographicString(ageStr, raceStr, sexStr);
-            document.getElementById("targetDemographic").innerText = formattedDemo;
-
-            if (viz && viz.getWorkbook()) {
-                viz.getWorkbook().getActiveSheet().clearSelectedMarksAsync();
-            }
-        });
-    }
+        marksEvent.getWorksheet().clearSelectedMarksAsync();
+    });
+}
 
     window.onload = initViz;
 </script>

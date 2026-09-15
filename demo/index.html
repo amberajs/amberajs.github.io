@@ -1,312 +1,183 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Fayette County Incarceration Disparity Explorer</title>
-  
-  <!-- Tableau JS API -->
-  <script type="text/javascript" src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fayette County Disparity Hero Dashboard</title>
+    <style>
+      
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+        .hero-layout {
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            height: 100vh;
+            padding: 15px 20px;
+            box-sizing: border-box;
+        }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #000000;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden; /* Prevents scrollbars entirely */
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+        .sentence-card {
+            flex: 0 0 auto;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 14px 20px;
+            text-align: center;
+            font-size: max(1.1rem, 2.2vh);
+            line-height: 1.5;
+            color: #cbd5e1;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
 
-    /* 
-      1200x1000 Fixed Frame (12:10 Ratio: 200px Top Sentence + 800px Heatmap)
-      Scaled dynamically via JS to fit any desktop screen height perfectly.
-    */
-    #scaler {
-      width: 1200px;
-      height: 1000px;
-      transform-origin: center center;
-      display: flex;
-      flex-direction: column;
-    }
+        .inline-select {
+            font-size: inherit;
+            font-weight: 700;
+            color: #38bdf8;
+            background: #0f172a;
+            border: 1px dashed #38bdf8;
+            border-radius: 4px;
+            padding: 2px 6px;
+            cursor: pointer;
+            outline: none;
+        }
 
-    /* Sentence Area: 1200x200 */
-    .sentence-container {
-      width: 1200px;
-      height: 200px;
-      background-color: #808080;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
+        .rri-badge {
+            font-weight: 800;
+            color: #f43f5e;
+            border-bottom: 2px solid #f43f5e;
+            padding: 0 4px;
+        }
 
-    .sentence-builder {
-      font-size: 24px;
-      line-height: 1.5;
-      color: #000000;
-      text-align: center;
-      font-weight: 600;
-    }
+        .tableau-wrapper {
+            flex: 1 1 auto;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            background: #1e293b;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #334155;
+        }
 
-    .sentence-builder select {
-      font-size: 22px;
-      font-weight: 700;
-      padding: 4px 8px;
-      border: 1px solid #333333;
-      border-radius: 4px;
-      background-color: #ffffff;
-      color: #0056b3;
-      cursor: pointer;
-    }
-
-    .dynamic-val {
-      font-weight: 700;
-      color: #b91c1c;
-      border-bottom: 2px dashed #b91c1c;
-      padding: 0 4px;
-    }
-
-    .dynamic-target {
-      font-weight: 700;
-      color: #1d4ed8;
-      border-bottom: 1px solid #1d4ed8;
-    }
-
-    /* Heatmap Grid Area: 1200x800 */
-    .heatmap-grid {
-      width: 1200px;
-      height: 800px;
-      display: grid;
-      grid-template-columns: repeat(11, 1fr);
-      grid-template-rows: repeat(8, 1fr);
-      position: relative;
-      background-color: #ffffff;
-    }
-
-    /* Tableau Layer (1200x800) */
-    .tableau-wrapper {
-      grid-column: 1 / span 11;
-      grid-row: 1 / span 8;
-      width: 1200px;
-      height: 800px;
-      z-index: 1;
-    }
-
-    #tableauViz {
-      width: 1200px !important;
-      height: 800px !important;
-    }
-
-    /* Overlay Labels Layer */
-    .cell-label {
-      z-index: 2;
-      display: grid;
-      place-items: center;
-      width: 100%;
-      height: 100%;
-      font-weight: 800;
-      font-size: 20px;
-      color: #000000;
-      pointer-events: none; /* Clicks pass through to Tableau */
-      user-select: none;
-    }
-
-    /* Grid Mapping for Bold HTML Overlay Labels */
-    .lbl-E4 { grid-column: 1; grid-row: 1; }
-    .lbl-F4 { grid-column: 2; grid-row: 1; }
-    .lbl-G4 { grid-column: 3; grid-row: 1; }
-    .lbl-H4 { grid-column: 4; grid-row: 1; }
-    .lbl-I4 { grid-column: 5; grid-row: 1; }
-    .lbl-J4 { grid-column: 6; grid-row: 1; font-weight: 900; }
-    .lbl-K4 { grid-column: 7; grid-row: 1; }
-    .lbl-L4 { grid-column: 8; grid-row: 1; }
-    .lbl-M4 { grid-column: 9; grid-row: 1; }
-    .lbl-N4 { grid-column: 10; grid-row: 1; }
-    .lbl-O4 { grid-column: 11; grid-row: 1; }
-
-    .lbl-J5 { grid-column: 6; grid-row: 2; }
-    .lbl-J6 { grid-column: 6; grid-row: 3; }
-    .lbl-J7 { grid-column: 6; grid-row: 4; }
-    .lbl-J8 { grid-column: 6; grid-row: 5; }
-    .lbl-J9 { grid-column: 6; grid-row: 6; }
-    .lbl-J10 { grid-column: 6; grid-row: 7; }
-
-    .lbl-J11 { grid-column: 6; grid-row: 8; font-size: 18px; font-weight: 900; }
-  </style>
+        #vizContainer {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
 </head>
 <body>
 
-<div id="scaler">
-  <!-- Sentence Builder (200px) -->
-  <div class="sentence-container">
-    <div class="sentence-builder">
-      On 
-      <select id="dateSelect">
-        <option value="2026-09-03" selected>September 3, 2026</option>
-      </select> 
-      in Fayette County, Kentucky:<br/>
-      A/An 
-      <select id="ageSelect">
-        <option value="18-24">18–24</option>
-        <option value="25-34">25–34</option>
-        <option value="35-44">35–44</option>
-        <option value="45-54">45–54</option>
-        <option value="55-64">55–64</option>
-        <option value="65+">65+</option>
-      </select> 
-      year old 
-      <select id="raceSelect">
-        <option value="Black">Black</option>
-        <option value="Hispanic">Hispanic</option>
-        <option value="White">White</option>
-        <option value="Other">Other</option>
-      </select> 
-      <select id="sexSelect">
-        <option value="Female">Female</option>
-        <option value="Male" selected>Male</option>
-      </select> 
-      was <span id="multiplier" class="dynamic-val">1.0x</span> 
-      more likely to be incarcerated at FCDC than a/an 
-      <span id="targetDemographic" class="dynamic-target">average person</span>.
+<div class="hero-layout">
+    <div class="sentence-card">
+        On <strong>September 8th, 2026</strong> in Fayette County, Kentucky:<br>
+        A/An 
+        <select id="ageSelect" class="inline-select" onchange="updateParam('Select Reference Age', this.value)">
+            <option value="35-44" selected>35-44</option>
+            <option value="18-24">18-24</option>
+            <option value="25-34">25-34</option>
+            <option value="45-54">45-54</option>
+            <option value="55-64">55-64</option>
+            <option value="65+">65+</option>
+        </select> 
+        year old 
+        <select id="raceSelect" class="inline-select" onchange="updateParam('Select Reference Race', this.value)">
+            <option value="WHITE" selected>White</option>
+            <option value="BLACK">Black</option>
+            <option value="HISPANIC">Hispanic</option>
+            <option value="OTHER">Other</option>
+        </select> 
+        <select id="sexSelect" class="inline-select" onchange="updateParam('Select Reference Sex', this.value)">
+            <option value="M" selected>male</option>
+            <option value="F">female</option>
+        </select> 
+        was <span id="rriDisplay" class="rri-badge">(click a cell)</span> times as likely to be incarcerated at FCDC than <span id="targetDemographic" style="color:#38bdf8; font-weight:700;">the selected cell</span>.
     </div>
-  </div>
 
-  <!-- Heatmap & Overlay Grid (800px) -->
-  <div class="heatmap-grid">
+    <!-- Embedded Tableau Heatmap -->
     <div class="tableau-wrapper">
-      <div id="tableauViz"></div>
+        <div id="vizContainer"></div>
     </div>
-
-    <!-- Headers (Row 4) -->
-    <div class="cell-label lbl-E4">O</div>
-    <div class="cell-label lbl-F4">W</div>
-    <div class="cell-label lbl-G4">H</div>
-    <div class="cell-label lbl-H4">B</div>
-    <div class="cell-label lbl-I4">F</div>
-    <div class="cell-label lbl-J4">AVG</div>
-    <div class="cell-label lbl-K4">M</div>
-    <div class="cell-label lbl-L4">B</div>
-    <div class="cell-label lbl-M4">H</div>
-    <div class="cell-label lbl-N4">W</div>
-    <div class="cell-label lbl-O4">O</div>
-
-    <!-- Age Groups (Rows 5-10) -->
-    <div class="cell-label lbl-J5">18-24</div>
-    <div class="cell-label lbl-J6">25-34</div>
-    <div class="cell-label lbl-J7">35-44</div>
-    <div class="cell-label lbl-J8">45-54</div>
-    <div class="cell-label lbl-J9">55-64</div>
-    <div class="cell-label lbl-J10">65+</div>
-
-    <!-- Bottom Average (Row 11) -->
-    <div class="cell-label lbl-J11">AVERAGE</div>
-  </div>
 </div>
 
+<!-- Tableau JS API -->
+<script type="text/javascript" src="https://public.tableau.com/javascripts/api/viz_v1.js"></script>
 <script>
-  // Auto-scaler: Scales the 1200x1000 block uniformly to fit below the browser bar
-  function scaleToFit() {
-    const scaler = document.getElementById('scaler');
-    const windowWidth = window.innerWidth;
-    const windowHeight = window.innerHeight;
+    var viz, workbook;
 
-    // Calculate scale factor for height and width
-    const scaleX = windowWidth / 1200;
-    const scaleY = windowHeight / 1000;
-    
-    // Choose smaller factor to ensure full fit without scrolling
-    const scale = Math.min(scaleX, scaleY) * 0.96; // 0.96 provides 2% safety margin
+    function initViz() {
+        var containerDiv = document.getElementById("vizContainer"),
+            // Replace with your published Tableau Public URL
+            url = "https://public.tableau.com/views/demo_view/Dashboard1",
+            options = {
+                hideTabs: true,
+                hideToolbar: true,
+                width: "100%",
+                height: "100%",
+                onFirstInteractive: function () {
+                    workbook = viz.getWorkbook();
+                    viz.addEventListener(tableau.TableauEventName.MARKS_SELECTION, onMarkSelection);
+                }
+            };
+        
+        viz = new tableau.Viz(containerDiv, url, options);
+    }
 
-    scaler.style.transform = `scale(${scale})`;
-  }
-
-  window.addEventListener('resize', scaleToFit);
-  window.addEventListener('DOMContentLoaded', scaleToFit);
-
-  // Tableau JS API Setup
-  let viz, workbook;
-  const vizUrl = "https://public.tableau.com/views/demo_17890907558550/Dashboard4?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link&:embed=y&:render=true"; 
-
-  function initViz() {
-    const containerDiv = document.getElementById("tableauViz");
-    const options = {
-      hideTabs: true,
-      hideToolbar: true,
-      width: "1200px",
-      height: "800px",
-      onFirstInteractive: function () {
-        workbook = viz.getWorkbook();
-        viz.addEventListener(tableau.TableauEventName.MARKS_SELECTION, onMarkSelection);
-      }
-    };
-    viz = new tableau.Viz(containerDiv, vizUrl, options);
-  }
-
-  function updateTableauParameters() {
-    if (!workbook) return;
-    const age = document.getElementById("ageSelect").value;
-    const race = document.getElementById("raceSelect").value;
-    const sex = document.getElementById("sexSelect").value;
-    const date = document.getElementById("dateSelect").value;
-
-    workbook.changeParameterValueAsync("Param_Age", age);
-    workbook.changeParameterValueAsync("Param_Race", race);
-    workbook.changeParameterValueAsync("Param_Sex", sex);
-    workbook.changeParameterValueAsync("Param_Date", date);
-  }
-
-  function onMarkSelection(marksEvent) {
-    return marksEvent.getMarksAsync().then(function (marks) {
-      if (marks.length === 0) {
-        document.getElementById("multiplier").innerText = "1.0x";
-        document.getElementById("targetDemographic").innerText = "average person";
-        return;
-      }
-
-      const pairs = marks[0].getPairs();
-      let hoveredVal = "1.0x";
-      let hAge = "", hRace = "", hSex = "";
-
-      pairs.forEach(function (pair) {
-        const field = pair.fieldName.toLowerCase();
-        if (field.includes("disparity_ratio") || field.includes("ratio") || field.includes("multiplier")) {
-          hoveredVal = parseFloat(pair.formattedValue).toFixed(1) + "x";
+    // Pass HTML dropdown selections directly into Tableau Parameters
+    function updateParam(paramName, value) {
+        if (workbook) {
+            workbook.changeParameterValueAsync(paramName, value)
+                .then(function() {
+                    console.log(paramName + " updated to: " + value);
+                })
+                .catch(function(err) {
+                    console.error("Error updating parameter: ", err);
+                });
         }
-        if (field.includes("age")) hAge = pair.formattedValue;
-        if (field.includes("race")) hRace = pair.formattedValue;
-        if (field.includes("sex") || field.includes("gender")) hSex = pair.formattedValue;
-      });
+    }
 
-      let hoveredDemo = "";
-      if ((!hAge || hAge === "ALL") && !hRace && !hSex) {
-        hoveredDemo = "average person";
-      } else {
-        const ageStr = (hAge && hAge !== 'ALL') ? `${hAge} year old ` : '';
-        const raceStr = hRace ? `${hRace} ` : '';
-        const sexStr = hSex || 'person';
-        hoveredDemo = `${ageStr}${raceStr}${sexStr}`.trim();
-      }
+    // Extract cell selection RRI and update HTML sentence
+    function onMarkSelection(marksEvent) {
+        return marksEvent.getMarksAsync().then(function (marks) {
+            if (marks.length === 0) {
+                document.getElementById("rriDisplay").innerText = "(click a cell)";
+                return;
+            }
 
-      document.getElementById("multiplier").innerText = hoveredVal;
-      document.getElementById("targetDemographic").innerText = hoveredDemo;
-    });
-  }
+            var pairs = marks.getPairs();
+            var rriVal = null;
+            var raceStr = "", sexStr = "", ageStr = "";
 
-  document.getElementById("ageSelect").addEventListener("change", updateTableauParameters);
-  document.getElementById("raceSelect").addEventListener("change", updateTableauParameters);
-  document.getElementById("sexSelect").addEventListener("change", updateTableauParameters);
-  document.getElementById("dateSelect").addEventListener("change", updateTableauParameters);
+            for (var i = 0; i < pairs.length; i++) {
+                var name = pairs[i].fieldName.toUpperCase();
+                if (name.includes("RRI") || name.includes("INDEX")) {
+                    rriVal = pairs[i].formattedValue;
+                }
+                if (name.includes("RACE")) raceStr = pairs[i].formattedValue;
+                if (name.includes("SEX")) sexStr = pairs[i].formattedValue;
+                if (name.includes("AGE")) ageStr = pairs[i].formattedValue;
+            }
 
-  document.addEventListener("DOMContentLoaded", initViz);
+            if (rriVal) {
+                document.getElementById("rriDisplay").innerText = rriVal + "x";
+                if (raceStr || ageStr) {
+                    document.getElementById("targetDemographic").innerText = (ageStr + " " + raceStr + " " + sexStr).trim();
+                }
+            }
+        });
+    }
+
+    window.onload = initViz;
 </script>
 
 </body>

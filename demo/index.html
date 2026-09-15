@@ -97,8 +97,10 @@
             left: 5%;
             right: 5%;
             display: flex;
-            justify-content: space-around;
+            align-items: center;
+            justify-content: space-between;
             text-align: center;
+            gap: 2px;
         }
 
         .col-center-labels {
@@ -114,9 +116,18 @@
         }
 
         .label-item {
+            flex: 1;
             background: rgba(255, 255, 255, 0.7); /* Slight semi-translucent backdrop for legibility */
             padding: 2px 4px;
             border-radius: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Middle "Average" cell double width */
+        .label-item.double-width {
+            flex: 2;
         }
     </style>
 </head>
@@ -162,20 +173,20 @@
         <!-- Overlaid Row and Column Header Labels -->
         <div class="chart-overlay">
             <div class="row-top-labels">
-                <span class="label-item">O</span>
-                <span class="label-item">W</span>
-                <span class="label-item">H</span>
-                <span class="label-item">B</span>
-                <span class="label-item">F</span>
-                <span class="label-item">AVG</span>
-                <span class="label-item">M</span>
-                <span class="label-item">B</span>
-                <span class="label-item">H</span>
-                <span class="label-item">W</span>
-                <span class="label-item">O</span>
+                <span class="label-item">Other</span>
+                <span class="label-item">White</span>
+                <span class="label-item">Hispanic</span>
+                <span class="label-item">Black</span>
+                <span class="label-item">Female</span>
+                <span class="label-item double-width">Average</span>
+                <span class="label-item">Male</span>
+                <span class="label-item">Black</span>
+                <span class="label-item">Hispanic</span>
+                <span class="label-item">White</span>
+                <span class="label-item">Other</span>
             </div>
             <div class="col-center-labels">
-                <span class="label-item">Average (*)</span>
+                <span class="label-item">Average</span>
                 <span class="label-item">18-24</span>
                 <span class="label-item">25-34</span>
                 <span class="label-item">35-44</span>
@@ -188,8 +199,8 @@
     </div>
 </div>
 
-<!-- Official Tableau JavaScript API -->
-<script type="text/javascript" src="https://public.tableau.com/views/demo_17890907558550/Dashboard4?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link"></script>
+<!-- Official Tableau JavaScript API Library -->
+<script type="text/javascript" src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
 
 <script>
     var viz, workbook;
@@ -277,15 +288,6 @@
     }
 
     function onMarkSelection(marksEvent) {
-        function onMarkSelection(marksEvent) {
-        return marksEvent.getMarksAsync().then(function (marks) {
-        if (marks.length === 0) return;
-
-        var pairs = marks[0].getPairs();
-
-        viz.getWorkbook().getActiveSheet().clearSelectedMarksAsync();
-    });
-}
         return marksEvent.getMarksAsync().then(function (marks) {
             if (marks.length === 0) {
                 document.getElementById("rriDisplay").innerText = "(click a cell)";
@@ -315,6 +317,11 @@
             
             var formattedDemo = formatDemographicString(ageStr, raceStr, sexStr);
             document.getElementById("targetDemographic").innerText = formattedDemo;
+
+            // Clear the highlighted mark selection immediately so the chart does not stay grayed out
+            if (viz && viz.getWorkbook()) {
+                viz.getWorkbook().getActiveSheet().clearSelectedMarksAsync();
+            }
         });
     }
 

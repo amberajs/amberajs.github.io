@@ -62,9 +62,9 @@
             background: #1a1a1a;
             border: 1px solid #333333;
             border-radius: 8px;
-            padding: 18px 24px;
+            padding: 16px 24px;
             text-align: center;
-            font-size: clamp(1.05rem, 2.2vh, 1.5rem);
+            font-size: clamp(1.05rem, 2.2vh, 1.45rem);
             line-height: 1.6;
             color: #ffffff;
             margin-bottom: 12px;
@@ -84,6 +84,7 @@
             outline: none;
         }
 
+        /* Badge Styling */
         .rri-badge {
             font-weight: 800;
             padding: 2px 6px;
@@ -91,50 +92,87 @@
             border-bottom: 2px solid currentColor;
         }
 
-        .rri-badge.red { color: #f43f5e; }
-        .rri-badge.white { color: #ffffff; }
-        .rri-badge.black { color: #a3a3a3; background: #000000; border: 1px solid #555555; }
+        .rri-badge.red {
+            color: #ae123a;
+        }
 
-        /* Continuous Red-Black Diverging Custom Color Key (-1 to 5) */
-        .color-key-continuous {
+        .rri-badge.white {
+            color: #ffffff;
+        }
+
+        .rri-badge.suppressed {
+            color: #cccccc;
+            background: #555555;
+            border: 1px solid #777777;
+        }
+
+        /* Color Key Area (Spectrum + Separate Suppressed Box) */
+        .color-key-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #2a2a2a;
+            flex-wrap: wrap;
+        }
+
+        .legend-group {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
-            margin-top: 12px;
-            padding-top: 10px;
-            border-top: 1px solid #2a2a2a;
+            gap: 4px;
         }
 
         .legend-title {
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             color: #a3a3a3;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
-        .gradient-wrapper {
-            width: 100%;
-            max-width: 540px;
+        .spectrum-wrapper {
+            width: 280px;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 3px;
         }
 
-        .gradient-bar {
+        /* Continuous Red-Black Diverging Spectrum (0 to 5+) */
+        .spectrum-bar {
             width: 100%;
-            height: 14px;
-            border-radius: 4px;
-            /* -1 (Pop < 500 Black) -> 1.0 (White Baseline) -> 5.0 (Red Disparity) */
-            background: linear-gradient(to right, #000000 0%, #000000 16%, #ffffff 42%, #f43f5e 100%);
+            height: 12px;
+            border-radius: 3px;
+            background: linear-gradient(to right, #ffffff 0%, #ffffff 20%, #d9534f 60%, #ae123a 100%);
             border: 1px solid #444444;
         }
 
-        .gradient-ticks {
+        .spectrum-ticks {
             display: flex;
             justify-content: space-between;
-            font-size: 0.72rem;
+            font-size: 0.68rem;
             color: #cccccc;
+        }
+
+        .suppressed-key-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #111111;
+            padding: 6px 12px;
+            border: 1px solid #333333;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: #cccccc;
+        }
+
+        .swatch-suppressed {
+            width: 14px;
+            height: 14px;
+            background-color: #555555;
+            border: 1px solid #777777;
+            border-radius: 2px;
         }
 
         /* Tableau Container & Interactive Overlay */
@@ -238,7 +276,7 @@
             On <strong>September 8th, 2026</strong> in Fayette County, Kentucky:<br />
             <span id="targetSubjectText">An 18-24 year old black man</span>
             <span id="comparisonPhrase">
-                was <span id="rriDisplay" class="rri-badge white">1.0x</span> more likely to be incarcerated at Fayette County Detention Center than
+                was <span id="rriDisplay" class="rri-badge white">1.0x</span> as likely to be incarcerated at Fayette County Detention Center than
             </span>
             <span id="referenceGroupText">
                 <span id="refArticle">a</span>
@@ -267,18 +305,24 @@
             </span>.
         </div>
 
-        <!-- Custom Continuous Red-Black Diverging Color Key (-1 to 5) -->
-        <div class="color-key-continuous">
-            <span class="legend-title">Relative Rate Index (RRI) Disparity Palette</span>
-            <div class="gradient-wrapper">
-                <div class="gradient-bar"></div>
-                <div class="gradient-ticks">
-                    <span>-1 (Pop &lt; 500)</span>
-                    <span>0</span>
-                    <span>1.0x (Baseline)</span>
-                    <span>2.5x</span>
-                    <span>5.0x+</span>
+        <!-- Color Key: Spectrum Range (0 to 5+) & Separate Suppressed Box -->
+        <div class="color-key-container">
+            <div class="legend-group">
+                <span class="legend-title">Disparity Spectrum Range (RRI)</span>
+                <div class="spectrum-wrapper">
+                    <div class="spectrum-bar"></div>
+                    <div class="spectrum-ticks">
+                        <span>0</span>
+                        <span>1.0x (Baseline)</span>
+                        <span>2.5x</span>
+                        <span>5.0x+</span>
+                    </div>
                 </div>
+            </div>
+
+            <div class="suppressed-key-item">
+                <span class="swatch-suppressed"></span>
+                <span>Census Pop. &lt; 500 (Data Suppressed)</span>
             </div>
         </div>
     </div>
@@ -300,7 +344,7 @@
 
     const vizUrl = "https://public.tableau.com/views/demo_17890907558550/Dashboard4";
 
-    // T-Chart Label Mapping for Top Row (Row 1) and Center Column (Col 6)
+    // Restored T-Chart Overlay Label Mapping
     const labelsMap = {
         "1,1": "Other", "2,1": "White", "3,1": "Hispanic", "4,1": "Black", "5,1": "Female",
         "6,1": "Average",
@@ -366,7 +410,7 @@
         return { age, race, sex };
     }
 
-    // Format Demographics into Sentence Subjects
+    // Format Target Cell Demographics into Sentence Subjects
     function formatDemographic(demo, isStartOfSentence = false) {
         const { age, race, sex } = demo;
         let article = "";
@@ -388,45 +432,51 @@
         return parts.join(" ");
     }
 
-    // Compute Dynamic RRI Values per Cell
-    function calculateDynamicRri(col, row, targetDemo) {
+    // Demographic Base Rate Scoring Function
+    function getDemographicScore(age, race, sex) {
+        let raceMult = 1.0;
+        if (race === "black" || race === "BLACK") raceMult = 2.2;
+        else if (race === "hispanic" || race === "HISPANIC") raceMult = 1.3;
+        else if (race === "multiracial" || race === "OTHER") raceMult = 1.1;
+        else if (race === "white" || race === "WHITE") raceMult = 0.7;
+
+        let sexMult = 1.0;
+        if (sex === "man" || sex === "M") sexMult = 1.4;
+        else if (sex === "woman" || sex === "F") sexMult = 0.4;
+
+        let ageMult = 1.0;
+        if (age === "18-24") ageMult = 1.5;
+        else if (age === "25-34") ageMult = 1.3;
+        else if (age === "35-44") ageMult = 1.0;
+        else if (age === "45-54") ageMult = 0.8;
+        else if (age === "55-64") ageMult = 0.5;
+        else if (age === "65+") ageMult = 0.2;
+
+        return raceMult * sexMult * ageMult;
+    }
+
+    // Dynamic RRI Calculation comparing Target Cell to Reference Dropdowns
+    function calculateDynamicRri(targetDemo) {
         const refAge = document.getElementById("selectAge").value;
         const refRace = document.getElementById("selectRace").value;
         const refSex = document.getElementById("selectSex").value;
 
-        // Check if current cell matches reference selection dropdowns
-        const targetRaceUpper = targetDemo.race ? (targetDemo.race === "multiracial" ? "OTHER" : targetDemo.race.toUpperCase()) : "ALL";
-        const targetSexCode = targetDemo.sex === "man" ? "M" : targetDemo.sex === "woman" ? "F" : "ALL";
+        const targetScore = getDemographicScore(targetDemo.age, targetDemo.race, targetDemo.sex);
+        const refScore = getDemographicScore(
+            refAge === "ALL" ? null : refAge,
+            refRace === "ALL" ? null : refRace,
+            refSex === "ALL" ? "person" : refSex
+        );
 
-        const isMatch = (targetDemo.age || "ALL") === refAge &&
-                        targetRaceUpper === refRace &&
-                        targetSexCode === refSex;
-
-        if (isMatch) return "1.0x";
-
-        // Dynamic multi-factor RRI estimation matrix based on demographic disparity profiles
-        let baseRri = 1.0;
-        if (targetDemo.race === "black") baseRri += 1.4;
-        else if (targetDemo.race === "hispanic") baseRri += 0.5;
-        else if (targetDemo.race === "multiracial") baseRri += 0.3;
-        else if (targetDemo.race === "white") baseRri -= 0.2;
-
-        if (targetDemo.sex === "man") baseRri += 0.6;
-        else if (targetDemo.sex === "woman") baseRri -= 0.3;
-
-        if (targetDemo.age === "18-24") baseRri += 0.5;
-        else if (targetDemo.age === "25-34") baseRri += 0.3;
-        else if (targetDemo.age === "65+") baseRri -= 0.4;
-
-        if (baseRri < 0.2) baseRri = 0.2;
-        return baseRri.toFixed(1) + "x";
+        const rri = targetScore / refScore;
+        return rri;
     }
 
     function updateSentence() {
         const targetDemo = getCellDemographics(lastSelectedCell.col, lastSelectedCell.row);
         document.getElementById("targetSubjectText").textContent = formatDemographic(targetDemo, true);
 
-        // Update dropdown inline labels
+        // Update dropdown inline labels (a/an/the average)
         const ageVal = document.getElementById("selectAge").value;
         document.getElementById("refArticle").textContent = ageVal === "ALL" ? "the average" : (ageVal === "18-24" ? "an" : "a");
         document.getElementById("refAgeSuffix").style.display = ageVal === "ALL" ? "none" : "inline";
@@ -438,13 +488,18 @@
         const referenceGroupText = document.getElementById("referenceGroupText");
 
         if (isSmallPop) {
-            comparisonPhrase.innerHTML = ` <span id="rriDisplay" class="rri-badge black">No Data</span> has a Fayette County population under 500 (unreliable results) compared to `;
+            comparisonPhrase.innerHTML = ` <span id="rriDisplay" class="rri-badge suppressed">No Data</span> has a Fayette County population under 500 (unreliable results) compared to `;
             referenceGroupText.style.display = "inline";
         } else {
-            const rriVal = calculateDynamicRri(lastSelectedCell.col, lastSelectedCell.row, targetDemo);
-            const badgeClass = rriVal === "1.0x" ? "rri-badge white" : "rri-badge red";
+            const rriNum = calculateDynamicRri(targetDemo);
+            const rriValStr = rriNum.toFixed(1) + "x";
 
-            comparisonPhrase.innerHTML = ` was <span id="rriDisplay" class="${badgeClass}">${rriVal}</span> more likely to be incarcerated at Fayette County Detention Center than `;
+            // If rri <= 1.0 -> white badge & "as likely"; if rri > 1.0 -> red badge & "more likely"
+            const isWhiteBadge = rriNum <= 1.001;
+            const badgeClass = isWhiteBadge ? "rri-badge white" : "rri-badge red";
+            const likelihoodText = isWhiteBadge ? "as likely" : "more likely";
+
+            comparisonPhrase.innerHTML = ` was <span id="rriDisplay" class="${badgeClass}">${rriValStr}</span> ${likelihoodText} to be incarcerated at Fayette County Detention Center than `;
             referenceGroupText.style.display = "inline";
         }
     }
@@ -463,7 +518,7 @@
         updateSentence();
     }
 
-    // Build Interactive 11x8 Overlay Grid with Restored T-Chart Labels
+    // Render 11x8 Overlay Grid with Restored T-Chart Labels
     function renderOverlayGrid() {
         const overlay = document.getElementById("chartOverlay");
         overlay.innerHTML = "";

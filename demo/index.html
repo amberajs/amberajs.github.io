@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kentucky Detention Disparity Dashboard Interface</title>
-    <script type="text/javascript" src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
     <style>
         body, html {
             width: 100vw;
@@ -134,10 +133,10 @@
             height: 100%;
             pointer-events: none;
             z-index: 10;
-            font-family: inherit;
+            font-family: "Courier New", Courier, monospace;
             color: #ffffff;
             font-weight: 800;
-            font-size: clamp(0.85rem, 1.6vh, 1.25rem);
+            font-size: clamp(0.75rem, 1.3vh, 1.1rem);
 
             display: grid;
             grid-template-columns: repeat(11, 1fr);
@@ -228,7 +227,10 @@
         </div>
 
         <div class="tableau-wrapper">
-            <div id="vizContainer"></div>
+            <div id="vizContainer">
+                <div class='tableauPlaceholder' id='viz1789955804050' style='position: relative'><noscript><a href='#'><img alt='Publish ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;de&#47;demo_17890907558550&#47;Dashboard4&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='demo_17890907558550&#47;Dashboard4' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;de&#47;demo_17890907558550&#47;Dashboard4&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div>                <script type='text/javascript'>                    var divElement = document.getElementById('viz1789955804050');                    var vizElement = divElement.getElementsByTagName('object')[0];                    vizElement.style.width='1018px';vizElement.style.height='433px';                    var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';                    vizElement.parentNode.insertBefore(scriptElement, vizElement);                </script>
+                <iframe src="https://public.tableau.com/views/demo_17890907558550/Dashboard4?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link"></iframe>
+            </div>
             <div id="chartOverlay" class="chart-overlay"></div>
         </div>
     </div>
@@ -239,6 +241,19 @@
             race: 'BLACK',
             sex: 'M'
         };
+
+        const demoGroups = [
+            { race: 'BLACK', sex: 'M', label: 'BLACK M' },
+            { race: 'BLACK', sex: 'F', label: 'BLACK F' },
+            { race: 'HISPANIC', sex: 'M', label: 'HISP M' },
+            { race: 'HISPANIC', sex: 'F', label: 'HISP F' },
+            { race: 'WHITE', sex: 'M', label: 'WHITE M' },
+            { race: 'WHITE', sex: 'F', label: 'WHITE F' },
+            { race: 'OTHER', sex: 'M', label: 'OTHER M' },
+            { race: 'OTHER', sex: 'F', label: 'OTHER F' }
+        ];
+
+        const ageColumns = ['18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
 
         function getDemographicScore(age, race, sex) {
             let raceMult = 1.0;
@@ -290,8 +305,9 @@
             const refAge = document.getElementById('selectAge').value;
             const refRace = document.getElementById('selectRace').value;
             const refSex = document.getElementById('selectSex').value;
+            const ref = { age: refAge, race: refRace, sex: refSex };
 
-            const rri = calculateRRI(selectedCellData, { age: refAge, race: refRace, sex: refSex });
+            const rri = calculateRRI(selectedCellData, ref);
             const badge = document.getElementById('rriDisplay');
 
             if (rri === null) {
@@ -305,6 +321,22 @@
                     badge.style.color = '#de2d26';
                 }
             }
+
+            document.querySelectorAll('.grid-cell').forEach(cell => {
+                const cellAge = cell.dataset.age;
+                const cellRace = cell.dataset.race;
+                const cellSex = cell.dataset.sex;
+                const labelSpan = cell.querySelector('.label-item');
+
+                if (labelSpan && cellAge && cellRace && cellSex) {
+                    const cellRRI = calculateRRI({ age: cellAge, race: cellRace, sex: cellSex }, ref);
+                    if (cellRRI !== null) {
+                        labelSpan.textContent = cellRRI.toFixed(1) + 'x';
+                    } else {
+                        labelSpan.textContent = 'Suppressed';
+                    }
+                }
+            });
         }
 
         async function handleDropdownChange() {
@@ -342,70 +374,51 @@
             const overlay = document.getElementById('chartOverlay');
             if (!overlay) return;
 
-            const ages = ['18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
-            const races = ['BLACK', 'HISPANIC', 'WHITE', 'OTHER'];
-            const sexes = ['M', 'F'];
-
-            let initialSelectedFound = false;
             overlay.innerHTML = '';
             for (let r = 0; r < 8; r++) {
+                const group = demoGroups[r];
                 for (let c = 0; c < 11; c++) {
                     const cell = document.createElement('div');
                     cell.className = 'grid-cell';
 
-                    const demoAge = ages[(r + c) % ages.length];
-                    const demoRace = races[(r * 2 + c) % races.length];
-                    const demoSex = sexes[(r + c) % sexes.length];
+                    const labelSpan = document.createElement('span');
+                    labelSpan.className = 'label-item';
 
-                    cell.dataset.age = demoAge;
-                    cell.dataset.race = demoRace;
-                    cell.dataset.sex = demoSex;
+                    if (c === 0) {
+                        labelSpan.textContent = group.label;
+                        cell.dataset.isHeader = "true";
+                    } else {
+                        const demoAge = ageColumns[(c - 1) % ageColumns.length];
+                        cell.dataset.age = demoAge;
+                        cell.dataset.race = group.race;
+                        cell.dataset.sex = group.sex;
 
-                    if (demoAge === selectedCellData.age && demoRace === selectedCellData.race && demoSex === selectedCellData.sex && !initialSelectedFound) {
-                        cell.classList.add('selected');
-                        initialSelectedFound = true;
+                        if (demoAge === selectedCellData.age && group.race === selectedCellData.race && group.sex === selectedCellData.sex) {
+                            cell.classList.add('selected');
+                        }
+
+                        cell.addEventListener('click', function() {
+                            document.querySelectorAll('.grid-cell').forEach(el => el.classList.remove('selected'));
+                            this.classList.add('selected');
+
+                            selectedCellData = {
+                                age: this.dataset.age,
+                                race: this.dataset.race,
+                                sex: this.dataset.sex
+                            };
+
+                            updateSentenceAndRRI();
+                        });
                     }
 
-                    cell.addEventListener('click', function() {
-                        document.querySelectorAll('.grid-cell').forEach(el => el.classList.remove('selected'));
-                        this.classList.add('selected');
-
-                        selectedCellData = {
-                            age: this.dataset.age,
-                            race: this.dataset.race,
-                            sex: this.dataset.sex
-                        };
-
-                        updateSentenceAndRRI();
-                    });
-
+                    cell.appendChild(labelSpan);
                     overlay.appendChild(cell);
                 }
             }
         }
 
-        function initTableauViz() {
-            const containerDiv = document.getElementById("vizContainer");
-            if (!containerDiv) return;
-
-            const url = "https://public.tableau.com/views/demo_17890907558550/Dashboard4?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link"; 
-            
-            const options = {
-                hideTabs: true,
-                hideToolbar: true,
-                onFirstInteractive: function () {
-                    console.log("Tableau Heatmap loaded successfully.");
-                }
-            };
-
-            if (url !== "https://public.tableau.com/views/demo_17890907558550/Dashboard4?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link") {
-                window.tableauViz = new tableau.Viz(containerDiv, url, options);
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', function() {
             initGridOverlay();
-            initTableauViz();
             updateSentenceAndRRI();
         });
     </script>

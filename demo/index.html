@@ -7,13 +7,13 @@
 <!-- Tableau JS API v2 -->
 <script src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
 <style>
-    /* Global Font: Linux Text Editor Monospace */
+    /* Global Monospace Font (Linux Text Editor Style) */
     * {
         box-sizing: border-box;
         font-family: "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace !important;
     }
 
-    /* Restored Exact Dimensions from Source [1] */
+    /* Exact Original Dimensions from Source */
     body, html {
         width: 100vw;
         height: 100vh;
@@ -94,7 +94,7 @@
         outline: none;
     }
 
-    /* Dynamic RRI Number Styling */
+    /* Dynamic RRI Number */
     .rri-number {
         font-weight: 800;
         padding: 2px 4px;
@@ -146,7 +146,7 @@
         display: inline-block;
     }
 
-    /* Tableau Container & Interactive Overlay (Restored from Source [1]) */
+    /* Tableau Container & Interactive Overlay (Exact Source Sizing) */
     .tableau-wrapper {
         position: relative;
         flex: 1 1 auto;
@@ -163,7 +163,6 @@
         height: 100%;
     }
 
-    /* Restored exact iframe sizing and offset calculation from source [1] */
     #vizContainer iframe,
     .tableau-wrapper iframe {
         width: 100% !important;
@@ -174,7 +173,7 @@
         background-color: #000000 !important;
     }
 
-    /* 11 Column x 8 Row Interactive Overlay Grid (Restored from Source [1]) */
+    /* 11 Column x 8 Row Interactive Overlay Grid (Exact Source Geometry) */
     .chart-overlay {
         position: absolute;
         top: 0;
@@ -185,7 +184,8 @@
         z-index: 10;
         color: #ffffff;
         font-weight: 800;
-        font-size: clamp(0.75rem, 1.3vh, 1.1rem);
+        /* Slightly larger label font size */
+        font-size: clamp(0.85rem, 1.5vh, 1.25rem);
 
         display: grid;
         grid-template-columns: repeat(11, 1fr);
@@ -227,7 +227,7 @@
 <body>
 
 <div class="hero-layout">
-    <!-- Top Navigation Bar with requested links -->
+    <!-- Top Navigation -->
     <div class="top-nav">
         <a href="#">&lt; back to amberajs portfolio</a>
         <a href="#" class="nav-center">view data</a>
@@ -305,7 +305,7 @@
         </div>
     </div>
 
-    <!-- Tableau Embed Container with Overlay -->
+    <!-- Tableau Embed Container with Grid Overlay -->
     <div class="tableau-wrapper">
         <div id="vizContainer"></div>
         <div id="chartOverlay" class="chart-overlay"></div>
@@ -316,6 +316,7 @@
     let viz;
     let workbook;
 
+    // Default cell selection state: 35-44 BLACK MAN
     let currentTarget = {
         age: "35-44",
         race: "BLACK",

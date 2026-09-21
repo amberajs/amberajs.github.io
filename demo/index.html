@@ -7,13 +7,13 @@
 <!-- Tableau JS API v2 -->
 <script src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
 <style>
-    /* Global Monospace Font (Linux Text Editor Style) */
+    /* Global Monospace Font across entire screen */
     * {
         box-sizing: border-box;
         font-family: "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace !important;
     }
 
-    /* Exact Original Dimensions from Source */
+    /* Exact Original Container Dimensions */
     body, html {
         width: 100vw;
         height: 100vh;
@@ -57,28 +57,28 @@
         color: #737373;
     }
 
-    /* Sentence Card Container */
+    /* Sentence Card Container - Calibrated Height to Match Original Source */
     .sentence-card {
         flex: 0 0 auto;
         background: #1a1a1a;
         border: 1px solid #333333;
         border-radius: 8px;
-        padding: 16px 24px;
+        padding: 12px 20px;
         text-align: center;
-        font-size: clamp(1.05rem, 2.2vh, 1.45rem);
-        line-height: 1.6;
+        font-size: clamp(1.0rem, 2.0vh, 1.35rem);
+        line-height: 1.4;
         color: #ffffff;
         margin-bottom: 12px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     }
 
     .sentence-line-1 {
-        margin-bottom: 6px;
+        margin-bottom: 4px;
     }
 
     .sentence-line-2 {
         display: block;
-        margin-top: 4px;
+        margin-top: 2px;
     }
 
     .inline-select {
@@ -94,25 +94,25 @@
         outline: none;
     }
 
-    /* Dynamic RRI Number */
+    /* Dynamic RRI Display Number */
     .rri-number {
         font-weight: 800;
-        padding: 2px 4px;
+        padding: 1px 4px;
     }
 
-    /* Relative Rate Index (RRI) Key Container */
+    /* Relative Rate Index (RRI) Key - Single-Row Slim Profile */
     .color-key-container {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 8px;
-        margin-top: 10px;
-        padding-top: 10px;
+        gap: 4px;
+        margin-top: 8px;
+        padding-top: 6px;
         border-top: 1px solid #2a2a2a;
     }
 
     .legend-title {
-        font-size: 0.85rem;
+        font-size: 0.72rem;
         color: #ffffff;
         font-weight: 700;
         text-transform: uppercase;
@@ -121,32 +121,35 @@
 
     .key-grid {
         display: flex;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         justify-content: center;
-        gap: 12px;
-        font-size: 0.75rem;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.68rem;
     }
 
     .key-item {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 4px;
         background: #111111;
-        padding: 4px 8px;
+        padding: 2px 6px;
         border: 1px solid #333333;
-        border-radius: 4px;
+        border-radius: 3px;
         color: #ffffff;
+        white-space: nowrap;
     }
 
     .key-swatch {
-        width: 14px;
-        height: 14px;
+        width: 10px;
+        height: 10px;
         border-radius: 2px;
         border: 1px solid #444444;
         display: inline-block;
+        flex-shrink: 0;
     }
 
-    /* Tableau Container & Interactive Overlay (Exact Source Sizing) */
+    /* Tableau Container & Interactive Overlay (Exact Source Dimensions) */
     .tableau-wrapper {
         position: relative;
         flex: 1 1 auto;
@@ -184,8 +187,7 @@
         z-index: 10;
         color: #ffffff;
         font-weight: 800;
-        /* Slightly larger label font size */
-        font-size: clamp(0.85rem, 1.5vh, 1.25rem);
+        font-size: clamp(0.75rem, 1.3vh, 1.1rem);
 
         display: grid;
         grid-template-columns: repeat(11, 1fr);
@@ -275,31 +277,31 @@
             <div class="key-grid">
                 <div class="key-item">
                     <span class="key-swatch" style="background-color: #CCCCCC;"></span>
-                    <span>Less Likely (RRI &lt; 1)</span>
+                    <span>Less Likely (&lt;1)</span>
                 </div>
                 <div class="key-item">
                     <span class="key-swatch" style="background-color: #FFFFFF;"></span>
-                    <span>Equal Baseline (RRI = 1)</span>
+                    <span>Baseline (=1)</span>
                 </div>
                 <div class="key-item">
                     <span class="key-swatch" style="background-color: #FEE0D2;"></span>
-                    <span>Some Disparity (1 &lt; RRI &le; 1.5)</span>
+                    <span>Some (1-1.5)</span>
                 </div>
                 <div class="key-item">
                     <span class="key-swatch" style="background-color: #FC9272;"></span>
-                    <span>Moderate Disparity (1.5 &le; RRI &lt; 2.5)</span>
+                    <span>Moderate (1.5-2.5)</span>
                 </div>
                 <div class="key-item">
                     <span class="key-swatch" style="background-color: #DE2D26;"></span>
-                    <span>High Disparity (2.5 &le; RRI &lt; 5)</span>
+                    <span>High (2.5-5)</span>
                 </div>
                 <div class="key-item">
                     <span class="key-swatch" style="background-color: #67000D;"></span>
-                    <span>Extreme Disparity (RRI &ge; 5)</span>
+                    <span>Extreme (&ge;5)</span>
                 </div>
                 <div class="key-item">
                     <span class="key-swatch" style="background-color: #1A1A1A;"></span>
-                    <span>Suppressed (Census Population &lt; 500)</span>
+                    <span>Suppressed (&lt;500)</span>
                 </div>
             </div>
         </div>
@@ -316,7 +318,7 @@
     let viz;
     let workbook;
 
-    // Default cell selection state: 35-44 BLACK MAN
+    // Default selected target cell state
     let currentTarget = {
         age: "35-44",
         race: "BLACK",

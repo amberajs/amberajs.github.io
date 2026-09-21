@@ -7,20 +7,21 @@
 <!-- Tableau JS API v2 -->
 <script src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
 <style>
-    /* Global Linux Text Editor Monospace Font */
+    /* Global Font: Linux Text Editor Monospace */
     * {
         box-sizing: border-box;
         font-family: "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace !important;
     }
 
+    /* Restored Exact Dimensions from Source [1] */
     body, html {
         width: 100vw;
         height: 100vh;
-        margin: 0;
-        padding: 0;
         background-color: #000000;
         color: #ffffff;
         overflow: hidden;
+        margin: 0;
+        padding: 0;
     }
 
     .hero-layout {
@@ -44,6 +45,7 @@
     .top-nav a {
         color: #a3a3a3;
         text-decoration: none;
+        transition: color 0.2s ease;
     }
 
     .top-nav a:hover {
@@ -64,7 +66,7 @@
         padding: 16px 24px;
         text-align: center;
         font-size: clamp(1.05rem, 2.2vh, 1.45rem);
-        line-height: 1.8;
+        line-height: 1.6;
         color: #ffffff;
         margin-bottom: 12px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.5);
@@ -80,7 +82,7 @@
     }
 
     .inline-select {
-        font-family: "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace !important;
+        font-family: inherit;
         font-size: inherit;
         font-weight: 700;
         color: #ffffff;
@@ -104,7 +106,7 @@
         flex-direction: column;
         align-items: center;
         gap: 8px;
-        margin-top: 14px;
+        margin-top: 10px;
         padding-top: 10px;
         border-top: 1px solid #2a2a2a;
     }
@@ -144,7 +146,7 @@
         display: inline-block;
     }
 
-    /* Tableau Container */
+    /* Tableau Container & Interactive Overlay (Restored from Source [1]) */
     .tableau-wrapper {
         position: relative;
         flex: 1 1 auto;
@@ -161,7 +163,18 @@
         height: 100%;
     }
 
-    /* T-Chart Label Overlay Styling (Slightly Bigger Font Size) */
+    /* Restored exact iframe sizing and offset calculation from source [1] */
+    #vizContainer iframe,
+    .tableau-wrapper iframe {
+        width: 100% !important;
+        height: calc(100% + 28px) !important;
+        margin-bottom: -28px !important;
+        border: none !important;
+        outline: none !important;
+        background-color: #000000 !important;
+    }
+
+    /* 11 Column x 8 Row Interactive Overlay Grid (Restored from Source [1]) */
     .chart-overlay {
         position: absolute;
         top: 0;
@@ -172,27 +185,59 @@
         z-index: 10;
         color: #ffffff;
         font-weight: 800;
-        font-size: clamp(0.95rem, 1.7vh, 1.35rem); /* Slightly bigger labels */
+        font-size: clamp(0.75rem, 1.3vh, 1.1rem);
+
         display: grid;
         grid-template-columns: repeat(11, 1fr);
         grid-template-rows: repeat(8, 1fr);
+        gap: 0;
+    }
+
+    .grid-cell {
+        pointer-events: auto;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2px;
+        user-select: none;
+        transition: background 0.15s ease;
+    }
+
+    .grid-cell:hover {
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .grid-cell.selected {
+        border: 2px solid #ffffff;
+        background: rgba(255, 255, 255, 0.18);
+    }
+
+    .label-item {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-shadow: 0px 0px 4px #000000, 0px 0px 8px #000000;
+        font-weight: 800;
     }
 </style>
 </head>
 <body>
 
 <div class="hero-layout">
-    <!-- Navigation -->
+    <!-- Top Navigation Bar with requested links -->
     <div class="top-nav">
-        <a href="#">&larr; Back to Overview</a>
-        <span class="nav-center">Fayette County Detention Center Disparity Dashboard</span>
-        <a href="#">Data Sources &amp; Methodology &rarr;</a>
+        <a href="#">&lt; back to amberajs portfolio</a>
+        <a href="#" class="nav-center">view data</a>
+        <a href="#">view source code &gt;</a>
     </div>
 
     <!-- Sentence Card Area -->
     <div class="sentence-card">
         <div id="sentenceContainer">
-            <!-- First half: User Selected Cell Target -->
+            <!-- First half: User selected cell target -->
             <div class="sentence-line-1">
                 A <strong id="targetAge">35-44</strong> year old <strong id="targetRace">BLACK</strong> <strong id="targetSex">MAN</strong> was <strong id="rriDisplay" class="rri-number" style="color: #ffffff;">1.0x</strong> as likely to be incarcerated at Fayette County Detention Center
             </div>
@@ -260,7 +305,7 @@
         </div>
     </div>
 
-    <!-- Tableau Embed Container -->
+    <!-- Tableau Embed Container with Overlay -->
     <div class="tableau-wrapper">
         <div id="vizContainer"></div>
         <div id="chartOverlay" class="chart-overlay"></div>
@@ -271,7 +316,6 @@
     let viz;
     let workbook;
 
-    // Default target cell selection state
     let currentTarget = {
         age: "35-44",
         race: "BLACK",
@@ -279,7 +323,6 @@
         rri: 1.0
     };
 
-    // Tableau Dashboard URL from user input
     const vizUrl = "https://public.tableau.com/views/demo_17890907558550/Dashboard4";
 
     function initTableau() {
@@ -291,11 +334,7 @@
             height: "100%",
             onFirstInteractive: function () {
                 workbook = viz.getWorkbook();
-                
-                // Add event listener for mark selection across all 6 worksheets in Dashboard4
                 viz.addEventListener(tableau.TableauEventName.MARKS_SELECTION, onMarkSelection);
-                
-                // Sync default baseline dropdown selections with Tableau
                 handleDropdownChange();
             }
         };
@@ -303,33 +342,26 @@
         viz = new tableau.Viz(containerDiv, vizUrl, options);
     }
 
-    // Handles user clicking a cell anywhere on the 6 Tableau worksheets
     function onMarkSelection(marksEvent) {
         marksEvent.getMarksAsync().then(function (marks) {
             if (!marks || marks.length === 0) return;
 
-            // Iterate over selected mark's fields directly from Tableau
             marks.forEach(function (mark) {
                 const pairs = mark.getPairs();
                 pairs.forEach(function (pair) {
                     const fieldName = pair.fieldName.toLowerCase();
-                    
-                    // Match Age dimension
                     if (fieldName.includes("age")) {
                         currentTarget.age = pair.formattedValue;
                     }
-                    // Match Race dimension
                     if (fieldName.includes("race")) {
                         currentTarget.race = pair.formattedValue.toUpperCase();
                     }
-                    // Match Sex/Gender dimension
                     if (fieldName.includes("sex") || fieldName.includes("gender")) {
                         let val = pair.formattedValue.toUpperCase();
                         if (val === "M" || val === "MALE") currentTarget.sex = "MAN";
                         else if (val === "F" || val === "FEMALE") currentTarget.sex = "WOMAN";
                         else currentTarget.sex = val;
                     }
-                    // Match calculated RRI measure directly from Tableau
                     if (fieldName.includes("rri") || fieldName.includes("relative rate")) {
                         currentTarget.rri = parseFloat(pair.value);
                     }
@@ -340,13 +372,11 @@
         });
     }
 
-    // Triggered when user changes any dropdown selection
     function handleDropdownChange() {
         const refAge = document.getElementById("selectAge").value;
         const refRace = document.getElementById("selectRace").value;
         const refSex = document.getElementById("selectSex").value;
 
-        // Article grammar check ("a" vs "an")
         const refArticle = document.getElementById("refArticle");
         if (refAge.startsWith("18") || refAge.startsWith("8")) {
             refArticle.textContent = "an";
@@ -355,28 +385,21 @@
         }
 
         if (workbook) {
-            // Push baseline dropdown parameters directly to Tableau
-            // (Note: ensure parameter names match your Tableau workbook parameter names)
             Promise.all([
                 workbook.changeParameterValueAsync("Baseline Age", refAge),
                 workbook.changeParameterValueAsync("Baseline Race", refRace),
                 workbook.changeParameterValueAsync("Baseline Sex", refSex)
             ]).then(function() {
-                // After Tableau re-renders the heatmap with new baseline parameters, refresh target cell RRI
                 queryTargetCellRRI();
-            }).catch(function(err) {
-                // If parameter names differ, Tableau will maintain heatmap rendering and query current selection
+            }).catch(function() {
                 queryTargetCellRRI();
             });
         }
     }
 
-    // Queries current selected cell RRI from Tableau after heatmap updates
     function queryTargetCellRRI() {
         if (!workbook) return;
         const activeSheet = workbook.getActiveSheet();
-        
-        // Handle multi-worksheet Dashboard
         if (activeSheet.getSheetType() === tableau.SheetType.DASHBOARD) {
             const worksheets = activeSheet.getWorksheets();
             worksheets.forEach(function(sheet) {
@@ -397,9 +420,7 @@
         }
     }
 
-    // Updates sentence UI elements
     function updateSentenceUI() {
-        // Target values: Bolded age, ALL CAPS BOLD race, ALL CAPS BOLD sex
         document.getElementById("targetAge").textContent = currentTarget.age;
         document.getElementById("targetRace").textContent = currentTarget.race.toUpperCase();
         document.getElementById("targetSex").textContent = currentTarget.sex.toUpperCase();
@@ -407,8 +428,6 @@
         const rriDisplay = document.getElementById("rriDisplay");
         rriDisplay.textContent = currentTarget.rri.toFixed(1) + "x";
 
-        // Dynamic RRI text color rule:
-        // #ffffff for RRI <= 1.0, #de2d26 for RRI > 1.0
         if (currentTarget.rri <= 1.0) {
             rriDisplay.style.color = "#ffffff";
         } else {

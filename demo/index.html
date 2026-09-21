@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kentucky Detention Disparity Dashboard Interface</title>
+    <script type="text/javascript" src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
     <style>
         body, html {
             width: 100vw;
@@ -180,10 +181,11 @@
         <div class="sentence-card">
             <div id="sentenceContainer">
                 On <strong>September 8th, 2026</strong> in Fayette County, Kentucky:<br />
-                <span id="targetSubjectText">A 35-44 year old black man</span>
+                <span id="targetSubjectText">A <strong>35-44</strong> year old <strong>BLACK</strong> <strong>MAN</strong></span>
                 <span id="comparisonPhrase">
-                    was <span id="rriDisplay" class="rri-badge" style="color:#de2d26;">2.1x</span> as likely to be incarcerated at Fayette County Detention Center than
-                </span>
+                    was <span id="rriDisplay" class="rri-badge" style="color:#de2d26;">2.1x</span> as likely to be incarcerated at Fayette County Detention Center
+                </span><br />
+                than
                 <span id="referenceGroupText">
                     <span id="refArticle">an</span>
                     <select id="selectAge" class="inline-select" onchange="handleDropdownChange()">
@@ -214,13 +216,13 @@
             <div class="color-key-container">
                 <div class="key-title">Relative Rate Index (RRI) Key</div>
                 <div class="key-grid">
-                    <div class="key-item"><span class="swatch" style="background:#CCCCCC;"></span>1. Less Likely</div>
-                    <div class="key-item"><span class="swatch" style="background:#FFFFFF;"></span>2. Equal Baseline</div>
-                    <div class="key-item"><span class="swatch" style="background:#FEE0D2;"></span>3. Some Disparity</div>
-                    <div class="key-item"><span class="swatch" style="background:#FC9272;"></span>4. Moderate Disparity</div>
-                    <div class="key-item"><span class="swatch" style="background:#DE2D26;"></span>5. High Disparity</div>
-                    <div class="key-item"><span class="swatch" style="background:#67000D;"></span>6. Highest Disparity</div>
-                    <div class="key-item"><span class="swatch" style="background:#1A1A1A; border:1px solid #444;"></span>7. Suppressed</div>
+                    <div class="key-item"><span class="swatch" style="background:#CCCCCC;"></span>Less Likely (0 &lt; RRI &lt; 1)</div>
+                    <div class="key-item"><span class="swatch" style="background:#FFFFFF;"></span>Equal Baseline (RRI = 1)</div>
+                    <div class="key-item"><span class="swatch" style="background:#FEE0D2;"></span>Some Disparity (1 &lt; RRI &lt; 1.5)</div>
+                    <div class="key-item"><span class="swatch" style="background:#FC9272;"></span>Moderate Disparity (1.5 &le; RRI &lt; 2.5)</div>
+                    <div class="key-item"><span class="swatch" style="background:#DE2D26;"></span>High Disparity (2.5 &le; RRI &lt; 5)</div>
+                    <div class="key-item"><span class="swatch" style="background:#67000D;"></span>Highest Disparity (RRI &ge; 5)</div>
+                    <div class="key-item"><span class="swatch" style="background:#1A1A1A; border:1px solid #444;"></span>Suppressed (Census Population &lt; 500)</div>
                 </div>
             </div>
         </div>
@@ -261,14 +263,14 @@
         }
 
         function formatSubjectText(age, race, sex) {
-            let raceLabel = race.toLowerCase();
-            if (raceLabel === 'other') raceLabel = 'multiracial';
+            let raceLabel = race.toUpperCase();
+            if (raceLabel === 'OTHER') raceLabel = 'MULTIRACIAL';
             
-            let sexLabel = sex === 'M' ? 'man' : sex === 'F' ? 'woman' : 'person';
-            let ageLabel = (age === 'ALL' || !age) ? '' : `${age} year old `;
+            let sexLabel = sex === 'M' ? 'MAN' : sex === 'F' ? 'WOMAN' : 'PERSON';
+            let ageLabel = (age === 'ALL' || !age) ? '' : `<strong>${age}</strong> year old `;
             let article = (age === '18-24' || age === 'ALL' || !age) ? 'An' : 'A';
             
-            return `${article} ${ageLabel}${raceLabel} ${sexLabel}`.replace(/\s+/g, ' ').trim();
+            return `${article} ${ageLabel}<strong>${raceLabel}</strong> <strong>${sexLabel}</strong>`.replace(/\s+/g, ' ').trim();
         }
 
         function calculateRRI(target, ref) {
@@ -279,7 +281,7 @@
         }
 
         function updateSentenceAndRRI() {
-            document.getElementById('targetSubjectText').textContent = formatSubjectText(
+            document.getElementById('targetSubjectText').innerHTML = formatSubjectText(
                 selectedCellData.age, 
                 selectedCellData.race, 
                 selectedCellData.sex
@@ -382,8 +384,29 @@
             }
         }
 
+        function initTableauViz() {
+            const containerDiv = document.getElementById("vizContainer");
+            if (!containerDiv) return;
+
+            // Replace with your Tableau Dashboard URL
+            const url = "YOUR_TABLEAU_PUBLIC_OR_SERVER_URL_HERE"; 
+            
+            const options = {
+                hideTabs: true,
+                hideToolbar: true,
+                onFirstInteractive: function () {
+                    console.log("Tableau Heatmap loaded successfully.");
+                }
+            };
+
+            if (url !== "YOUR_TABLEAU_PUBLIC_OR_SERVER_URL_HERE") {
+                window.tableauViz = new tableau.Viz(containerDiv, url, options);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             initGridOverlay();
+            initTableauViz();
             updateSentenceAndRRI();
         });
     </script>

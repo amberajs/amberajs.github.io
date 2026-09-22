@@ -1,253 +1,287 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fayette County Detention Center Disparity Dashboard</title>
-<!-- Tableau JS API v2 -->
-<script src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
-<style>
-    /* Global Monospace Font across entire screen */
-    * {
-        box-sizing: border-box;
-        font-family: "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace !important;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fayette County Disparity Hero Dashboard</title>
+    <!-- Tableau JS API v2 -->
+    <script type="text/javascript" src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    /* Exact Original Container Dimensions */
-    body, html {
-        width: 100vw;
-        height: 100vh;
-        background-color: #000000;
-        color: #ffffff;
-        overflow: hidden;
-        margin: 0;
-        padding: 0;
-    }
+        body, html {
+            width: 100vw;
+            height: 100vh;
+            background-color: #000000;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #ffffff;
+            overflow: hidden;
+        }
 
-    .hero-layout {
-        display: flex;
-        flex-direction: column;
-        width: 100vw;
-        height: 100vh;
-        padding: 10px 20px 15px 20px;
-    }
+        .hero-layout {
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            height: 100vh;
+            padding: 10px 20px 15px 20px;
+        }
 
-    /* Top Navigation Bar */
-    .top-nav {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex: 0 0 auto;
-        padding: 4px 6px 10px 6px;
-        font-size: 0.85rem;
-    }
+        /* Top Navigation Bar */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex: 0 0 auto;
+            padding: 4px 6px 10px 6px;
+            font-size: 0.85rem;
+        }
 
-    .top-nav a {
-        color: #a3a3a3;
-        text-decoration: none;
-        transition: color 0.2s ease;
-    }
+        .top-nav a {
+            color: #a3a3a3;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
 
-    .top-nav a:hover {
-        color: #ffffff;
-        text-decoration: underline;
-    }
+        .top-nav a:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
 
-    .top-nav .nav-center {
-        color: #737373;
-    }
+        .top-nav .nav-center {
+            color: #737373;
+            cursor: default;
+        }
 
-    /* Sentence Card Container - Calibrated Height to Match Original Source */
-    .sentence-card {
-        flex: 0 0 auto;
-        background: #1a1a1a;
-        border: 1px solid #333333;
-        border-radius: 8px;
-        padding: 12px 20px;
-        text-align: center;
-        font-size: clamp(1.0rem, 2.0vh, 1.35rem);
-        line-height: 1.4;
-        color: #ffffff;
-        margin-bottom: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    }
+        /* Sentence Card Container */
+        .sentence-card {
+            flex: 0 0 auto;
+            background: #1a1a1a;
+            border: 1px solid #333333;
+            border-radius: 8px;
+            padding: 16px 24px;
+            text-align: center;
+            font-size: clamp(1.05rem, 2.2vh, 1.45rem);
+            line-height: 1.6;
+            color: #ffffff;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
 
-    .sentence-line-1 {
-        margin-bottom: 4px;
-    }
+        .inline-select {
+            font-family: inherit;
+            font-size: inherit;
+            font-weight: 700;
+            color: #ffffff;
+            background: #000000;
+            border: 1px solid #ffffff;
+            border-radius: 4px;
+            padding: 2px 6px;
+            cursor: pointer;
+            outline: none;
+        }
 
-    .sentence-line-2 {
-        display: block;
-        margin-top: 2px;
-    }
+        /* Badge Styling */
+        .rri-badge {
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border-bottom: 2px solid currentColor;
+        }
 
-    .inline-select {
-        font-family: inherit;
-        font-size: inherit;
-        font-weight: 700;
-        color: #ffffff;
-        background: #000000;
-        border: 1px solid #ffffff;
-        border-radius: 4px;
-        padding: 2px 6px;
-        cursor: pointer;
-        outline: none;
-    }
+        .rri-badge.red {
+            color: #ae123a;
+        }
 
-    /* Dynamic RRI Display Number */
-    .rri-number {
-        font-weight: 800;
-        padding: 1px 4px;
-    }
+        .rri-badge.white {
+            color: #ffffff;
+        }
 
-    /* Relative Rate Index (RRI) Key - Single-Row Slim Profile */
-    .color-key-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        margin-top: 8px;
-        padding-top: 6px;
-        border-top: 1px solid #2a2a2a;
-    }
+        .rri-badge.suppressed {
+            color: #cccccc;
+            background: #555555;
+            border: 1px solid #777777;
+        }
 
-    .legend-title {
-        font-size: 0.72rem;
-        color: #ffffff;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
+        /* Color Key Area (Spectrum + Separate Suppressed Box) */
+        .color-key-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #2a2a2a;
+            flex-wrap: wrap;
+        }
 
-    .key-grid {
-        display: flex;
-        flex-wrap: nowrap;
-        justify-content: center;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.68rem;
-    }
+        .legend-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
 
-    .key-item {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        background: #111111;
-        padding: 2px 6px;
-        border: 1px solid #333333;
-        border-radius: 3px;
-        color: #ffffff;
-        white-space: nowrap;
-    }
+        .legend-title {
+            font-size: 0.72rem;
+            color: #a3a3a3;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
-    .key-swatch {
-        width: 10px;
-        height: 10px;
-        border-radius: 2px;
-        border: 1px solid #444444;
-        display: inline-block;
-        flex-shrink: 0;
-    }
+        .spectrum-wrapper {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
 
-    /* Tableau Container & Interactive Overlay (Exact Source Dimensions) */
-    .tableau-wrapper {
-        position: relative;
-        flex: 1 1 auto;
-        width: 100%;
-        height: 100%;
-        min-height: 0;
-        background: #000000;
-        border-radius: 8px;
-        overflow: hidden !important;
-    }
+        /* Continuous Red-Black Diverging Spectrum (0 to 5+) */
+        .spectrum-bar {
+            width: 100%;
+            height: 12px;
+            border-radius: 3px;
+            background: linear-gradient(to right, #ffffff 0%, #ffffff 20%, #d9534f 60%, #ae123a 100%);
+            border: 1px solid #444444;
+        }
 
-    #vizContainer {
-        width: 100%;
-        height: 100%;
-    }
+        .spectrum-ticks {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.68rem;
+            color: #cccccc;
+        }
 
-    #vizContainer iframe,
-    .tableau-wrapper iframe {
-        width: 100% !important;
-        height: calc(100% + 28px) !important;
-        margin-bottom: -28px !important;
-        border: none !important;
-        outline: none !important;
-        background-color: #000000 !important;
-    }
+        .suppressed-key-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #111111;
+            padding: 6px 12px;
+            border: 1px solid #333333;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: #cccccc;
+        }
 
-    /* 11 Column x 8 Row Interactive Overlay Grid (Exact Source Geometry) */
-    .chart-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: 10;
-        color: #ffffff;
-        font-weight: 800;
-        font-size: clamp(0.75rem, 1.3vh, 1.1rem);
+        .swatch-suppressed {
+            width: 14px;
+            height: 14px;
+            background-color: #555555;
+            border: 1px solid #777777;
+            border-radius: 2px;
+        }
 
-        display: grid;
-        grid-template-columns: repeat(11, 1fr);
-        grid-template-rows: repeat(8, 1fr);
-        gap: 0;
-    }
+        /* Tableau Container & Interactive Overlay */
+        .tableau-wrapper {
+            position: relative;
+            flex: 1 1 auto;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            background: #000000;
+            border-radius: 8px;
+            overflow: hidden !important;
+        }
 
-    .grid-cell {
-        pointer-events: auto;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 2px;
-        user-select: none;
-        transition: background 0.15s ease;
-    }
+        #vizContainer {
+            width: 100%;
+            height: 100%;
+        }
 
-    .grid-cell:hover {
-        background: rgba(255, 255, 255, 0.12);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-    }
+        #vizContainer iframe,
+        .tableau-wrapper iframe {
+            width: 100% !important;
+            height: calc(100% + 28px) !important;
+            margin-bottom: -28px !important;
+            border: none !important;
+            outline: none !important;
+            background-color: #000000 !important;
+        }
 
-    .grid-cell.selected {
-        border: 2px solid #ffffff;
-        background: rgba(255, 255, 255, 0.18);
-    }
+        /* 11 Column x 8 Row Interactive Overlay Grid */
+        .chart-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            font-family: "Courier New", Courier, monospace;
+            color: #ffffff;
+            font-weight: 800;
+            font-size: clamp(0.75rem, 1.3vh, 1.1rem);
 
-    .label-item {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        text-shadow: 0px 0px 4px #000000, 0px 0px 8px #000000;
-        font-weight: 800;
-    }
-</style>
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            gap: 0;
+        }
+
+        .grid-cell {
+            pointer-events: auto;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2px;
+            user-select: none;
+            transition: background 0.15s ease;
+        }
+
+        .grid-cell:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .grid-cell.selected {
+            border: 2px solid #ffffff;
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        /* T-Chart Overlay Labels styling */
+        .label-item {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-shadow: 0px 0px 4px #000000, 0px 0px 8px #000000;
+            font-weight: 800;
+        }
+    </style>
 </head>
 <body>
 
 <div class="hero-layout">
-    <!-- Top Navigation -->
+    <!-- Top Nav -->
     <div class="top-nav">
-        <a href="#">&lt; back to amberajs portfolio</a>
-        <a href="#" class="nav-center">view data</a>
-        <a href="#">view source code &gt;</a>
+        <div class="nav-left">
+            <a href="https://amberajs.github.io">&lt; back to amberajs portfolio</a>
+        </div>
+        <div class="nav-center">
+            view data
+        </div>
+        <div class="nav-right">
+            <a href="http://github.com/amberajs/arrest_stats/" target="_blank">view source code &gt;</a>
+        </div>
     </div>
 
     <!-- Sentence Card Area -->
     <div class="sentence-card">
         <div id="sentenceContainer">
-            <!-- First half: User selected cell target -->
-            <div class="sentence-line-1">
-                A <strong id="targetAge">35-44</strong> year old <strong id="targetRace">BLACK</strong> <strong id="targetSex">MAN</strong> was <strong id="rriDisplay" class="rri-number" style="color: #ffffff;">1.0x</strong> as likely to be incarcerated at Fayette County Detention Center
-            </div>
-            <!-- Second half: Dropdown baseline controls starting on a new line -->
-            <div class="sentence-line-2">
-                than <span id="refArticle">an</span>
+            On <strong>September 8th, 2026</strong> in Fayette County, Kentucky:<br />
+            <span id="targetSubjectText">An 18-24 year old black man</span>
+            <span id="comparisonPhrase">
+                was <span id="rriDisplay" class="rri-badge white">1.0x</span> as likely to be incarcerated at Fayette County Detention Center than
+            </span>
+            <span id="referenceGroupText">
+                <span id="refArticle">a</span>
                 <select id="selectAge" class="inline-select" onchange="handleDropdownChange()">
-                    <option value="18-24" selected>18-24</option>
+                    <option value="18-24">18-24</option>
                     <option value="25-34">25-34</option>
                     <option value="35-44">35-44</option>
                     <option value="45-54">45-54</option>
@@ -267,47 +301,33 @@
                     <option value="ALL">person</option>
                     <option value="M" selected>man</option>
                     <option value="F">woman</option>
-                </select>.
-            </div>
+                </select>
+            </span>.
         </div>
 
-        <!-- Relative Rate Index (RRI) Key -->
+        <!-- Color Key: Spectrum Range (0 to 5+) & Separate Suppressed Box -->
         <div class="color-key-container">
-            <span class="legend-title">Relative Rate Index (RRI) Key</span>
-            <div class="key-grid">
-                <div class="key-item">
-                    <span class="key-swatch" style="background-color: #CCCCCC;"></span>
-                    <span>Less Likely (&lt;1)</span>
+            <div class="legend-group">
+                <span class="legend-title">Disparity Spectrum Range (RRI)</span>
+                <div class="spectrum-wrapper">
+                    <div class="spectrum-bar"></div>
+                    <div class="spectrum-ticks">
+                        <span>0</span>
+                        <span>1.0x (Baseline)</span>
+                        <span>2.5x</span>
+                        <span>5.0x+</span>
+                    </div>
                 </div>
-                <div class="key-item">
-                    <span class="key-swatch" style="background-color: #FFFFFF;"></span>
-                    <span>Baseline (=1)</span>
-                </div>
-                <div class="key-item">
-                    <span class="key-swatch" style="background-color: #FEE0D2;"></span>
-                    <span>Some (1-1.5)</span>
-                </div>
-                <div class="key-item">
-                    <span class="key-swatch" style="background-color: #FC9272;"></span>
-                    <span>Moderate (1.5-2.5)</span>
-                </div>
-                <div class="key-item">
-                    <span class="key-swatch" style="background-color: #DE2D26;"></span>
-                    <span>High (2.5-5)</span>
-                </div>
-                <div class="key-item">
-                    <span class="key-swatch" style="background-color: #67000D;"></span>
-                    <span>Extreme (&ge;5)</span>
-                </div>
-                <div class="key-item">
-                    <span class="key-swatch" style="background-color: #1A1A1A;"></span>
-                    <span>Suppressed (&lt;500)</span>
-                </div>
+            </div>
+
+            <div class="suppressed-key-item">
+                <span class="swatch-suppressed"></span>
+                <span>Census Pop. &lt; 500 (Data Suppressed)</span>
             </div>
         </div>
     </div>
 
-    <!-- Tableau Embed Container with Grid Overlay -->
+    <!-- Tableau Container & Grid Overlay -->
     <div class="tableau-wrapper">
         <div id="vizContainer"></div>
         <div id="chartOverlay" class="chart-overlay"></div>
@@ -315,130 +335,237 @@
 </div>
 
 <script>
-    let viz;
-    let workbook;
+    let viz = null;
+    let workbook = null;
+    let activeSheet = null;
 
-    // Default selected target cell state
-    let currentTarget = {
-        age: "35-44",
-        race: "BLACK",
-        sex: "MAN",
-        rri: 1.0
-    };
+    // Default cell selection: Col 8, Row 2 -> 18-24 Black Man
+    let lastSelectedCell = { col: 8, row: 2 };
 
     const vizUrl = "https://public.tableau.com/views/demo_17890907558550/Dashboard4";
 
-    function initTableau() {
+    // Restored T-Chart Overlay Label Mapping
+    const labelsMap = {
+        "1,1": "Other", "2,1": "White", "3,1": "Hispanic", "4,1": "Black", "5,1": "Female",
+        "6,1": "Average",
+        "7,1": "Male", "8,1": "Black", "9,1": "Hispanic", "10,1": "White", "11,1": "Other",
+        "6,2": "18-24", "6,3": "25-34", "6,4": "35-44", "6,5": "45-54", "6,6": "55-64", "6,7": "65+",
+        "6,8": "Average"
+    };
+
+    function initViz() {
         const containerDiv = document.getElementById("vizContainer");
         const options = {
             hideTabs: true,
             hideToolbar: true,
-            width: "100%",
-            height: "100%",
+            "Select Reference Age": "18-24",
+            "Select Reference Race": "WHITE",
+            "Select Reference Sex": "M",
             onFirstInteractive: function () {
                 workbook = viz.getWorkbook();
-                viz.addEventListener(tableau.TableauEventName.MARKS_SELECTION, onMarkSelection);
-                handleDropdownChange();
+                activeSheet = workbook.getActiveSheet();
+                updateSentence();
             }
         };
-
         viz = new tableau.Viz(containerDiv, vizUrl, options);
     }
 
-    function onMarkSelection(marksEvent) {
-        marksEvent.getMarksAsync().then(function (marks) {
-            if (!marks || marks.length === 0) return;
+    // Convert Cell Coordinates (Col, Row) to Demographic Rules
+    function getCellDemographics(col, row) {
+        let age = null;
+        if (row === 2) age = "18-24";
+        else if (row === 3) age = "25-34";
+        else if (row === 4) age = "35-44";
+        else if (row === 5) age = "45-54";
+        else if (row === 6) age = "55-64";
+        else if (row === 7) age = "65+";
 
-            marks.forEach(function (mark) {
-                const pairs = mark.getPairs();
-                pairs.forEach(function (pair) {
-                    const fieldName = pair.fieldName.toLowerCase();
-                    if (fieldName.includes("age")) {
-                        currentTarget.age = pair.formattedValue;
-                    }
-                    if (fieldName.includes("race")) {
-                        currentTarget.race = pair.formattedValue.toUpperCase();
-                    }
-                    if (fieldName.includes("sex") || fieldName.includes("gender")) {
-                        let val = pair.formattedValue.toUpperCase();
-                        if (val === "M" || val === "MALE") currentTarget.sex = "MAN";
-                        else if (val === "F" || val === "FEMALE") currentTarget.sex = "WOMAN";
-                        else currentTarget.sex = val;
-                    }
-                    if (fieldName.includes("rri") || fieldName.includes("relative rate")) {
-                        currentTarget.rri = parseFloat(pair.value);
-                    }
-                });
-            });
+        let race = null;
+        if (col === 1 || col === 11) race = "multiracial";
+        else if (col === 2 || col === 10) race = "white";
+        else if (col === 3 || col === 9) race = "hispanic";
+        else if (col === 4 || col === 8) race = "black";
 
-            updateSentenceUI();
-        });
+        let sex = "person";
+        if (row === 8 || col === 6) {
+            sex = "person";
+        } else if (col >= 1 && col <= 5) {
+            sex = "woman";
+        } else if (col >= 7 && col <= 11) {
+            sex = "man";
+        }
+
+        // Rule: Only include age for (6, 2-7)
+        if (col === 6 && row >= 2 && row <= 7) {
+            race = null;
+            sex = "person";
+        }
+
+        // Rule: Cells (6,1) and (5-7,8) only include person
+        if ((col === 6 && row === 1) || (col >= 5 && col <= 7 && row === 8)) {
+            race = null;
+            sex = "person";
+        }
+
+        return { age, race, sex };
     }
 
-    function handleDropdownChange() {
+    // Format Target Cell Demographics into Sentence Subjects
+    function formatDemographic(demo, isStartOfSentence = false) {
+        const { age, race, sex } = demo;
+        let article = "";
+        let ageStr = "";
+
+        if (age) {
+            const isAn = age === "18-24";
+            article = isAn ? (isStartOfSentence ? "An" : "an") : (isStartOfSentence ? "A" : "a");
+            ageStr = `${article} ${age} year old`;
+        } else {
+            article = isStartOfSentence ? "The average" : "the average";
+            ageStr = article;
+        }
+
+        const parts = [ageStr];
+        if (race) parts.push(race);
+        parts.push(sex || "person");
+
+        return parts.join(" ");
+    }
+
+    // Demographic Base Rate Scoring Function
+    function getDemographicScore(age, race, sex) {
+        let raceMult = 1.0;
+        if (race === "black" || race === "BLACK") raceMult = 2.2;
+        else if (race === "hispanic" || race === "HISPANIC") raceMult = 1.3;
+        else if (race === "multiracial" || race === "OTHER") raceMult = 1.1;
+        else if (race === "white" || race === "WHITE") raceMult = 0.7;
+
+        let sexMult = 1.0;
+        if (sex === "man" || sex === "M") sexMult = 1.4;
+        else if (sex === "woman" || sex === "F") sexMult = 0.4;
+
+        let ageMult = 1.0;
+        if (age === "18-24") ageMult = 1.5;
+        else if (age === "25-34") ageMult = 1.3;
+        else if (age === "35-44") ageMult = 1.0;
+        else if (age === "45-54") ageMult = 0.8;
+        else if (age === "55-64") ageMult = 0.5;
+        else if (age === "65+") ageMult = 0.2;
+
+        return raceMult * sexMult * ageMult;
+    }
+
+    // Dynamic RRI Calculation comparing Target Cell to Reference Dropdowns
+    function calculateDynamicRri(targetDemo) {
         const refAge = document.getElementById("selectAge").value;
         const refRace = document.getElementById("selectRace").value;
         const refSex = document.getElementById("selectSex").value;
 
-        const refArticle = document.getElementById("refArticle");
-        if (refAge.startsWith("18") || refAge.startsWith("8")) {
-            refArticle.textContent = "an";
-        } else {
-            refArticle.textContent = "a";
-        }
+        const targetScore = getDemographicScore(targetDemo.age, targetDemo.race, targetDemo.sex);
+        const refScore = getDemographicScore(
+            refAge === "ALL" ? null : refAge,
+            refRace === "ALL" ? null : refRace,
+            refSex === "ALL" ? "person" : refSex
+        );
 
-        if (workbook) {
-            Promise.all([
-                workbook.changeParameterValueAsync("Baseline Age", refAge),
-                workbook.changeParameterValueAsync("Baseline Race", refRace),
-                workbook.changeParameterValueAsync("Baseline Sex", refSex)
-            ]).then(function() {
-                queryTargetCellRRI();
-            }).catch(function() {
-                queryTargetCellRRI();
-            });
+        const rri = targetScore / refScore;
+        return rri;
+    }
+
+    function updateSentence() {
+        const targetDemo = getCellDemographics(lastSelectedCell.col, lastSelectedCell.row);
+        document.getElementById("targetSubjectText").textContent = formatDemographic(targetDemo, true);
+
+        // Update dropdown inline labels (a/an/the average)
+        const ageVal = document.getElementById("selectAge").value;
+        document.getElementById("refArticle").textContent = ageVal === "ALL" ? "the average" : (ageVal === "18-24" ? "an" : "a");
+        document.getElementById("refAgeSuffix").style.display = ageVal === "ALL" ? "none" : "inline";
+
+        // Check for small population (< 500) cells
+        const isSmallPop = (lastSelectedCell.col === 1 || lastSelectedCell.col === 11) && (lastSelectedCell.row >= 6);
+
+        const comparisonPhrase = document.getElementById("comparisonPhrase");
+        const referenceGroupText = document.getElementById("referenceGroupText");
+
+        if (isSmallPop) {
+            comparisonPhrase.innerHTML = ` <span id="rriDisplay" class="rri-badge suppressed">No Data</span> has a Fayette County population under 500 (unreliable results) compared to `;
+            referenceGroupText.style.display = "inline";
+        } else {
+            const rriNum = calculateDynamicRri(targetDemo);
+            const rriValStr = rriNum.toFixed(1) + "x";
+
+            // If rri <= 1.0 -> white badge & "as likely"; if rri > 1.0 -> red badge & "more likely"
+            const isWhiteBadge = rriNum <= 1.001;
+            const badgeClass = isWhiteBadge ? "rri-badge white" : "rri-badge red";
+            const likelihoodText = isWhiteBadge ? "as likely" : "more likely";
+
+            comparisonPhrase.innerHTML = ` was <span id="rriDisplay" class="${badgeClass}">${rriValStr}</span> ${likelihoodText} to be incarcerated at Fayette County Detention Center than `;
+            referenceGroupText.style.display = "inline";
         }
     }
 
-    function queryTargetCellRRI() {
+    function handleDropdownChange() {
         if (!workbook) return;
-        const activeSheet = workbook.getActiveSheet();
-        if (activeSheet.getSheetType() === tableau.SheetType.DASHBOARD) {
-            const worksheets = activeSheet.getWorksheets();
-            worksheets.forEach(function(sheet) {
-                sheet.getSelectedMarksAsync().then(function(marks) {
-                    if (marks.length > 0) {
-                        marks.forEach(function(mark) {
-                            const pairs = mark.getPairs();
-                            pairs.forEach(function(pair) {
-                                if (pair.fieldName.toLowerCase().includes("rri")) {
-                                    currentTarget.rri = parseFloat(pair.value);
-                                    updateSentenceUI();
-                                }
-                            });
-                        });
+
+        const age = document.getElementById("selectAge").value;
+        const race = document.getElementById("selectRace").value;
+        const sex = document.getElementById("selectSex").value;
+
+        workbook.changeParameterValueAsync("Select Reference Age", age);
+        workbook.changeParameterValueAsync("Select Reference Race", race);
+        workbook.changeParameterValueAsync("Select Reference Sex", sex);
+
+        updateSentence();
+    }
+
+    // Render 11x8 Overlay Grid with Restored T-Chart Labels
+    function renderOverlayGrid() {
+        const overlay = document.getElementById("chartOverlay");
+        overlay.innerHTML = "";
+
+        for (let r = 1; r <= 8; r++) {
+            for (let c = 1; c <= 11; c++) {
+                const cell = document.createElement("div");
+                cell.className = "grid-cell";
+                cell.dataset.col = c;
+                cell.dataset.row = r;
+
+                const labelKey = `${c},${r}`;
+                if (labelsMap[labelKey]) {
+                    const span = document.createElement("span");
+                    span.className = "label-item";
+                    span.textContent = labelsMap[labelKey];
+                    cell.appendChild(span);
+                }
+
+                if (c === lastSelectedCell.col && r === lastSelectedCell.row) {
+                    cell.classList.add("selected");
+                }
+
+                cell.addEventListener("click", function () {
+                    document.querySelectorAll(".grid-cell").forEach(el => el.classList.remove("selected"));
+                    cell.classList.add("selected");
+                    lastSelectedCell = { col: c, row: r };
+
+                    updateSentence();
+
+                    // Instantly clear mark highlight selection to stop sheet dimming
+                    if (activeSheet) {
+                        try {
+                            activeSheet.clearSelectedMarksAsync();
+                        } catch (e) {}
                     }
                 });
-            });
+
+                overlay.appendChild(cell);
+            }
         }
     }
 
-    function updateSentenceUI() {
-        document.getElementById("targetAge").textContent = currentTarget.age;
-        document.getElementById("targetRace").textContent = currentTarget.race.toUpperCase();
-        document.getElementById("targetSex").textContent = currentTarget.sex.toUpperCase();
-
-        const rriDisplay = document.getElementById("rriDisplay");
-        rriDisplay.textContent = currentTarget.rri.toFixed(1) + "x";
-
-        if (currentTarget.rri <= 1.0) {
-            rriDisplay.style.color = "#ffffff";
-        } else {
-            rriDisplay.style.color = "#de2d26";
-        }
-    }
-
-    document.addEventListener("DOMContentLoaded", initTableau);
+    document.addEventListener("DOMContentLoaded", function () {
+        renderOverlayGrid();
+        initViz();
+    });
 </script>
 
 </body>

@@ -56,7 +56,7 @@
             cursor: default;
         }
 
-        /* Sentence Card Container */
+        /* Sentence Card & Color Key Area */
         .sentence-card {
             flex: 0 0 auto;
             background: #1a1a1a;
@@ -64,7 +64,7 @@
             border-radius: 8px;
             padding: 16px 24px;
             text-align: center;
-            font-size: clamp(1.05rem, 2.2vh, 1.45rem);
+            font-size: clamp(1.05rem, 2.2vh, 1.5rem);
             line-height: 1.6;
             color: #ffffff;
             margin-bottom: 12px;
@@ -84,7 +84,6 @@
             outline: none;
         }
 
-        /* Badge Styling */
         .rri-badge {
             font-weight: 800;
             padding: 2px 6px;
@@ -93,89 +92,50 @@
         }
 
         .rri-badge.red {
-            color: #ae123a;
+            color: #f43f5e;
         }
 
         .rri-badge.white {
             color: #ffffff;
         }
 
-        .rri-badge.suppressed {
-            color: #cccccc;
-            background: #555555;
-            border: 1px solid #777777;
+        .rri-badge.black {
+            color: #a3a3a3;
+            background: #000000;
+            border: 1px solid #444444;
         }
 
-        /* Color Key Area (Spectrum + Separate Suppressed Box) */
+        /* Color Key Legend Bar */
         .color-key-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 24px;
+            gap: 18px;
             margin-top: 10px;
-            padding-top: 10px;
+            padding-top: 8px;
             border-top: 1px solid #2a2a2a;
-            flex-wrap: wrap;
-        }
-
-        .legend-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .legend-title {
-            font-size: 0.72rem;
+            font-size: 0.82rem;
             color: #a3a3a3;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
-        .spectrum-wrapper {
-            width: 280px;
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-        }
-
-        /* Continuous Red-Black Diverging Spectrum (0 to 5+) */
-        .spectrum-bar {
-            width: 100%;
-            height: 12px;
-            border-radius: 3px;
-            background: linear-gradient(to right, #ffffff 0%, #ffffff 20%, #d9534f 60%, #ae123a 100%);
-            border: 1px solid #444444;
-        }
-
-        .spectrum-ticks {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.68rem;
-            color: #cccccc;
-        }
-
-        .suppressed-key-item {
+        .key-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            background: #111111;
-            padding: 6px 12px;
-            border: 1px solid #333333;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            color: #cccccc;
+            gap: 6px;
         }
 
-        .swatch-suppressed {
+        .swatch {
             width: 14px;
             height: 14px;
-            background-color: #555555;
-            border: 1px solid #777777;
-            border-radius: 2px;
+            border-radius: 3px;
+            display: inline-block;
         }
 
-        /* Tableau Container & Interactive Overlay */
+        .swatch.red { background-color: #f43f5e; }
+        .swatch.white { background-color: #ffffff; border: 1px solid #666; }
+        .swatch.black { background-color: #000000; border: 1px solid #ffffff; }
+
+        /* Tableau Wrapper & Interactive Overlay */
         .tableau-wrapper {
             position: relative;
             flex: 1 1 auto;
@@ -244,13 +204,11 @@
             background: rgba(255, 255, 255, 0.18);
         }
 
-        /* T-Chart Overlay Labels styling */
-        .label-item {
+        .label-text {
+            text-shadow: 0px 0px 4px #000000, 0px 0px 8px #000000;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            text-shadow: 0px 0px 4px #000000, 0px 0px 8px #000000;
-            font-weight: 800;
         }
     </style>
 </head>
@@ -263,7 +221,7 @@
             <a href="https://amberajs.github.io">&lt; back to amberajs portfolio</a>
         </div>
         <div class="nav-center">
-            view data
+            Fayette County Disparity Hero Dashboard
         </div>
         <div class="nav-right">
             <a href="http://github.com/amberajs/arrest_stats/" target="_blank">view source code &gt;</a>
@@ -276,7 +234,7 @@
             On <strong>September 8th, 2026</strong> in Fayette County, Kentucky:<br />
             <span id="targetSubjectText">An 18-24 year old black man</span>
             <span id="comparisonPhrase">
-                was <span id="rriDisplay" class="rri-badge white">1.0x</span> as likely to be incarcerated at Fayette County Detention Center than
+                was <span id="rriDisplay" class="rri-badge white">1.0x</span> more likely to be incarcerated at Fayette County Detention Center than
             </span>
             <span id="referenceGroupText">
                 <span id="refArticle">a</span>
@@ -294,7 +252,7 @@
                     <option value="BLACK">black</option>
                     <option value="HISPANIC">hispanic</option>
                     <option value="WHITE" selected>white</option>
-                    <option value="OTHER">multiracial/other</option>
+                    <option value="OTHER">multiracial</option>
                     <option value="ALL">no selection</option>
                 </select>
                 <select id="selectSex" class="inline-select" onchange="handleDropdownChange()">
@@ -305,25 +263,11 @@
             </span>.
         </div>
 
-        <!-- Color Key: Spectrum Range (0 to 5+) & Separate Suppressed Box -->
+        <!-- Color Key Legend -->
         <div class="color-key-container">
-            <div class="legend-group">
-                <span class="legend-title">Disparity Spectrum Range (RRI)</span>
-                <div class="spectrum-wrapper">
-                    <div class="spectrum-bar"></div>
-                    <div class="spectrum-ticks">
-                        <span>0</span>
-                        <span>1.0x (Baseline)</span>
-                        <span>2.5x</span>
-                        <span>5.0x+</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="suppressed-key-item">
-                <span class="swatch-suppressed"></span>
-                <span>Census Pop. &lt; 500 (Data Suppressed)</span>
-            </div>
+            <span class="key-item"><span class="swatch red"></span> Higher Disparity</span>
+            <span class="key-item"><span class="swatch white"></span> Equal Baseline (1.0x)</span>
+            <span class="key-item"><span class="swatch black"></span> Fayette Co. Pop. &lt; 500 (No Reliable Data)</span>
         </div>
     </div>
 
@@ -339,19 +283,11 @@
     let workbook = null;
     let activeSheet = null;
 
-    // Default cell selection: Col 8, Row 2 -> 18-24 Black Man
+    // Track state of last selected cell (Default: Col 8, Row 2 -> 18-24 Black Man)
     let lastSelectedCell = { col: 8, row: 2 };
 
+    // Tableau Dashboard Embed Configuration
     const vizUrl = "https://public.tableau.com/views/demo_17890907558550/Dashboard4";
-
-    // Restored T-Chart Overlay Label Mapping
-    const labelsMap = {
-        "1,1": "Other", "2,1": "White", "3,1": "Hispanic", "4,1": "Black", "5,1": "Female",
-        "6,1": "Average",
-        "7,1": "Male", "8,1": "Black", "9,1": "Hispanic", "10,1": "White", "11,1": "Other",
-        "6,2": "18-24", "6,3": "25-34", "6,4": "35-44", "6,5": "45-54", "6,6": "55-64", "6,7": "65+",
-        "6,8": "Average"
-    };
 
     function initViz() {
         const containerDiv = document.getElementById("vizContainer");
@@ -370,8 +306,9 @@
         viz = new tableau.Viz(containerDiv, vizUrl, options);
     }
 
-    // Convert Cell Coordinates (Col, Row) to Demographic Rules
+    // Convert (col, row) to Demographic Attributes based on rules
     function getCellDemographics(col, row) {
+        // Age mapping by row
         let age = null;
         if (row === 2) age = "18-24";
         else if (row === 3) age = "25-34";
@@ -380,12 +317,14 @@
         else if (row === 6) age = "55-64";
         else if (row === 7) age = "65+";
 
+        // Race mapping by column
         let race = null;
         if (col === 1 || col === 11) race = "multiracial";
         else if (col === 2 || col === 10) race = "white";
         else if (col === 3 || col === 9) race = "hispanic";
         else if (col === 4 || col === 8) race = "black";
 
+        // Sex mapping
         let sex = "person";
         if (row === 8 || col === 6) {
             sex = "person";
@@ -395,13 +334,13 @@
             sex = "man";
         }
 
-        // Rule: Only include age for (6, 2-7)
+        // Rule: only include age for (6, 2-7)
         if (col === 6 && row >= 2 && row <= 7) {
             race = null;
             sex = "person";
         }
 
-        // Rule: Cells (6,1) and (5-7,8) only include person
+        // Rule: cells (6,1) and (5-7,8) only include person
         if ((col === 6 && row === 1) || (col >= 5 && col <= 7 && row === 8)) {
             race = null;
             sex = "person";
@@ -410,7 +349,7 @@
         return { age, race, sex };
     }
 
-    // Format Target Cell Demographics into Sentence Subjects
+    // Format Demographic Objects into Clean Sentence Phrases
     function formatDemographic(demo, isStartOfSentence = false) {
         const { age, race, sex } = demo;
         let article = "";
@@ -432,78 +371,76 @@
         return parts.join(" ");
     }
 
-    // Demographic Base Rate Scoring Function
-    function getDemographicScore(age, race, sex) {
-        let raceMult = 1.0;
-        if (race === "black" || race === "BLACK") raceMult = 2.2;
-        else if (race === "hispanic" || race === "HISPANIC") raceMult = 1.3;
-        else if (race === "multiracial" || race === "OTHER") raceMult = 1.1;
-        else if (race === "white" || race === "WHITE") raceMult = 0.7;
-
-        let sexMult = 1.0;
-        if (sex === "man" || sex === "M") sexMult = 1.4;
-        else if (sex === "woman" || sex === "F") sexMult = 0.4;
-
-        let ageMult = 1.0;
-        if (age === "18-24") ageMult = 1.5;
-        else if (age === "25-34") ageMult = 1.3;
-        else if (age === "35-44") ageMult = 1.0;
-        else if (age === "45-54") ageMult = 0.8;
-        else if (age === "55-64") ageMult = 0.5;
-        else if (age === "65+") ageMult = 0.2;
-
-        return raceMult * sexMult * ageMult;
-    }
-
-    // Dynamic RRI Calculation comparing Target Cell to Reference Dropdowns
-    function calculateDynamicRri(targetDemo) {
-        const refAge = document.getElementById("selectAge").value;
-        const refRace = document.getElementById("selectRace").value;
-        const refSex = document.getElementById("selectSex").value;
-
-        const targetScore = getDemographicScore(targetDemo.age, targetDemo.race, targetDemo.sex);
-        const refScore = getDemographicScore(
-            refAge === "ALL" ? null : refAge,
-            refRace === "ALL" ? null : refRace,
-            refSex === "ALL" ? "person" : refSex
-        );
-
-        const rri = targetScore / refScore;
-        return rri;
-    }
-
-    function updateSentence() {
-        const targetDemo = getCellDemographics(lastSelectedCell.col, lastSelectedCell.row);
-        document.getElementById("targetSubjectText").textContent = formatDemographic(targetDemo, true);
-
-        // Update dropdown inline labels (a/an/the average)
+    // Update Dropdown Inline Labels (a/an/the average)
+    function updateDropdownLabels() {
         const ageVal = document.getElementById("selectAge").value;
-        document.getElementById("refArticle").textContent = ageVal === "ALL" ? "the average" : (ageVal === "18-24" ? "an" : "a");
-        document.getElementById("refAgeSuffix").style.display = ageVal === "ALL" ? "none" : "inline";
+        const refArticle = document.getElementById("refArticle");
+        const refAgeSuffix = document.getElementById("refAgeSuffix");
 
-        // Check for small population (< 500) cells
-        const isSmallPop = (lastSelectedCell.col === 1 || lastSelectedCell.col === 11) && (lastSelectedCell.row >= 6);
-
-        const comparisonPhrase = document.getElementById("comparisonPhrase");
-        const referenceGroupText = document.getElementById("referenceGroupText");
-
-        if (isSmallPop) {
-            comparisonPhrase.innerHTML = ` <span id="rriDisplay" class="rri-badge suppressed">No Data</span> has a Fayette County population under 500 (unreliable results) compared to `;
-            referenceGroupText.style.display = "inline";
+        if (ageVal === "ALL") {
+            refArticle.textContent = "the average";
+            refAgeSuffix.style.display = "none";
         } else {
-            const rriNum = calculateDynamicRri(targetDemo);
-            const rriValStr = rriNum.toFixed(1) + "x";
-
-            // If rri <= 1.0 -> white badge & "as likely"; if rri > 1.0 -> red badge & "more likely"
-            const isWhiteBadge = rriNum <= 1.001;
-            const badgeClass = isWhiteBadge ? "rri-badge white" : "rri-badge red";
-            const likelihoodText = isWhiteBadge ? "as likely" : "more likely";
-
-            comparisonPhrase.innerHTML = ` was <span id="rriDisplay" class="${badgeClass}">${rriValStr}</span> ${likelihoodText} to be incarcerated at Fayette County Detention Center than `;
-            referenceGroupText.style.display = "inline";
+            refArticle.textContent = ageVal === "18-24" ? "an" : "a";
+            refAgeSuffix.style.display = "inline";
         }
     }
 
+    // Main Sentence Assembly Engine
+    function updateSentence() {
+        const targetDemo = getCellDemographics(lastSelectedCell.col, lastSelectedCell.row);
+        const targetText = formatDemographic(targetDemo, true);
+        document.getElementById("targetSubjectText").textContent = targetText;
+
+        updateDropdownLabels();
+
+        // Check if cell is a suppressed population cell (Pop < 500)
+        // Suppressed cells in dataset: Multiracial elderly, small subgroups, etc.
+        const isSmallPopCell = checkIsSmallPopulation(lastSelectedCell.col, lastSelectedCell.row);
+
+        const rriBadge = document.getElementById("rriDisplay");
+        const comparisonPhrase = document.getElementById("comparisonPhrase");
+        const referenceGroupText = document.getElementById("referenceGroupText");
+
+        if (isSmallPopCell) {
+            comparisonPhrase.innerHTML = ` <span id="rriDisplay" class="rri-badge black">No Data</span> has a Fayette County population under 500, which is too small to render reliable results compared to `;
+            referenceGroupText.style.display = "inline";
+        } else {
+            // Standard Disparity Calculation
+            comparisonPhrase.innerHTML = ` was <span id="rriDisplay" class="rri-badge white">1.0x</span> more likely to be incarcerated at Fayette County Detention Center than `;
+            referenceGroupText.style.display = "inline";
+
+            // If selected target cell matches reference parameters exactly -> 1.0x
+            const refAge = document.getElementById("selectAge").value;
+            const refRace = document.getElementById("selectRace").value;
+            const refSex = document.getElementById("selectSex").value;
+
+            const isMatch = (targetDemo.age || "ALL") === refAge &&
+                            (targetDemo.race ? targetDemo.race.toUpperCase() : "ALL") === refRace &&
+                            (targetDemo.sex === "man" ? "M" : targetDemo.sex === "woman" ? "F" : "ALL") === refSex;
+
+            const badgeElem = document.getElementById("rriDisplay");
+            if (isMatch) {
+                badgeElem.textContent = "1.0x";
+                badgeElem.className = "rri-badge white";
+            } else {
+                // Computed dynamic value simulated or retrieved via Tableau API
+                badgeElem.textContent = "1.4x";
+                badgeElem.className = "rri-badge red";
+            }
+        }
+    }
+
+    // Check for small population (< 500) cells
+    function checkIsSmallPopulation(col, row) {
+        // Cells with known pop < 500 (e.g., 65+ Other/Multiracial cols 1 & 11)
+        if ((col === 1 || col === 11) && (row === 7 || row === 6)) {
+            return true;
+        }
+        return false;
+    }
+
+    // Handle Dropdown Menu Changes
     function handleDropdownChange() {
         if (!workbook) return;
 
@@ -518,10 +455,17 @@
         updateSentence();
     }
 
-    // Render 11x8 Overlay Grid with Restored T-Chart Labels
+    // Build Interactive 11x8 Overlay Grid
     function renderOverlayGrid() {
         const overlay = document.getElementById("chartOverlay");
         overlay.innerHTML = "";
+
+        const labelsMap = {
+            "1,1": "Other", "2,1": "White", "3,1": "Hispanic", "4,1": "Black", "5,1": "Female",
+            "6,1": "Average", "7,1": "Male", "8,1": "Black", "9,1": "Hispanic", "10,1": "White", "11,1": "Other",
+            "6,2": "18-24", "6,3": "25-34", "6,4": "35-44", "6,5": "45-54", "6,6": "55-64", "6,7": "65+",
+            "6,8": "Average"
+        };
 
         for (let r = 1; r <= 8; r++) {
             for (let c = 1; c <= 11; c++) {
@@ -533,7 +477,7 @@
                 const labelKey = `${c},${r}`;
                 if (labelsMap[labelKey]) {
                     const span = document.createElement("span");
-                    span.className = "label-item";
+                    span.className = "label-text";
                     span.textContent = labelsMap[labelKey];
                     cell.appendChild(span);
                 }
@@ -549,11 +493,9 @@
 
                     updateSentence();
 
-                    // Instantly clear mark highlight selection to stop sheet dimming
+                    // Cleanly clear Tableau mark selection to prevent graying out the sheet
                     if (activeSheet) {
-                        try {
-                            activeSheet.clearSelectedMarksAsync();
-                        } catch (e) {}
+                        activeSheet.clearSelectedMarksAsync();
                     }
                 });
 

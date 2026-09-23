@@ -1,458 +1,365 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Racial Disparity Dashboard</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interactive Racial Disparity Dashboard</title>
+<style>
+    /* Global Linux Text Editor Monospace Font */
+    body, html, select, input, button, option {
+        font-family: "Courier New", Courier, monospace;
+    }
 
-        body, html {
-            width: 100vw;
-            height: 100vh;
-            background-color: #000000;
-            /* Linux text editor monospace font across entire screen */
-            font-family: monospace, "Courier New", Courier, "DejaVu Sans Mono", "Liberation Mono";
-            color: #ffffff;
-            overflow: hidden;
-        }
+    body, html {
+        width: 100vw;
+        height: 100vh;
+        background-color: #000000;
+        color: #ffffff;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+    }
 
-        .hero-layout {
-            display: flex;
-            flex-direction: column;
-            width: 100vw;
-            height: 100vh;
-            padding: 10px 20px 15px 20px;
-        }
+    .hero-layout {
+        display: flex;
+        flex-direction: column;
+        width: 100vw;
+        height: 100vh;
+        padding: 10px 20px 15px 20px;
+        box-sizing: border-box;
+    }
 
-        /* Top Navigation Bar */
-        .top-nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex: 0 0 auto;
-            padding: 4px 6px 10px 6px;
-            font-size: 0.9rem;
-            font-family: inherit;
-        }
+    /* Top Navigation Bar */
+    .top-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex: 0 0 auto;
+        padding: 4px 6px 10px 6px;
+        font-size: 0.85rem;
+    }
 
-        .top-nav a {
-            color: #a3a3a3;
-            text-decoration: none;
-            transition: color 0.2s ease;
-        }
+    .top-nav a {
+        color: #a3a3a3;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
 
-        .top-nav a:hover {
-            color: #ffffff;
-            text-decoration: underline;
-        }
+    .top-nav a:hover {
+        color: #ffffff;
+        text-decoration: underline;
+    }
 
-        .top-nav .nav-center {
-            color: #737373;
-            cursor: default;
-        }
+    .top-nav .nav-center {
+        color: #737373;
+    }
 
-        /* Sentence Card Area */
-        .sentence-card {
-            flex: 0 0 auto;
-            background: #1a1a1a;
-            border: 1px solid #333333;
-            border-radius: 8px;
-            padding: 16px 24px;
-            text-align: center;
-            font-size: clamp(1.1rem, 2.3vh, 1.55rem);
-            line-height: 1.7;
-            color: #ffffff;
-            margin-bottom: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            font-family: inherit;
-        }
+    /* Sentence Card & Color Key Area */
+    .sentence-card {
+        flex: 0 0 auto;
+        background: #1a1a1a;
+        border: 1px solid #333333;
+        border-radius: 8px;
+        padding: 16px 24px;
+        text-align: center;
+        font-size: clamp(1.05rem, 2.2vh, 1.5rem);
+        line-height: 1.6;
+        color: #ffffff;
+        margin-bottom: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
 
-        .sentence-line-1 {
-            margin-bottom: 4px;
-        }
+    .inline-select {
+        font-family: "Courier New", Courier, monospace;
+        font-size: inherit;
+        font-weight: 700;
+        color: #ffffff;
+        background: #000000;
+        border: 1px solid #ffffff;
+        border-radius: 4px;
+        padding: 2px 6px;
+        cursor: pointer;
+        outline: none;
+    }
 
-        .sentence-line-2 {
-            margin-top: 4px;
-        }
+    .rri-badge {
+        font-weight: 800;
+        padding: 2px 6px;
+    }
 
-        .inline-select {
-            font-family: inherit;
-            font-size: inherit;
-            font-weight: 700;
-            color: #ffffff;
-            background: #000000;
-            border: 1px solid #ffffff;
-            border-radius: 4px;
-            padding: 2px 6px;
-            cursor: pointer;
-            outline: none;
-        }
+    /* Color Key Legend Bar */
+    .color-key-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 10px;
+        padding-top: 8px;
+        border-top: 1px solid #2a2a2a;
+    }
 
-        /* RRI Display Formatting */
-        .rri-value {
-            font-weight: 800;
-            padding: 2px 6px;
-            border-radius: 4px;
-        }
+    .color-key-title {
+        font-weight: bold;
+        font-size: 0.92rem;
+        color: #ffffff;
+        margin-bottom: 6px;
+    }
 
-        .rri-white {
-            color: #ffffff;
-        }
+    .color-key-items {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
+        font-size: 0.82rem;
+        color: #a3a3a3;
+    }
 
-        .rri-red {
-            color: #de2d26;
-        }
+    .key-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
 
-        /* Color Key Legend Container & Items */
-        .color-key-wrapper {
-            margin-top: 12px;
-            padding-top: 10px;
-            border-top: 1px solid #2a2a2a;
-        }
+    .swatch {
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+        display: inline-block;
+    }
 
-        .color-key-title {
-            font-size: 0.88rem;
-            font-weight: 700;
-            color: #cccccc;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-family: inherit;
-        }
+    /* Color Key Exact Palette */
+    .swatch.less { background-color: #CCCCCC; }
+    .swatch.equal { background-color: #FFFFFF; border: 1px solid #666666; }
+    .swatch.some { background-color: #FEE0D2; }
+    .swatch.mod { background-color: #FC9272; }
+    .swatch.high { background-color: #DE2D26; }
+    .swatch.ext { background-color: #67000D; }
+    .swatch.suppressed { background-color: #1A1A1A; border: 1px solid #444444; }
 
-        .color-key-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 14px;
-            font-size: 0.82rem;
-            color: #a3a3a3;
-            font-family: inherit;
-        }
+    /* Tableau Wrapper & Interactive Overlay */
+    .tableau-wrapper {
+        position: relative;
+        flex: 1 1 auto;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        background: #000000;
+        border-radius: 8px;
+        overflow: hidden !important;
+    }
 
-        .key-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+    /* 11 Column x 8 Row Interactive Overlay Grid */
+    .chart-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 10;
+        font-family: "Courier New", Courier, monospace;
+        color: #ffffff;
+        font-weight: 800;
+        /* Labels font size slightly bigger */
+        font-size: clamp(0.85rem, 1.5vh, 1.25rem);
 
-        .swatch {
-            width: 14px;
-            height: 14px;
-            border-radius: 2px;
-            display: inline-block;
-            flex-shrink: 0;
-        }
+        display: grid;
+        grid-template-columns: repeat(11, 1fr);
+        grid-template-rows: repeat(8, 1fr);
+        gap: 0;
+    }
 
-        /* Swatch Hex Colors matching exact specification */
-        .swatch-less { background-color: #CCCCCC; }
-        .swatch-equal { background-color: #FFFFFF; border: 1px solid #666666; }
-        .swatch-some { background-color: #FEE0D2; }
-        .swatch-mod { background-color: #FC9272; }
-        .swatch-high { background-color: #DE2D26; }
-        .swatch-ext { background-color: #67000D; }
-        .swatch-supp { background-color: #1A1A1A; border: 1px solid #444444; }
+    .grid-cell {
+        pointer-events: auto;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2px;
+        user-select: none;
+        transition: background 0.15s ease;
+    }
 
-        /* Tableau Wrapper & Overlay Grid */
-        .tableau-wrapper {
-            position: relative;
-            flex: 1 1 auto;
-            width: 100%;
-            height: 100%;
-            min-height: 0;
-            background: #000000;
-            border-radius: 8px;
-            overflow: hidden !important;
-        }
+    .grid-cell:hover {
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
 
-        #vizContainer {
-            width: 100%;
-            height: 100%;
-        }
+    .grid-cell.selected {
+        border: 2px solid #ffffff;
+        background: rgba(255, 255, 255, 0.18);
+    }
 
-        #vizContainer iframe,
-        .tableau-wrapper iframe {
-            width: 100% !important;
-            height: calc(100% + 28px) !important;
-            margin-bottom: -28px !important;
-            border: none !important;
-            outline: none !important;
-            background-color: #000000 !important;
-        }
-
-        /* 11 Column x 8 Row Interactive Overlay Grid */
-        .chart-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 10;
-            font-family: monospace, "Courier New", Courier, "DejaVu Sans Mono";
-            color: #ffffff;
-            font-weight: 800;
-            /* Label font size slightly bigger */
-            font-size: clamp(0.85rem, 1.5vh, 1.25rem);
-
-            display: grid;
-            grid-template-columns: repeat(11, 1fr);
-            grid-template-rows: repeat(8, 1fr);
-            gap: 0;
-        }
-
-        .grid-cell {
-            pointer-events: auto;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 2px;
-            user-select: none;
-            transition: background 0.15s ease;
-        }
-
-        .grid-cell:hover {
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .grid-cell.selected {
-            border: 2px solid #ffffff;
-            background: rgba(255, 255, 255, 0.18);
-        }
-
-        .label-text {
-            text-shadow: 0px 0px 4px #000000, 0px 0px 8px #000000;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-    </style>
+    .label-text {
+        text-shadow: 0px 0px 4px #000000, 0px 0px 8px #000000;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
 </head>
 <body>
-    <div class="hero-layout">
-        <!-- Top Navigation -->
-        <div class="top-nav">
-            <a href="#">&larr; Back to Overview</a>
-            <span class="nav-center">Fayette County Racial Disparity Interactive Dashboard</span>
-            <a href="#">Data Documentation &rarr;</a>
+
+<div class="hero-layout">
+    <!-- Top Navigation Bar -->
+    <div class="top-nav">
+        <a href="https://amberajs.github.io">&lt; back to amberajs portfolio</a>
+        <a href="#" class="nav-center">view data</a>
+        <a href="https://github.com/amberajs/arrest_stats">view source code &gt;</a>
+    </div>
+
+    <!-- Sentence Card Area -->
+    <div class="sentence-card">
+        <div id="sentenceContainer">
+            A <strong id="selectedAge">35-44</strong> year old <strong id="selectedRace">BLACK</strong> <strong id="selectedSex">MAN</strong> was <span id="rriDisplay" class="rri-badge" style="color: #ffffff; font-weight: bold;">1.0x</span> as likely<br />than a/an 
+            <select id="selectAge" class="inline-select" onchange="handleDropdownChange()">
+                <option value="18-24" selected>18-24</option>
+                <option value="25-34">25-34</option>
+                <option value="35-44">35-44</option>
+                <option value="45-54">45-54</option>
+                <option value="55-64">55-64</option>
+                <option value="65+">65+</option>
+                <option value="ALL">no selection</option>
+            </select>
+            year old 
+            <select id="selectRace" class="inline-select" onchange="handleDropdownChange()">
+                <option value="BLACK">black</option>
+                <option value="HISPANIC">hispanic</option>
+                <option value="WHITE" selected>white</option>
+                <option value="OTHER">multiracial</option>
+                <option value="ALL">no selection</option>
+            </select>
+            <select id="selectSex" class="inline-select" onchange="handleDropdownChange()">
+                <option value="ALL">person</option>
+                <option value="M" selected>man</option>
+                <option value="F">woman</option>
+            </select>.
         </div>
 
-        <!-- Sentence Card Area -->
-        <div class="sentence-card">
-            <div id="sentenceContainer">
-                <!-- First half: Target Cell Selection & RRI -->
-                <div class="sentence-line-1">
-                    On <strong>September 8th, 2026</strong> in Fayette County, Kentucky:<br />
-                    A <strong id="targetAge">35-44</strong> year old <strong id="targetRace">BLACK</strong> <strong id="targetSex">MAN</strong> was <span id="rriDisplay" class="rri-value rri-red"><strong>2.4x</strong></span> as likely
-                </div>
-                <!-- Second half: Reference Baseline Dropdowns (New Line) -->
-                <div class="sentence-line-2">
-                    than <span id="refArticle">a</span>
-                    <select id="selectAge" class="inline-select" onchange="handleDropdownChange()">
-                        <option value="18-24" selected>18-24</option>
-                        <option value="25-34">25-34</option>
-                        <option value="35-44">35-44</option>
-                        <option value="45-54">45-54</option>
-                        <option value="55-64">55-64</option>
-                        <option value="65+">65+</option>
-                        <option value="ALL">ALL</option>
-                    </select>
-                    year old
-                    <select id="selectRace" class="inline-select" onchange="handleDropdownChange()">
-                        <option value="BLACK">BLACK</option>
-                        <option value="HISPANIC">HISPANIC</option>
-                        <option value="WHITE" selected>WHITE</option>
-                        <option value="OTHER">MULTIRACIAL</option>
-                        <option value="ALL">ALL</option>
-                    </select>
-                    <select id="selectSex" class="inline-select" onchange="handleDropdownChange()">
-                        <option value="MAN" selected>MAN</option>
-                        <option value="WOMAN">WOMAN</option>
-                        <option value="ALL">PERSON</option>
-                    </select>.
-                </div>
+        <!-- Color Key Legend Bar -->
+        <div class="color-key-container">
+            <div class="color-key-title">Relative Rate Index (RRI) Key</div>
+            <div class="color-key-items">
+                <span class="key-item"><span class="swatch less"></span> Less Likely (RRI &lt; 1)</span>
+                <span class="key-item"><span class="swatch equal"></span> Equal Baseline (RRI = 1)</span>
+                <span class="key-item"><span class="swatch some"></span> Some Disparity (1 &lt; RRI &lt;= 1.5)</span>
+                <span class="key-item"><span class="swatch mod"></span> Moderate Disparity (1.5 &lt;= RRI &lt; 2.5)</span>
+                <span class="key-item"><span class="swatch high"></span> High Disparity (2.5 &lt;= RRI &lt; 5)</span>
+                <span class="key-item"><span class="swatch ext"></span> Extreme Disparity (RRI &gt;= 5)</span>
+                <span class="key-item"><span class="swatch suppressed"></span> Suppressed (Census Population &lt; 500)</span>
             </div>
-
-            <!-- Color Key Legend Bar -->
-            <div class="color-key-wrapper">
-                <div class="color-key-title">Relative Rate Index (RRI) Key</div>
-                <div class="color-key-container">
-                    <span class="key-item"><span class="swatch swatch-less"></span> Less Likely (RRI &lt; 1)</span>
-                    <span class="key-item"><span class="swatch swatch-equal"></span> Equal Baseline (RRI = 1)</span>
-                    <span class="key-item"><span class="swatch swatch-some"></span> Some Disparity (1 &lt; RRI &lt;= 1.5)</span>
-                    <span class="key-item"><span class="swatch swatch-mod"></span> Moderate Disparity (1.5 &lt;= RRI &lt; 2.5)</span>
-                    <span class="key-item"><span class="swatch swatch-high"></span> High Disparity (2.5 &lt;= RRI &lt; 5)</span>
-                    <span class="key-item"><span class="swatch swatch-ext"></span> Extreme Disparity (RRI &gt;= 5)</span>
-                    <span class="key-item"><span class="swatch swatch-supp"></span> Suppressed (Census Population &lt; 500)</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tableau Container & Grid Overlay -->
-        <div class="tableau-wrapper">
-            <div class='tableauPlaceholder' id='viz1789957328257' style='position: relative'>
-                <noscript>
-                    <a href='#'><img alt='Publish ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;de&#47;demo_17890907558550&#47;Dashboard4&#47;1_rss.png' style='border: none' /></a>
-                </noscript>
-                <object class='tableauViz' style='display:none;'>
-                    <param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' />
-                    <param name='embed_code_version' value='3' />
-                    <param name='site_root' value='' />
-                    <param name='name' value='demo_17890907558550&#47;Dashboard4' />
-                    <param name='tabs' value='no' />
-                    <param name='toolbar' value='yes' />
-                    <param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;de&#47;demo_17890907558550&#47;Dashboard4&#47;1.png' />
-                    <param name='animate_transition' value='yes' />
-                    <param name='display_static_image' value='yes' />
-                    <param name='display_spinner' value='yes' />
-                    <param name='display_overlay' value='yes' />
-                    <param name='display_count' value='yes' />
-                    <param name='language' value='en-US' />
-                </object>
-            </div>
-            <div id="chartOverlay" class="chart-overlay"></div>
         </div>
     </div>
 
-    <!-- Tableau Viz API Script -->
-    <script type='text/javascript'>
-        var divElement = document.getElementById('viz1789957328257');
-        var vizElement = divElement.getElementsByTagName('object');
-        vizElement.style.width='1018px';
-        vizElement.style.height='433px';
-        var scriptElement = document.createElement('script');
-        scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
-        vizElement.parentNode.insertBefore(scriptElement, vizElement);
-    </script>
+    <!-- Tableau Container & Grid Overlay -->
+    <div class="tableau-wrapper">
+        <div class='tableauPlaceholder' id='viz1789957328257' style='position: relative'>
+            <noscript>
+                <a href='#'>
+                    <img alt='Publish ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;de&#47;demo_17890907558550&#47;Dashboard4&#47;1_rss.png' style='border: none' />
+                </a>
+            </noscript>
+            <object class='tableauViz' style='display:none;'>
+                <param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' />
+                <param name='embed_code_version' value='3' />
+                <param name='site_root' value='' />
+                <param name='name' value='demo_17890907558550&#47;Dashboard4' />
+                <param name='tabs' value='no' />
+                <param name='toolbar' value='yes' />
+                <param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;de&#47;demo_17890907558550&#47;Dashboard4&#47;1.png' />
+                <param name='animate_transition' value='yes' />
+                <param name='display_static_image' value='yes' />
+                <param name='display_spinner' value='yes' />
+                <param name='display_overlay' value='yes' />
+                <param name='display_count' value='yes' />
+                <param name='language' value='en-US' />
+            </object>
+        </div>
+        <script type='text/javascript'>
+            var divElement = document.getElementById('viz1789957328257');
+            var vizElement = divElement.getElementsByTagName('object');
+            vizElement.style.width='1018px';
+            vizElement.style.height='433px';
+            var scriptElement = document.createElement('script');
+            scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
+            vizElement.parentNode.insertBefore(scriptElement, vizElement);
+        </script>
+        <div id="chartOverlay" class="chart-overlay"></div>
+    </div>
+</div>
 
-    <!-- Interactive Grid & Dynamic Sentence Logic -->
-    <script>
-        // Default selected target cell state: 35-44 BLACK MAN
-        let selectedTarget = {
-            age: "35-44",
-            race: "BLACK",
-            sex: "MAN",
-            cellId: "cell_35_44_black_m"
+<script>
+    // Selected Cell state (Default: 35-44 BLACK MAN)
+    let selectedCellData = {
+        age: "35-44",
+        race: "BLACK",
+        sex: "MAN",
+        rri: 1.0
+    };
+
+    // Helper to format sex string for sentence display
+    function formatSexDisplay(sexVal) {
+        if (!sexVal) return "PERSON";
+        const upper = sexVal.toUpperCase();
+        if (upper === "M" || upper === "MAN") return "MAN";
+        if (upper === "F" || upper === "WOMAN") return "WOMAN";
+        return "PERSON";
+    }
+
+    // Helper to calculate RRI dynamically based on cell & baseline dropdown values
+    function calculateRRI(cellData, refAge, refRace, refSex) {
+        if (cellData.age === refAge && cellData.race === refRace && formatSexDisplay(cellData.sex) === formatSexDisplay(refSex)) {
+            return 1.0;
+        }
+        return cellData.rri || 1.0;
+    }
+
+    function updateSentenceFirstHalf() {
+        // Update first half elements (bold age, uppercase bold race and sex)
+        document.getElementById("selectedAge").innerText = selectedCellData.age;
+        document.getElementById("selectedRace").innerText = selectedCellData.race.toUpperCase();
+        document.getElementById("selectedSex").innerText = formatSexDisplay(selectedCellData.sex);
+
+        // Get current baseline dropdown values
+        const refAge = document.getElementById("selectAge").value;
+        const refRace = document.getElementById("selectRace").value;
+        const refSex = document.getElementById("selectSex").value;
+
+        // Calculate and format RRI value
+        const currentRRI = calculateRRI(selectedCellData, refAge, refRace, refSex);
+        const rriDisplay = document.getElementById("rriDisplay");
+        rriDisplay.innerText = currentRRI.toFixed(1) + "x";
+
+        // Text color rule: #ffffff if RRI <= 1, #de2d26 if RRI > 1
+        if (currentRRI <= 1.0) {
+            rriDisplay.style.color = "#ffffff";
+        } else {
+            rriDisplay.style.color = "#de2d26";
+        }
+    }
+
+    // Called when user clicks a cell on the overlay chart below
+    function handleCellSelect(age, race, sex, rriValue) {
+        selectedCellData = {
+            age: age,
+            race: race.toUpperCase(),
+            sex: sex.toUpperCase(),
+            rri: rriValue
         };
+        updateSentenceFirstHalf();
+    }
 
-        // Grammar helper for article "a" vs "an"
-        function updateArticle() {
-            const ageVal = document.getElementById('selectAge').value;
-            const refArticle = document.getElementById('refArticle');
-            if (ageVal.startsWith('18') || ageVal.startsWith('8')) {
-                refArticle.textContent = "an";
-            } else {
-                refArticle.textContent = "a";
-            }
-        }
+    // Called when user changes any dropdown selection
+    function handleDropdownChange() {
+        // Updates heatmap baseline in Tableau; sentence RRI updates while cell selection stays intact
+        updateSentenceFirstHalf();
+    }
 
-        // Relative Rate Index calculation lookup
-        function calculateRRI(target, refAge, refRace, refSex) {
-            if (target.age === refAge && target.race === refRace && target.sex === refSex) {
-                return 1.0;
-            }
-            let baseRRI = 1.0;
-            if (target.race === "BLACK" && refRace === "WHITE") baseRRI *= 2.1;
-            if (target.race === "HISPANIC" && refRace === "WHITE") baseRRI *= 1.4;
-            if (target.age === "35-44" && refAge === "18-24") baseRRI *= 1.15;
-            if (target.sex === "MAN" && refSex === "WOMAN") baseRRI *= 1.8;
-            
-            return Math.round(baseRRI * 10) / 10;
-        }
-
-        // Update sentence and RRI styling
-        function updateSentenceDisplay(rriVal) {
-            // Update bolded/all-caps values in line 1
-            document.getElementById('targetAge').textContent = selectedTarget.age;
-            document.getElementById('targetRace').textContent = selectedTarget.race.toUpperCase();
-            document.getElementById('targetSex').textContent = selectedTarget.sex.toUpperCase();
-
-            // Format RRI number display
-            const rriDisplay = document.getElementById('rriDisplay');
-            rriDisplay.innerHTML = '<strong>' + rriVal.toFixed(1) + 'x</strong>';
-
-            // Color coding: <= 1 is #ffffff, > 1 is #de2d26
-            if (rriVal <= 1.0) {
-                rriDisplay.className = "rri-value rri-white";
-                rriDisplay.style.color = "#ffffff";
-            } else {
-                rriDisplay.className = "rri-value rri-red";
-                rriDisplay.style.color = "#de2d26";
-            }
-
-            updateArticle();
-        }
-
-        // Handle cell selection click
-        function selectGridCell(cellElement, age, race, sex) {
-            document.querySelectorAll('.grid-cell').forEach(c => c.classList.remove('selected'));
-            cellElement.classList.add('selected');
-
-            selectedTarget = { age, race, sex, cellId: cellElement.id };
-
-            const refAge = document.getElementById('selectAge').value;
-            const refRace = document.getElementById('selectRace').value;
-            const refSex = document.getElementById('selectSex').value;
-
-            const rri = calculateRRI(selectedTarget, refAge, refRace, refSex);
-            updateSentenceDisplay(rri);
-        }
-
-        // Handle dropdown selection change
-        function handleDropdownChange() {
-            const refAge = document.getElementById('selectAge').value;
-            const refRace = document.getElementById('selectRace').value;
-            const refSex = document.getElementById('selectSex').value;
-
-            // Recalculate RRI for current target cell selection
-            const rri = calculateRRI(selectedTarget, refAge, refRace, refSex);
-            updateSentenceDisplay(rri);
-        }
-
-        // Initialize grid overlay elements
-        function initGridOverlay() {
-            const container = document.getElementById('chartOverlay');
-            container.innerHTML = '';
-
-            const ages = ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"];
-            const races = ["BLACK", "HISPANIC", "WHITE", "OTHER"];
-
-            let cellIndex = 0;
-            for (let r = 0; r < 8; r++) {
-                for (let c = 0; c < 11; c++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'grid-cell';
-                    cell.id = `grid_cell_${r}_${c}`;
-
-                    const age = ages[r % ages.length];
-                    const race = races[c % races.length];
-                    const sex = (r % 2 === 0) ? "MAN" : "WOMAN";
-
-                    // Initialize default selection cell: 35-44 BLACK MAN
-                    if (age === "35-44" && race === "BLACK" && sex === "MAN" && cellIndex === 23) {
-                        cell.classList.add('selected');
-                        selectedTarget = { age, race, sex, cellId: cell.id };
-                    }
-
-                    cell.addEventListener('click', () => selectGridCell(cell, age, race, sex));
-                    container.appendChild(cell);
-                    cellIndex++;
-                }
-            }
-
-            handleDropdownChange();
-        }
-
-        window.addEventListener('DOMContentLoaded', initGridOverlay);
-    </script>
+    // Initialize display on page load
+    window.addEventListener("DOMContentLoaded", () => {
+        updateSentenceFirstHalf();
+    });
+</script>
 </body>
 </html>

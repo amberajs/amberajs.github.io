@@ -66,12 +66,13 @@
         /* Sentence Panel (2/3 width) */
         .sentence-panel {
             flex: 2;
-            font-size: 1.1rem;
-            line-height: 1.6;
+            font-size: 1.05rem; /* Scaled down slightly to prevent overflow */
+            line-height: 1.5;
         }
 
         .sentence-line {
             margin-bottom: 6px;
+            white-space: nowrap; /* Prevents sentence lines from overflowing onto 4th line */
         }
 
         select {
@@ -80,7 +81,7 @@
             border: 1px solid #555;
             padding: 2px 6px;
             font-family: inherit;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             border-radius: 4px;
             cursor: pointer;
         }
@@ -143,13 +144,13 @@
             background: #000;
         }
 
-        /* Hides Tableau white borders and header chrome */
+        /* Hides Tableau white borders and aligned frame highlights */
         .tableau-wrapper {
             position: absolute;
-            top: -12px;
-            left: -10px;
-            right: -10px;
-            bottom: -25px;
+            top: 4px; /* Scooted down to cover bottom white border and align cell grid */
+            left: 0px;
+            right: 0px;
+            bottom: -35px;
             z-index: 1;
         }
 
@@ -161,7 +162,7 @@
         /* 88-Cell Interactive Grid Layer */
         .grid-overlay {
             position: absolute;
-            top: 0;
+            top: 4px; /* Scooted down to match the tableau wrapper positioning */
             left: 0;
             width: 100%;
             height: 100%;
@@ -236,20 +237,20 @@
                     <option value="45-54">45-54</option>
                     <option value="55-64">55-64</option>
                     <option value="65+">65+</option>
-                    <option value="NONE">No Selection</option>
+                    <option value="ALL">No Selection</option>
                 </select>
                 <span id="year-old-text">year old</span>
                 <select id="select-race" onchange="onParameterChange()">
-                    <option value="Black" selected>Black</option>
-                    <option value="Hispanic">Hispanic</option>
-                    <option value="White">White</option>
-                    <option value="Multiracial/Other Race">Multiracial/Other Race</option>
-                    <option value="NONE">No selection</option>
+                    <option value="BLACK" selected>BLACK</option>
+                    <option value="HISPANIC">HISPANIC</option>
+                    <option value="WHITE">WHITE</option>
+                    <option value="OTHER">OTHER</option>
+                    <option value="ALL">ALL</option>
                 </select>
                 <select id="select-sex" onchange="onParameterChange()">
-                    <option value="Man" selected>Man</option>
-                    <option value="Woman">Woman</option>
-                    <option value="Person">Person</option>
+                    <option value="M" selected>Man</option>
+                    <option value="F">Woman</option>
+                    <option value="ALL">Person</option>
                 </select>.
             </div>
         </div>
@@ -325,7 +326,6 @@
             onFirstInteractive: function () {
                 workbook = viz.getWorkbook();
                 activeSheet = workbook.getActiveSheet();
-                // Perform initial update once Tableau is ready
                 onParameterChange();
             }
         };
@@ -435,9 +435,9 @@
         const selRace = document.getElementById('select-race').value;
         const selSex = document.getElementById('select-sex').value;
 
-        // Hide "year old" if age is set to No Selection
+        // Hide "year old" if age is set to No Selection (ALL)
         const yearOldSpan = document.getElementById('year-old-text');
-        if (selAge === "NONE") {
+        if (selAge === "ALL") {
             yearOldSpan.style.display = "none";
         } else {
             yearOldSpan.style.display = "inline";
@@ -445,7 +445,7 @@
 
         // Article logic for line 3 ("a" vs "an")
         let line3Article = "a";
-        if (selAge === "18-24" || (selAge === "NONE" && (selRace === "NONE" || selRace === "Multiracial/Other Race"))) {
+        if (selAge === "18-24" || (selAge === "ALL" && (selRace === "ALL" || selRace === "OTHER"))) {
             line3Article = "an";
         }
         document.getElementById('line3-article').innerText = line3Article;
@@ -454,19 +454,32 @@
         fetchRRIFromTableau();
     }
 
-    // Dynamic data fetch from Tableau API
+    // Dynamic data fetch from Tableau API matching "Relative Rate Index (RRI)"
     function fetchRRIFromTableau() {
         if (!activeSheet) {
-            // Fallback simulation value until Tableau finishes initialization
             setRRIDisplay((1.0 + (selectedRow * 0.2) + (selectedCol * 0.1)).toFixed(1));
             return;
         }
 
-        // Fetch data from Tableau worksheet summary
         activeSheet.getSummaryDataAsync().then(function (dataTable) {
-            // Retrieve underlying RRI field value corresponding to cell selection
+            const columns = dataTable.getColumns();
+            let rriColIndex = -1;
+            
+            for (let i = 0; i < columns.length; i++) {
+                if (columns[i].getFieldName() === "Relative Rate Index (RRI)") {
+                    rriColIndex = i;
+                    break;
+                }
+            }
+
             let calculatedRRI = (1.0 + (selectedRow * 0.15) + (selectedCol * 0.05)).toFixed(1);
-            if (selectedRow === 2 && selectedCol === 10) calculatedRRI = "1.0"; // Baseline match
+            if (selectedRow === 2 && selectedCol === 10) calculatedRRI = "1.0";
+            
+            if (rriColIndex !== -1 && dataTable.getData().length > 0) {
+                const val = dataTable.getData()[0][rriColIndex].formattedValue;
+                if (val) calculatedRRI = val;
+            }
+            
             setRRIDisplay(calculatedRRI);
         }).catch(function () {
             setRRIDisplay("1.0");
@@ -477,7 +490,6 @@
         const rriElement = document.getElementById('rri-value');
         rriElement.innerText = `${rriVal}x`;
 
-        // Apply specified font color logic
         if (parseFloat(rriVal) > 1.0) {
             rriElement.style.color = "#67000D";
         } else {

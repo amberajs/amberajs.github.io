@@ -32,6 +32,7 @@
             height: 100vh;
             padding: 12px;
             gap: 12px;
+            background-color: #000000;
         }
 
         /* LEFT PANEL (1/4 Width ~ 25%) */
@@ -69,7 +70,7 @@
             text-decoration: underline;
         }
 
-        /* Sentence Card Panel (~6/8 to 7/8 of remaining left height) */
+        /* Sentence Card Panel */
         .sentence-panel {
             flex: 1;
             display: flex;
@@ -89,7 +90,7 @@
             opacity: 0.75;
         }
 
-        /* Distinct Line Blocks with clean spacing between lines 1-4 */
+        /* Sentence Lines */
         .sentence-line-1 {
             font-family: 'Ubuntu', sans-serif;
             font-size: 0.95rem;
@@ -208,12 +209,11 @@
             height: 100%;
             position: relative;
             overflow: hidden;
-            background: #000;
+            background: #000000;
             border-radius: 6px;
             border: 1px solid #222;
         }
 
-        /* Offsets Tableau footer completely outside the frame */
         .tableau-wrapper {
             position: absolute;
             top: 0px;
@@ -243,7 +243,7 @@
             box-sizing: border-box;
         }
 
-        /* Dynamic Interactive 88-Cell Grid Overlay Layer */
+        /* Dynamic 88 Interactive Grid Layer */
         .grid-overlay {
             position: absolute;
             top: 6px;
@@ -280,7 +280,7 @@
             z-index: 30;
         }
 
-        /* Permanent Gray Borders for specific regions */
+        /* Permanent Gray Borders */
         .permanent-border-r8c57 {
             position: absolute;
             grid-row: 8;
@@ -338,13 +338,11 @@
 <div id="app-container">
     <!-- LEFT PANEL (1/4 Width) -->
     <div class="left-panel">
-        <!-- Top Navigation -->
         <div class="top-nav">
             <a href="https://amberajs.github.io" target="_blank">&lt; back to amberajs portfolio</a>
             <a href="https://github.com/amberajs/arrest_stats" target="_blank">view source code &gt;</a>
         </div>
 
-        <!-- Dynamic Sentence Card -->
         <div class="sentence-panel" id="sentence-card">
             <div class="sentence-line-1">On September 3, 2026 in Fayette County, Kentucky</div>
             
@@ -381,7 +379,6 @@
             </div>
         </div>
 
-        <!-- Color Key Panel -->
         <div class="key-panel">
             <div class="key-title">RRI Key</div>
             <div class="key-list">
@@ -436,14 +433,12 @@
 </div>
 
 <script>
-    // Global Tableau API References & State
     let viz = null;
     let workbook = null;
     let isVizReady = false;
-    let selectedCell = { row: 2, col: 10 }; // Default: 18-24 White Man (Row 2, Col 10)
-    let rriCache = {}; // In-memory map: "row_col" -> RRI numeric value
+    let selectedCell = { row: 2, col: 10 };
+    let rriCache = {};
 
-    // Matrix Population Mapping Definitions (8 Rows x 11 Columns)
     const COL_MAP = {
         1:  { race: "OTHER",    sex: "F",   desc: "OTHER WOMAN" },
         2:  { race: "WHITE",    sex: "F",   desc: "WHITE WOMAN" },
@@ -469,18 +464,16 @@
         8: { age: "ALL",   prefix: "An average" }
     };
 
-    // Initialize HTML Interactive Grid Overlay & Tableau Viz on DOM Load
     document.addEventListener("DOMContentLoaded", () => {
         buildInteractiveGrid();
         initTableauViz();
     });
 
-    // Safely Build 88 Interactive Cell Targets over the static label layer
     function buildInteractiveGrid() {
         const gridContainer = document.getElementById("interactive-grid");
         if (!gridContainer) return;
 
-        gridContainer.innerHTML = ""; // Clear cells on dedicated interactive container
+        gridContainer.innerHTML = "";
 
         for (let r = 1; r <= 8; r++) {
             for (let c = 1; c <= 11; c++) {
@@ -501,7 +494,6 @@
         }
     }
 
-    // Initialize Tableau Viz & Handshake
     function initTableauViz() {
         const containerDiv = document.getElementById("tableauViz");
         if (!containerDiv) return;
@@ -517,7 +509,6 @@
                 if (typeof viz !== "undefined" && viz) {
                     workbook = viz.getWorkbook();
                     isVizReady = true;
-                    // Pre-fetch RRI data into in-memory cache and render sentence
                     fetchTableauRRIData().then(() => {
                         updateSentenceCard();
                     });
@@ -528,15 +519,12 @@
         try {
             if (typeof tableau !== "undefined" && tableau.Viz) {
                 viz = new tableau.Viz(containerDiv, url, options);
-            } else {
-                console.warn("Tableau JS API library not loaded yet.");
             }
         } catch (e) {
-            console.error("Error initializing Tableau Viz:", e);
+            console.error("Tableau initialization deferred:", e);
         }
     }
 
-    // Fetch Summary Data from Tableau Sheets to Populate Cache
     async function fetchTableauRRIData() {
         if (!isVizReady || !workbook) return;
 
@@ -550,7 +538,7 @@
                 sheets = [activeSheet];
             }
 
-            rriCache = {}; // Clear old cache
+            rriCache = {};
 
             for (const sheet of sheets) {
                 try {
@@ -575,15 +563,14 @@
                         }
                     });
                 } catch (err) {
-                    console.warn("Sheet data extraction notice:", err);
+                    console.warn("Sheet data notice:", err);
                 }
             }
         } catch (err) {
-            console.error("Error fetching Tableau summary data:", err);
+            console.error("Data extraction error:", err);
         }
     }
 
-    // Map Tableau dimensions to matrix row_col key
     function findMatrixKey(age, race, sex) {
         for (let r = 1; r <= 8; r++) {
             for (let c = 1; c <= 11; c++) {
@@ -601,7 +588,6 @@
         return null;
     }
 
-    // Interaction 1: Cell Selection
     function onCellClick(row, col) {
         selectedCell = { row, col };
 
@@ -612,7 +598,6 @@
         updateSentenceCard();
     }
 
-    // Interaction 2: Dropdown Selection -> Tableau Parameters
     async function onParameterChange() {
         if (!isVizReady || !workbook) return;
 
@@ -635,14 +620,13 @@
             await fetchTableauRRIData();
             updateSentenceCard();
         } catch (err) {
-            console.error("Error changing Tableau parameters:", err);
+            console.error("Parameter update error:", err);
         } finally {
             if (sentenceCard) sentenceCard.classList.remove("is-loading");
             if (rriValSpan) rriValSpan.classList.remove("loading-pulse");
         }
     }
 
-    // Update Sentence Card & RRI Display
     function updateSentenceCard() {
         const r = selectedCell.row;
         const c = selectedCell.col;

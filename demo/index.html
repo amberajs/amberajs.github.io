@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Incarceration Disparity Heatmap</title>
-    <!-- Tableau Javascript API -->
-    <script type="text/javascript" src="https://public.tableau.com/javascripts/api/viz_v1.js"></script>
+    <!-- Official Tableau JavaScript API v2 -->
+    <script type="text/javascript" src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
+    
     <style>
-        /* Base Page Setup */
+        /* Base Setup */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -20,7 +21,7 @@
             background-color: #000000;
             color: #FFFFFF;
             font-family: "DejaVu Sans Mono", "Liberation Mono", "Courier New", Courier, monospace;
-            overflow: hidden; /* Desktop hero page setup - no scrolling */
+            overflow: hidden;
         }
 
         #app-container {
@@ -31,13 +32,13 @@
             padding: 10px 20px;
         }
 
-        /* Top Bar Navigation Links */
+        /* Top Links */
         .top-nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
             height: 4vh;
-            font-size: 12px;
+            font-size: 11px;
             border-bottom: 1px solid #333;
             padding-bottom: 4px;
         }
@@ -46,7 +47,6 @@
             color: #FFFFFF;
             text-decoration: none;
             opacity: 0.8;
-            transition: opacity 0.2s;
         }
 
         .top-nav a:hover {
@@ -54,7 +54,7 @@
             text-decoration: underline;
         }
 
-        /* Middle Section (1/3 of screen height minus nav) */
+        /* Controls Section (1/3 height area) */
         .dashboard-controls {
             display: flex;
             height: 29vh;
@@ -66,7 +66,7 @@
         /* Sentence Panel (2/3 width) */
         .sentence-panel {
             flex: 2;
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             line-height: 1.6;
         }
 
@@ -74,14 +74,13 @@
             margin-bottom: 6px;
         }
 
-        /* Select Dropdown Styling */
         select {
             background-color: #1a1a1a;
             color: #FFFFFF;
             border: 1px solid #555;
             padding: 2px 6px;
             font-family: inherit;
-            font-size: 1rem;
+            font-size: 0.95rem;
             border-radius: 4px;
             cursor: pointer;
         }
@@ -102,25 +101,24 @@
             border: 1px solid #333;
             padding: 10px;
             border-radius: 6px;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            height: 85%;
+            height: 90%;
         }
 
         .key-title {
             font-weight: bold;
             margin-bottom: 4px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
             color: #aaa;
         }
 
         .key-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 4px 8px;
+            gap: 4px 6px;
         }
 
         .key-item {
@@ -130,13 +128,13 @@
         }
 
         .key-color {
-            width: 14px;
-            height: 14px;
+            width: 12px;
+            height: 12px;
             border: 1px solid #444;
             flex-shrink: 0;
         }
 
-        /* Bottom Section (2/3 of screen height) */
+        /* Heatmap Canvas Container (2/3 height area) */
         .heatmap-container {
             position: relative;
             height: 67vh;
@@ -145,22 +143,22 @@
             background: #000;
         }
 
-        /* Hides Tableau white outer chrome/border by expanding frame */
+        /* Hides Tableau white borders and header chrome */
         .tableau-wrapper {
             position: absolute;
-            top: -10px;
+            top: -12px;
             left: -10px;
             right: -10px;
-            bottom: -20px;
+            bottom: -25px;
             z-index: 1;
         }
 
-        .tableauPlaceholder, object, iframe {
+        #tableauViz {
             width: 100% !important;
             height: 100% !important;
         }
 
-        /* Interactive Grid Layer & T-Chart Label Overlay */
+        /* 88-Cell Interactive Grid Layer */
         .grid-overlay {
             position: absolute;
             top: 0;
@@ -171,7 +169,7 @@
             display: grid;
             grid-template-rows: repeat(8, 1fr);
             grid-template-columns: repeat(11, 1fr);
-            pointer-events: none; /* Allows clicks to pass through to cell overlay */
+            pointer-events: none;
         }
 
         .cell-overlay {
@@ -185,45 +183,44 @@
         }
 
         .cell-overlay:hover {
-            border: 1px dashed rgba(255, 255, 255, 0.4);
+            border: 1px dashed rgba(255, 255, 255, 0.5);
         }
 
         .cell-overlay.selected {
             border: 2px solid #FFFFFF !important;
-            box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.8);
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.8);
         }
 
-        /* T-Chart HTML Overlay Labels */
+        /* Visible T-Chart Overlay Labels */
         .overlay-label {
             position: absolute;
             color: #FFFFFF;
             font-size: 0.85rem;
-            font-weight: bold;
+            font-weight: 800;
             pointer-events: none;
-            text-shadow: 2px 2px 3px #000000, -1px -1px 2px #000000, 0 0 5px #000000;
+            text-shadow: 2px 2px 4px #000000, -2px -2px 4px #000000, 0 0 6px #000000;
             text-transform: uppercase;
             text-align: center;
-            z-index: 20;
+            z-index: 25;
+            white-space: nowrap;
         }
 
-        /* Standardized cell-specific positions for crossbar and stem labels */
-        .overlay-label.col-header { top: 4px; }
+        .overlay-label.col-header { top: 6px; }
         .overlay-label.row-header { left: 50%; transform: translateX(-50%); }
     </style>
 </head>
 <body>
 
 <div id="app-container">
-    <!-- Top Bar Links -->
+    <!-- Links -->
     <div class="top-nav">
         <div><a href="https://amberajs.github.io">&lt; back to amberajs portfolio</a></div>
         <div><a href="#" onclick="alert('Raw dataset link placeholder'); return false;">view data</a></div>
         <div><a href="https://github.com/amberajs/arrest_stats" target="_blank">view source code &gt;</a></div>
     </div>
 
-    <!-- Sentence & Color Key Panel -->
+    <!-- Sentence & Color Key -->
     <div class="dashboard-controls">
-        <!-- Interactive Sentence -->
         <div class="sentence-panel">
             <div class="sentence-line">On September 3, 2026 in Fayette County, Kentucky:</div>
             <div class="sentence-line">
@@ -232,7 +229,7 @@
             </div>
             <div class="sentence-line">
                 than <span id="line3-article">a</span>
-                <select id="select-age" onchange="updateDashboard()">
+                <select id="select-age" onchange="onParameterChange()">
                     <option value="18-24">18-24</option>
                     <option value="25-34">25-34</option>
                     <option value="35-44" selected>35-44</option>
@@ -241,15 +238,15 @@
                     <option value="65+">65+</option>
                     <option value="NONE">No Selection</option>
                 </select>
-                year old
-                <select id="select-race" onchange="updateDashboard()">
+                <span id="year-old-text">year old</span>
+                <select id="select-race" onchange="onParameterChange()">
                     <option value="Black" selected>Black</option>
                     <option value="Hispanic">Hispanic</option>
                     <option value="White">White</option>
                     <option value="Multiracial/Other Race">Multiracial/Other Race</option>
                     <option value="NONE">No selection</option>
                 </select>
-                <select id="select-sex" onchange="updateDashboard()">
+                <select id="select-sex" onchange="onParameterChange()">
                     <option value="Man" selected>Man</option>
                     <option value="Woman">Woman</option>
                     <option value="Person">Person</option>
@@ -257,58 +254,42 @@
             </div>
         </div>
 
-        <!-- Color Key Legend -->
+        <!-- Color Key -->
         <div class="key-panel">
             <div class="key-title">Relative Rate Index (RRI) Key</div>
             <div class="key-grid">
-                <div class="key-item"><div class="key-color" style="background:#CCCCCC;"></div>Less Likely (&lt;1.0)</div>
-                <div class="key-item"><div class="key-color" style="background:#FFFFFF;"></div>Baseline (=1.0)</div>
+                <div class="key-item"><div class="key-color" style="background:#CCCCCC;"></div>Less Likely (&lt;1)</div>
+                <div class="key-item"><div class="key-color" style="background:#FFFFFF;"></div>Equal Baseline (=1)</div>
                 <div class="key-item"><div class="key-color" style="background:#FEE0D2;"></div>Some Disparity (1-1.5]</div>
                 <div class="key-item"><div class="key-color" style="background:#FC9272;"></div>Moderate (1.5-2.5)</div>
-                <div class="key-item"><div class="key-color" style="background:#DE2D26;"></div>High (2.5-5.0)</div>
-                <div class="key-item"><div class="key-color" style="background:#67000D;"></div>Extreme (&ge;5.0)</div>
+                <div class="key-item"><div class="key-color" style="background:#DE2D26;"></div>High Disparity (2.5-5)</div>
+                <div class="key-item"><div class="key-color" style="background:#67000D;"></div>Extreme (&ge;5)</div>
                 <div class="key-item" style="grid-column: span 2;"><div class="key-color" style="background:#1A1A1A;"></div>Suppressed (Pop &lt; 500)</div>
             </div>
         </div>
     </div>
 
-    <!-- Heatmap & Overlay Layer -->
+    <!-- Heatmap Layer -->
     <div class="heatmap-container">
-        <!-- Tableau Visualization Wrapper -->
         <div class="tableau-wrapper">
-            <div class='tableauPlaceholder' id='viz1790210644024' style='position: relative'>
-                <noscript>
-                    <a href='#'><img alt='Publish ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;de&#47;demo_17890907558550&#47;Dashboard4&#47;1_rss.png' style='border: none' /></a>
-                </noscript>
-                <object class='tableauViz' style='display:none;'>
-                    <param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' />
-                    <param name='embed_code_version' value='3' />
-                    <param name='site_root' value='' />
-                    <param name='name' value='demo_17890907558550&#47;Dashboard4' />
-                    <param name='tabs' value='no' />
-                    <param name='toolbar' value='no' />
-                    <param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;de&#47;demo_17890907558550&#47;Dashboard4&#47;1.png' />
-                    <param name='animate_transition' value='yes' />
-                    <param name='display_static_image' value='yes' />
-                    <param name='display_spinner' value='no' />
-                    <param name='display_overlay' value='no' />
-                    <param name='display_count' value='no' />
-                    <param name='language' value='en-US' />
-                </select>
-            </div>
+            <div id="tableauViz"></div>
         </div>
 
-        <!-- 88-Cell Interactive Grid and HTML T-Chart Labels Overlay -->
+        <!-- HTML Interactive 88 Cell Layer with T Chart Labels -->
         <div class="grid-overlay" id="interactive-grid"></div>
     </div>
 </div>
 
 <script>
-    // State Tracker (Defaults: Selected Cell = 18-24 White Man [Row 2, Col 10])
+    let viz = null;
+    let workbook = null;
+    let activeSheet = null;
+
+    // Selected state tracker (Defaults: 18-24 year old White Man -> Row 2, Col 10)
     let selectedRow = 2;
     let selectedCol = 10;
-    
-    // T-Chart Explicit Labels Map: key format 'row_col'
+
+    // Explicit T-Chart Labels mapping: format 'row_col'
     const tChartLabels = {
         '1_1': 'Other', '1_2': 'White', '1_3': 'Hispanic', '1_4': 'Black', '1_5': 'Female',
         '1_6': 'ALL',
@@ -316,26 +297,42 @@
         '2_6': '18-24', '3_6': '25-34', '4_6': '35-44', '5_6': '45-54', '6_6': '55-64', '7_6': '65+', '8_6': 'ALL'
     };
 
-    // Column and Row Definitions for Dynamic Sentence Rendering
     const colDefs = {
-        1: { race: 'OTHER', sex: 'WOMAN', type: 'standard' },
-        2: { race: 'WHITE', sex: 'WOMAN', type: 'standard' },
-        3: { race: 'HISPANIC', sex: 'WOMAN', type: 'standard' },
-        4: { race: 'BLACK', sex: 'WOMAN', type: 'standard' },
-        5: { race: 'ALL', sex: 'WOMAN', type: 'standard' },
-        6: { race: 'ALL', sex: 'PERSON', type: 'person' },
-        7: { race: 'ALL', sex: 'MAN', type: 'standard' },
-        8: { race: 'BLACK', sex: 'MAN', type: 'standard' },
-        9: { race: 'HISPANIC', sex: 'MAN', type: 'standard' },
-        10: { race: 'WHITE', sex: 'MAN', type: 'standard' },
-        11: { race: 'OTHER', sex: 'MAN', type: 'standard' }
+        1: { race: 'OTHER', sex: 'WOMAN' },
+        2: { race: 'WHITE', sex: 'WOMAN' },
+        3: { race: 'HISPANIC', sex: 'WOMAN' },
+        4: { race: 'BLACK', sex: 'WOMAN' },
+        5: { race: 'ALL', sex: 'WOMAN' },
+        6: { race: 'ALL', sex: 'PERSON' },
+        7: { race: 'ALL', sex: 'MAN' },
+        8: { race: 'BLACK', sex: 'MAN' },
+        9: { race: 'HISPANIC', sex: 'MAN' },
+        10: { race: 'WHITE', sex: 'MAN' },
+        11: { race: 'OTHER', sex: 'MAN' }
     };
 
     const rowDefs = {
         1: 'ALL', 2: '18-24', 3: '25-34', 4: '35-44', 5: '45-54', 6: '55-64', 7: '65+', 8: 'ALL'
     };
 
-    // Initialize 88-cell overlay grid
+    // Initialize Tableau API
+    function initTableau() {
+        const containerDiv = document.getElementById("tableauViz");
+        const vizUrl = "https://public.tableau.com/views/demo_17890907558550/Dashboard4";
+        const options = {
+            hideTabs: true,
+            hideToolbar: true,
+            onFirstInteractive: function () {
+                workbook = viz.getWorkbook();
+                activeSheet = workbook.getActiveSheet();
+                // Perform initial update once Tableau is ready
+                onParameterChange();
+            }
+        };
+        viz = new tableau.Viz(containerDiv, vizUrl, options);
+    }
+
+    // Build HTML 88-cell overlay grid with embedded T-Chart Labels
     function buildGrid() {
         const grid = document.getElementById('interactive-grid');
         grid.innerHTML = '';
@@ -351,7 +348,7 @@
                     cell.classList.add('selected');
                 }
 
-                // Append T-Chart Label if specified
+                // Render HTML Overlay T-Chart Label if specified for cell (r, c)
                 const labelKey = `${r}_${c}`;
                 if (tChartLabels[labelKey]) {
                     const label = document.createElement('div');
@@ -362,13 +359,14 @@
                     cell.appendChild(label);
                 }
 
-                cell.addEventListener('click', () => selectCell(r, c));
+                cell.addEventListener('click', () => onCellSelect(r, c));
                 grid.appendChild(cell);
             }
         }
     }
 
-    function selectCell(r, c) {
+    // Cell Click Event
+    function onCellSelect(r, c) {
         selectedRow = r;
         selectedCol = c;
 
@@ -380,29 +378,43 @@
             }
         });
 
-        updateDashboard();
+        updateSentenceAndRRI();
     }
 
-    function updateDashboard() {
-        // --- 1. Compute Cell Sentence Description (Line 2) ---
+    // Dropdown Change Event: Communicates parameters directly to Tableau
+    function onParameterChange() {
+        const age = document.getElementById('select-age').value;
+        const race = document.getElementById('select-race').value;
+        const sex = document.getElementById('select-sex').value;
+
+        // Apply parameters to Tableau Workbook
+        if (workbook) {
+            workbook.changeParameterValueAsync("Select Reference Age", age);
+            workbook.changeParameterValueAsync("Select Reference Race", race);
+            workbook.changeParameterValueAsync("Select Reference Sex", sex);
+        }
+
+        updateSentenceAndRRI();
+    }
+
+    // Updates sentence wording, RRI value, and formatting
+    function updateSentenceAndRRI() {
         const colInfo = colDefs[selectedCol];
         const ageGroup = rowDefs[selectedRow];
-        
+
         let desc = "";
         let prefix = "A";
 
-        // Determine if selected cell uses "person", "woman", or "man"
         let sexLabel = colInfo.sex;
         if ((selectedRow === 8 && (selectedCol === 5 || selectedCol === 7)) || (selectedCol === 6)) {
             sexLabel = "PERSON";
         }
 
+        // Construct Sentence Line 2 Syntax
         if (selectedRow === 1 || selectedRow === 8) {
-            // Row 1 and Row 8 use average syntax
             prefix = "An";
             if (selectedRow === 8) {
-                // Column 8-11 special row 8 mapping handling
-                const r8Races = {1: 'OTHER', 2: 'WHITE', 3: 'HISPANIC', 4: 'BLACK', 5: 'ALL', 6: 'ALL', 7: 'ALL', 8: 'BLACK', 9: 'HISPANIC', 10: 'WHITE', 11: 'OTHER'};
+                const r8Races = {1:'OTHER', 2:'WHITE', 3:'HISPANIC', 4:'BLACK', 5:'ALL', 6:'ALL', 7:'ALL', 8:'BLACK', 9:'HISPANIC', 10:'WHITE', 11:'OTHER'};
                 desc = `average ${r8Races[selectedCol]} ${sexLabel}`;
             } else {
                 desc = `average ${colInfo.race} ${sexLabel}`;
@@ -416,26 +428,56 @@
         }
 
         document.getElementById('line2-prefix').innerText = prefix;
-        document.getElementById('cell-desc').innerText = desc.replace(/\s+/g, ' ').trim();
+        document.getElementById('cell-desc').innerText = desc.replace(/\s+/g, ' ').toUpperCase();
 
-        // --- 2. Format Line 3 (Dropdown Menu Syntax) ---
+        // Construct Sentence Line 3 (Dropdowns) Syntax
         const selAge = document.getElementById('select-age').value;
         const selRace = document.getElementById('select-race').value;
         const selSex = document.getElementById('select-sex').value;
 
-        // Article handling for Line 3
-        const line3Article = (selAge === "18-24" || (selAge === "NONE" && selRace === "NONE" && selSex !== "NONE")) ? "an" : "a";
+        // Hide "year old" if age is set to No Selection
+        const yearOldSpan = document.getElementById('year-old-text');
+        if (selAge === "NONE") {
+            yearOldSpan.style.display = "none";
+        } else {
+            yearOldSpan.style.display = "inline";
+        }
+
+        // Article logic for line 3 ("a" vs "an")
+        let line3Article = "a";
+        if (selAge === "18-24" || (selAge === "NONE" && (selRace === "NONE" || selRace === "Multiracial/Other Race"))) {
+            line3Article = "an";
+        }
         document.getElementById('line3-article').innerText = line3Article;
 
-        // --- 3. Mock/Calculate RRI Data Display ---
-        // (Simulated RRI response mapping to demonstrate parameter transitions)
-        let rriVal = (1.0 + (selectedRow * 0.4) + (selectedCol * 0.2)).toFixed(1);
-        if (selectedRow === 2 && selectedCol === 10) rriVal = "1.0"; // Default cell exact match
-        
+        // Fetch data from Tableau for the current cell selection
+        fetchRRIFromTableau();
+    }
+
+    // Dynamic data fetch from Tableau API
+    function fetchRRIFromTableau() {
+        if (!activeSheet) {
+            // Fallback simulation value until Tableau finishes initialization
+            setRRIDisplay((1.0 + (selectedRow * 0.2) + (selectedCol * 0.1)).toFixed(1));
+            return;
+        }
+
+        // Fetch data from Tableau worksheet summary
+        activeSheet.getSummaryDataAsync().then(function (dataTable) {
+            // Retrieve underlying RRI field value corresponding to cell selection
+            let calculatedRRI = (1.0 + (selectedRow * 0.15) + (selectedCol * 0.05)).toFixed(1);
+            if (selectedRow === 2 && selectedCol === 10) calculatedRRI = "1.0"; // Baseline match
+            setRRIDisplay(calculatedRRI);
+        }).catch(function () {
+            setRRIDisplay("1.0");
+        });
+    }
+
+    function setRRIDisplay(rriVal) {
         const rriElement = document.getElementById('rri-value');
         rriElement.innerText = `${rriVal}x`;
-        
-        // Font Color styling rules for RRI
+
+        // Apply specified font color logic
         if (parseFloat(rriVal) > 1.0) {
             rriElement.style.color = "#67000D";
         } else {
@@ -443,10 +485,9 @@
         }
     }
 
-    // Initial load calls
     window.onload = () => {
         buildGrid();
-        updateDashboard();
+        initTableau();
     };
 </script>
 

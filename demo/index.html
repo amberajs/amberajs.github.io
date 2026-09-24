@@ -42,7 +42,7 @@
             justify-content: space-between;
             align-items: center;
             height: 4vh;
-            font-size: 13px; /* Slightly increased font size */
+            font-size: 13px;
             font-family: 'Ubuntu', sans-serif;
             border-bottom: 1px solid #333;
             padding-bottom: 4px;
@@ -69,7 +69,7 @@
             width: 100%;
         }
 
-        /* Sentence Panel (7/8 of width ~ 87.5%) */
+        /* Sentence Panel (7/8 Width area) */
         .sentence-panel {
             flex: 7;
             display: flex;
@@ -78,25 +78,32 @@
             align-items: center;
             text-align: center;
             height: 100%;
-            padding: 0 10px;
+            padding: 0 15px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid #222;
+            border-radius: 6px;
         }
 
         .sentence-line-small {
             font-family: 'Ubuntu', sans-serif;
-            font-size: 1.1rem; /* Slightly increased font size */
+            font-size: 1.1rem;
             line-height: 1.4;
             margin-top: 6px;
-            margin-bottom: 6px; /* Added spacing between lines */
+            margin-bottom: 6px;
             color: #E0E0E0;
+            width: 100%;
+            text-align: center;
         }
 
         .sentence-line-large {
             font-family: 'Montserrat', sans-serif;
-            font-size: 1.35rem; /* Slightly increased font size */
+            font-size: 1.35rem;
             line-height: 1.5;
             margin-top: 6px;
-            margin-bottom: 6px; /* Added spacing between lines */
+            margin-bottom: 6px;
             white-space: nowrap;
+            width: 100%;
+            text-align: center;
         }
 
         .bold-desc {
@@ -123,13 +130,14 @@
 
         .rri-text {
             font-weight: 800;
-            text-decoration: underline; /* Always underlined */
+            text-decoration: underline;
             padding: 0 4px;
         }
 
+        /* Color Key Panel (1/8 Width area) */
         .key-panel {
             flex: 1;
-            min-width: 150px;
+            min-width: 165px;
             background: #111;
             border: 1px solid #333;
             padding: 8px 10px;
@@ -182,13 +190,13 @@
             background: #000;
         }
 
-        /* Tableau Wrapper */
+        /* Tableau Wrapper cropping bottom footer area */
         .tableau-wrapper {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            right: 0;
+            bottom: -35px;
             z-index: 1;
         }
 
@@ -228,7 +236,6 @@
             border: 1px dashed rgba(255, 255, 255, 0.6);
         }
 
-        /* Perfectly aligned selection highlight across all 88 cells */
         .cell-overlay.selected {
             border: 2px solid #FFFFFF !important;
             box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.8);
@@ -273,7 +280,7 @@
     </div>
 
     <div class="dashboard-controls">
-        <!-- Sentence Panel (7/8 Width ~ 87.5%) -->
+        <!-- Sentence Panel Centered in its 7/8 card area -->
         <div class="sentence-panel">
             <div class="sentence-line-small">On September 3, 2026 in Fayette County, Kentucky</div>
             
@@ -311,16 +318,16 @@
             </div>
         </div>
 
-        <!-- Color Key Panel (1/8 Width ~ 12.5%) -->
+        <!-- Color Key Panel (1/8 Width area) with exact bracket notation -->
         <div class="key-panel">
             <div class="key-title">Relative Rate Index (RRI) Key</div>
             <div class="key-list">
-                <div class="key-item"><div class="key-color" style="background:#CCCCCC;"></div>Less Likely (&lt;1)</div>
-                <div class="key-item"><div class="key-color" style="background:#FFFFFF;"></div>Equal Baseline (=1)</div>
-                <div class="key-item"><div class="key-color" style="background:#FEE0D2;"></div>Some Disparity (1-1.5]</div>
-                <div class="key-item"><div class="key-color" style="background:#FC9272;"></div>Moderate Disparity (1.5-2.5)</div>
-                <div class="key-item"><div class="key-color" style="background:#DE2D26;"></div>High Disparity (2.5-5)</div>
-                <div class="key-item"><div class="key-color" style="background:#67000D;"></div>Extreme Disparity (&ge;5)</div>
+                <div class="key-item"><div class="key-color" style="background:#CCCCCC;"></div>Less Likely [0-1.0)</div>
+                <div class="key-item"><div class="key-color" style="background:#FFFFFF;"></div>Equal Baseline [1.0]</div>
+                <div class="key-item"><div class="key-color" style="background:#FEE0D2;"></div>Some Disparity (1.0-1.5)</div>
+                <div class="key-item"><div class="key-color" style="background:#FC9272;"></div>Moderate Disparity [1.5-2.5)</div>
+                <div class="key-item"><div class="key-color" style="background:#DE2D26;"></div>High Disparity [2.5-5.0)</div>
+                <div class="key-item"><div class="key-color" style="background:#67000D;"></div>Extreme Disparity [5.0+)</div>
                 <div class="key-item"><div class="key-color" style="background:#1A1A1A;"></div>Suppressed (Pop &lt; 500)</div>
             </div>
         </div>
@@ -340,11 +347,9 @@
     let viz = null;
     let workbook = null;
 
-    // Selected cell state tracker (Default: Row 2, Col 10 = 18-24 White Male)
     let selectedRow = 2;
     let selectedCol = 10;
 
-    // T-Chart Label Mapping
     const tChartLabels = {
         '1_1': 'Other', '1_2': 'White', '1_3': 'Hispanic', '1_4': 'Black', '1_5': 'Female',
         '1_6': 'ALL',
@@ -399,7 +404,6 @@
                     cell.classList.add('selected');
                 }
 
-                // Append T-Chart Header Labels
                 const labelKey = `${r}_${c}`;
                 if (tChartLabels[labelKey]) {
                     const label = document.createElement('div');
@@ -410,7 +414,6 @@
                     cell.appendChild(label);
                 }
 
-                // Cell selection ONLY updates sentence text and RRI calculation
                 cell.addEventListener('click', () => onCellSelect(r, c));
                 grid.appendChild(cell);
             }
@@ -429,7 +432,6 @@
             }
         });
 
-        // Updates local sentence parameters and RRI multiplier calculations
         updateSentenceAndRRI();
     }
 
@@ -438,7 +440,6 @@
         const race = document.getElementById('select-race').value;
         const sex = document.getElementById('select-sex').value;
 
-        // Apply parameters directly to Tableau Workbook ONLY on dropdown changes
         if (workbook) {
             workbook.changeParameterValueAsync("Select Reference Age", age);
             workbook.changeParameterValueAsync("Select Reference Race", race);
@@ -460,7 +461,6 @@
             sexLabel = "PERSON";
         }
 
-        // Line 2 Dynamic Construction
         if (selectedRow === 8 && (selectedCol >= 5 && selectedCol <= 7)) {
             prefix = "An";
             descHTML = `<span class="bold-desc">AVERAGE PERSON</span>`;
@@ -483,7 +483,6 @@
         document.getElementById('line2-prefix').innerText = prefix;
         document.getElementById('cell-desc').innerHTML = descHTML;
 
-        // Line 4 Dropdowns Article Logic
         const selAge = document.getElementById('select-age').value;
         const selRace = document.getElementById('select-race').value;
         const selSex = document.getElementById('select-sex').value;
@@ -501,7 +500,6 @@
         }
         document.getElementById('line4-article').innerText = line4Article;
 
-        // Fetch data calculation
         fetchRRIFromTableau();
     }
 

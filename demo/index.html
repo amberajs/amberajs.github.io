@@ -488,19 +488,25 @@
         updateSentenceAndRRI();
     }
 
-    // Dropdown Change Event: Communicates parameter values directly to Tableau
+    // Dropdown Change Event: Communicates parameter values directly to Tableau asynchronously
     function onParameterChange() {
         const age = document.getElementById('select-age').value;
         const race = document.getElementById('select-race').value;
         const sex = document.getElementById('select-sex').value;
 
         if (workbook) {
-            workbook.changeParameterValueAsync("Select Reference Age", age);
-            workbook.changeParameterValueAsync("Select Reference Race", race);
-            workbook.changeParameterValueAsync("Select Reference Sex", sex);
+            Promise.all([
+                workbook.changeParameterValueAsync("Select Reference Age", age),
+                workbook.changeParameterValueAsync("Select Reference Race", race),
+                workbook.changeParameterValueAsync("Select Reference Sex", sex)
+            ]).then(() => {
+                updateSentenceAndRRI();
+            }).catch(() => {
+                updateSentenceAndRRI();
+            });
+        } else {
+            updateSentenceAndRRI();
         }
-
-        updateSentenceAndRRI();
     }
 
     function updateSentenceAndRRI() {
@@ -585,33 +591,67 @@
         let foundPop = null;
         let pendingPromises = [];
 
+        // Demographic target strings for cell matching
+        const colInfo = colDefs[selectedCol];
+        const targetAge = rowDefs[selectedRow];
+        let targetRace = colInfo.race || colRaceOnly[selectedCol] || "";
+        let targetSex = colInfo.sex || "";
+
         for (let s = 0; s < sheets.length; s++) {
             let p = Promise.resolve(sheets[s].getSummaryDataAsync())
                 .then(function (dataTable) {
                     const columns = dataTable.getColumns();
                     let rriColIndex = -1;
                     let popColIndex = -1;
+                    let ageColIndex = -1;
+                    let raceColIndex = -1;
+                    let sexColIndex = -1;
                     
                     for (let i = 0; i < columns.length; i++) {
                         const fieldName = columns[i].getFieldName();
                         if (fieldName === "Relative Rate Index (RRI)" || fieldName.includes("RRI")) {
                             rriColIndex = i;
                         }
-                        if (fieldName.includes("County Pop Count") || fieldName.includes("Pop Count") || fieldName.includes("Population")) {
+                        if (fieldName === "County Pop Count" || fieldName.includes("County Pop Count")) {
                             popColIndex = i;
                         }
+                        const fnUpper = fieldName.toUpperCase();
+                        if (fnUpper.includes("AGE")) ageColIndex = i;
+                        if (fnUpper.includes("RACE")) raceColIndex = i;
+                        if (fnUpper.includes("SEX") || fnUpper.includes("GENDER")) sexColIndex = i;
                     }
 
-                    if (dataTable.getData().length > 0) {
-                        const rowData = dataTable.getData()[0];
-                        if (rriColIndex !== -1 && rowData[rriColIndex]) {
-                            const val = rowData[rriColIndex].formattedValue || rowData[rriColIndex].value;
+                    const rows = dataTable.getData();
+                    if (rows.length > 0) {
+                        let targetRow = null;
+
+                        // Search summary data rows to match selected cell's demographic profile
+                        if (rows.length > 1) {
+                            for (let r = 0; r < rows.length; r++) {
+                                let row = rows[r];
+                                let ageMatch = ageColIndex === -1 || (row[ageColIndex] && row[ageColIndex].value.toString().toUpperCase().includes(targetAge.toUpperCase()));
+                                let raceMatch = raceColIndex === -1 || (row[raceColIndex] && row[raceColIndex].value.toString().toUpperCase().includes(targetRace.toUpperCase()));
+                                let sexMatch = sexColIndex === -1 || (row[sexColIndex] && row[sexColIndex].value.toString().toUpperCase().includes(targetSex.toUpperCase()));
+
+                                if (ageMatch && raceMatch && sexMatch) {
+                                    targetRow = row;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!targetRow) {
+                            targetRow = rows[0];
+                        }
+
+                        if (rriColIndex !== -1 && targetRow[rriColIndex]) {
+                            const val = targetRow[rriColIndex].formattedValue || targetRow[rriColIndex].value;
                             if (val !== null && val !== undefined && !isNaN(parseFloat(val))) {
                                 foundRRI = val;
                             }
                         }
-                        if (popColIndex !== -1 && rowData[popColIndex]) {
-                            const popVal = rowData[popColIndex].value !== undefined ? rowData[popColIndex].value : rowData[popColIndex].formattedValue;
+                        if (popColIndex !== -1 && targetRow[popColIndex]) {
+                            const popVal = targetRow[popColIndex].value !== undefined ? targetRow[popColIndex].value : targetRow[popColIndex].formattedValue;
                             if (popVal !== null && popVal !== undefined && !isNaN(parseFloat(popVal))) {
                                 foundPop = parseFloat(popVal);
                             }

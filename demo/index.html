@@ -13,7 +13,7 @@
     <script type="text/javascript" src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
     
     <style>
-        /* Base Setup */
+        /* Base Setup - Strictly 100vw/100vh with no scrollbars */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -26,32 +26,47 @@
             background-color: #000000;
             color: #FFFFFF;
             overflow: hidden;
+            font-family: 'Ubuntu', sans-serif;
         }
 
+        /* Horizontal Split Container (1/4 Left, 3/4 Right) */
         #app-container {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             width: 100vw;
             height: 100vh;
-            padding: 10px 20px;
+            padding: 12px;
+            gap: 12px;
         }
 
-        /* Top Links */
+        /* LEFT PANEL (1/4 Width ~ 25%) */
+        .left-panel {
+            flex: 0 0 25%;
+            width: 25%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Top Navigation Links in Left Panel */
         .top-nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 4vh;
-            font-size: 13px;
+            height: 24px;
+            font-size: 12px;
             font-family: 'Ubuntu', sans-serif;
             border-bottom: 1px solid #333;
             padding-bottom: 4px;
+            flex-shrink: 0;
         }
 
         .top-nav a {
             color: #FFFFFF;
             text-decoration: none;
             opacity: 0.85;
+            transition: opacity 0.2s;
         }
 
         .top-nav a:hover {
@@ -59,47 +74,49 @@
             text-decoration: underline;
         }
 
-        /* Controls Section (7/8 Sentence vs 1/8 Color Key Layout) */
-        .dashboard-controls {
-            display: flex;
-            height: 29vh;
-            align-items: center;
-            gap: 15px;
-            padding: 10px 0;
-            width: 100%;
-        }
-
-        /* Sentence Panel (7/8 of width) */
+        /* Sentence Card Panel (~6/8 to 7/8 of remaining left height) */
         .sentence-panel {
-            flex: 7;
+            flex: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
-            height: 100%;
             background: #080808;
             border: 1px solid #222;
             border-radius: 6px;
-            padding: 10px 20px;
+            padding: 16px 14px;
+            overflow-y: auto;
         }
 
-        /* Font & Spacing for Lines 1 - 4 */
-        .sentence-line-small {
+        /* Distinct Line Blocks with clean spacing between lines 1-4 */
+        .sentence-line-1 {
             font-family: 'Ubuntu', sans-serif;
-            font-size: 1.05rem;
-            line-height: 1.3;
-            margin-top: 4px;
-            margin-bottom: 4px;
+            font-size: 0.95rem;
+            line-height: 1.25;
+            margin-bottom: 12px;
+            color: #D1D5DB;
         }
 
-        .sentence-line-large {
+        .sentence-line-2 {
             font-family: 'Montserrat', sans-serif;
-            font-size: 1.25rem;
-            line-height: 1.4;
-            margin-top: 6px;
-            margin-bottom: 6px;
-            white-space: nowrap;
+            font-size: 1.15rem;
+            line-height: 1.3;
+            margin-bottom: 12px;
+        }
+
+        .sentence-line-3 {
+            font-family: 'Ubuntu', sans-serif;
+            font-size: 0.95rem;
+            line-height: 1.25;
+            margin-bottom: 12px;
+            color: #D1D5DB;
+        }
+
+        .sentence-line-4 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.1rem;
+            line-height: 1.45;
         }
 
         .bold-desc {
@@ -110,11 +127,12 @@
             background-color: #1a1a1a;
             color: #FFFFFF;
             border: 1px solid #555;
-            padding: 2px 6px;
+            padding: 2px 5px;
             font-family: 'Montserrat', sans-serif;
-            font-size: 1.1rem;
+            font-size: 1rem;
             border-radius: 4px;
             cursor: pointer;
+            margin: 2px 0;
         }
 
         select:focus {
@@ -127,60 +145,61 @@
             text-decoration: underline;
         }
 
-        /* Color Key Panel (1/8 of width) */
+        /* Color Key Panel (Bottom Left) */
         .key-panel {
-            flex: 1;
-            min-width: 150px;
+            flex-shrink: 0;
             background: #111;
             border: 1px solid #333;
-            padding: 8px 10px;
+            padding: 10px 12px;
             border-radius: 6px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            height: 100%;
+            gap: 6px;
         }
 
         .key-title {
             font-family: 'Ubuntu', sans-serif;
             font-weight: bold;
             font-size: 0.68rem;
-            margin-bottom: 4px;
             text-transform: uppercase;
             color: #aaa;
             text-align: center;
+            letter-spacing: 0.5px;
         }
 
         .key-list {
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            height: 100%;
+            gap: 4px;
         }
 
         .key-item {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             font-family: 'Ubuntu', sans-serif;
-            font-size: 0.65rem;
+            font-size: 0.68rem;
             white-space: nowrap;
         }
 
         .key-color {
-            width: 12px;
+            width: 14px;
             height: 10px;
             border: 1px solid #444;
             flex-shrink: 0;
+            border-radius: 1px;
         }
 
-        /* Heatmap Canvas Container (67vh height area) */
-        .heatmap-container {
+        /* RIGHT PANEL (3/4 Width ~ 75%) */
+        .right-panel {
+            flex: 0 0 75%;
+            width: 75%;
+            height: 100%;
             position: relative;
-            height: 67vh;
-            width: 100%;
             overflow: hidden;
             background: #000;
+            border-radius: 6px;
+            border: 1px solid #222;
         }
 
         /* Offsets Tableau footer completely outside the frame */
@@ -198,7 +217,7 @@
             height: 100% !important;
         }
 
-        /* 88-Cell Interactive Grid Layer (Shifted down slightly to align bottom row edge) */
+        /* 88-Cell Interactive Grid Layer (Positioned over Tableau viz area) */
         .grid-overlay {
             position: absolute;
             top: 6px;
@@ -287,23 +306,25 @@
 <body>
 
 <div id="app-container">
-    <!-- Links -->
-    <div class="top-nav">
-        <div><a href="https://amberajs.github.io">&lt; back to amberajs portfolio</a></div>
-        <div><a href="#" onclick="alert('Raw dataset link placeholder'); return false;">view data</a></div>
-        <div><a href="https://github.com/amberajs/arrest_stats" target="_blank">view source code &gt;</a></div>
-    </div>
+    <!-- LEFT PANEL (1/4 Width) -->
+    <div class="left-panel">
+        <!-- Top Navigation Links -->
+        <div class="top-nav">
+            <div><a href="https://amberajs.github.io">&lt; back to amberajs portfolio</a></div>
+            <div><a href="https://github.com/amberajs/arrest_stats" target="_blank">view source code &gt;</a></div>
+        </div>
 
-    <!-- Sentence & Color Key Section -->
-    <div class="dashboard-controls">
-        <!-- Sentence Panel (7/8 Width, Centered) -->
+        <!-- Dynamic Sentence Card -->
         <div class="sentence-panel">
-            <div class="sentence-line-small">On September 3, 2026 in Fayette County, Kentucky</div>
-            <div class="sentence-line-large">
+            <div class="sentence-line-1">On September 3, 2026 in Fayette County, Kentucky</div>
+            
+            <div class="sentence-line-2">
                 <span id="line2-prefix">An</span> <span id="cell-desc" class="bold-desc">18-24 year old WHITE MAN</span> <span id="rri-phrase">was <span id="rri-value" class="rri-text" style="color: #FFFFFF;">1.0x</span> as likely</span>
             </div>
-            <div class="sentence-line-small">to be incarcerated at Fayette County Detention Center</div>
-            <div class="sentence-line-large">
+            
+            <div class="sentence-line-3">to be incarcerated at Fayette County Detention Center</div>
+            
+            <div class="sentence-line-4">
                 than <span id="line4-article">a</span>
                 <select id="select-age" onchange="onParameterChange()">
                     <option value="18-24">18-24</option>
@@ -330,7 +351,7 @@
             </div>
         </div>
 
-        <!-- Color Key Panel (1/8 Width with Mathematical Bracket Notation) -->
+        <!-- Color Key Panel -->
         <div class="key-panel">
             <div class="key-title">RRI Key</div>
             <div class="key-list">
@@ -345,8 +366,8 @@
         </div>
     </div>
 
-    <!-- Heatmap Container -->
-    <div class="heatmap-container">
+    <!-- RIGHT PANEL (3/4 Width) -->
+    <div class="right-panel">
         <div class="tableau-wrapper">
             <div id="tableauViz"></div>
         </div>
@@ -565,39 +586,39 @@
         let pendingPromises = [];
 
         for (let s = 0; s < sheets.length; s++) {
-            let p = sheets[s].getSummaryDataAsync().then(function (dataTable) {
-                const columns = dataTable.getColumns();
-                let rriColIndex = -1;
-                let popColIndex = -1;
-                
-                for (let i = 0; i < columns.length; i++) {
-                    const fieldName = columns[i].getFieldName();
-                    // Checking for RRI field (ATTR/AGG)
-                    if (fieldName === "Relative Rate Index (RRI)" || fieldName.includes("RRI")) {
-                        rriColIndex = i;
+            let p = Promise.resolve(sheets[s].getSummaryDataAsync())
+                .then(function (dataTable) {
+                    const columns = dataTable.getColumns();
+                    let rriColIndex = -1;
+                    let popColIndex = -1;
+                    
+                    for (let i = 0; i < columns.length; i++) {
+                        const fieldName = columns[i].getFieldName();
+                        if (fieldName === "Relative Rate Index (RRI)" || fieldName.includes("RRI")) {
+                            rriColIndex = i;
+                        }
+                        if (fieldName.includes("County Pop Count") || fieldName.includes("Pop Count") || fieldName.includes("Population")) {
+                            popColIndex = i;
+                        }
                     }
-                    // Checking for Population Count field
-                    if (fieldName.includes("County Pop Count") || fieldName.includes("Pop Count") || fieldName.includes("Population")) {
-                        popColIndex = i;
-                    }
-                }
 
-                if (dataTable.getData().length > 0) {
-                    const rowData = dataTable.getData()[0];
-                    if (rriColIndex !== -1 && rowData[rriColIndex]) {
-                        const val = rowData[rriColIndex].formattedValue || rowData[rriColIndex].value;
-                        if (val !== null && val !== undefined && !isNaN(parseFloat(val))) {
-                            foundRRI = val;
+                    if (dataTable.getData().length > 0) {
+                        const rowData = dataTable.getData()[0];
+                        if (rriColIndex !== -1 && rowData[rriColIndex]) {
+                            const val = rowData[rriColIndex].formattedValue || rowData[rriColIndex].value;
+                            if (val !== null && val !== undefined && !isNaN(parseFloat(val))) {
+                                foundRRI = val;
+                            }
+                        }
+                        if (popColIndex !== -1 && rowData[popColIndex]) {
+                            const popVal = rowData[popColIndex].value !== undefined ? rowData[popColIndex].value : rowData[popColIndex].formattedValue;
+                            if (popVal !== null && popVal !== undefined && !isNaN(parseFloat(popVal))) {
+                                foundPop = parseFloat(popVal);
+                            }
                         }
                     }
-                    if (popColIndex !== -1 && rowData[popColIndex]) {
-                        const popVal = rowData[popColIndex].value !== undefined ? rowData[popColIndex].value : rowData[popColIndex].formattedValue;
-                        if (popVal !== null && popVal !== undefined && !isNaN(parseFloat(popVal))) {
-                            foundPop = parseFloat(popVal);
-                        }
-                    }
-                }
-            }).catch(() => {});
+                })
+                .catch(function () {});
             pendingPromises.push(p);
         }
 
@@ -622,7 +643,7 @@
         const rriPhrase = document.getElementById('rri-phrase');
 
         if (isSuppressed) {
-            rriPhrase.innerHTML = `<span style="color: #FF6B6B; font-size: 1.1rem; font-weight: bold;">sample size was too small to be sure of RRI</span>`;
+            rriPhrase.innerHTML = `<span style="color: #FF6B6B; font-size: 1.05rem; font-weight: bold;">sample size was too small to be sure of RRI</span>`;
         } else {
             const parsedRRI = parseFloat(rriVal);
             const colorStyle = parsedRRI > 1.0 ? "color: #DE2D26;" : "color: #FFFFFF;";

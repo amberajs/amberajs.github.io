@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Tableau Heatmap Overlay & RRI Details</title>
-    <!-- Tableau Embedding API v3 -->
-    <script type="module" src="https://public.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js"></script>
+    <!-- Tableau JS API v1 -->
+    <script type="text/javascript" src="https://public.tableau.com/javascripts/api/viz_v1.js"></script>
     <style>
         :root {
             --grid-rows: 8;
@@ -23,23 +23,23 @@
 
         .dashboard-container {
             position: relative;
-            width: 1100px;
+            width: 100%;
+            max-width: 1100px;
             margin: 0 auto;
         }
 
         .viz-wrapper {
             position: relative;
             width: 100%;
-            height: 650px;
             background: #ffffff;
             border-radius: 8px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
-        tableau-viz {
+        .tableauPlaceholder {
+            position: relative;
             width: 100%;
-            height: 100%;
         }
 
         /* Shifted Grid Container: moved down to align precisely over the visible heatmap area */
@@ -48,12 +48,13 @@
             top: 8px; /* Offset down to align bottom row with visible heatmap bottom edge */
             left: 0;
             width: 100%;
-            height: 600px; /* Constrained height ignoring bottom Tableau bar */
+            height: calc(100% - 40px); /* Constrained height ignoring bottom Tableau toolbar */
             pointer-events: none;
             display: grid;
             grid-template-rows: repeat(var(--grid-rows), 1fr);
             grid-template-columns: repeat(var(--grid-cols), 1fr);
             box-sizing: border-box;
+            z-index: 20;
         }
 
         .grid-cell {
@@ -74,7 +75,7 @@
             z-index: 10;
         }
 
-        /* Permanent Gray Rectangle Overlays */
+        /* Permanent Dark Gray Rectangle Overlays */
         .perm-overlay {
             position: absolute;
             pointer-events: none;
@@ -127,12 +128,31 @@
 
 <div class="dashboard-container">
     <div class="viz-wrapper">
-        <tableau-viz id="tableauViz" 
-            src="https://public.tableau.com/views/YourWorkbook/YourView" 
-            toolbar="bottom">
-        </tableau-viz>
+        <!-- Tableau Embed Container -->
+        <div class='tableauPlaceholder' id='viz1790228867547'>
+            <noscript>
+                <a href='#'>
+                    <img alt='Dashboard4' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;de&#47;demo_17890907558550&#47;Dashboard4&#47;1_rss.png' style='border: none' />
+                </a>
+            </noscript>
+            <object class='tableauViz' style='display:none;'>
+                <param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' />
+                <param name='embed_code_version' value='3' />
+                <param name='site_root' value='' />
+                <param name='name' value='demo_17890907558550&#47;Dashboard4' />
+                <param name='tabs' value='no' />
+                <param name='toolbar' value='yes' />
+                <param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;de&#47;demo_17890907558550&#47;Dashboard4&#47;1.png' />
+                <param name='animate_transition' value='yes' />
+                <param name='display_static_image' value='yes' />
+                <param name='display_spinner' value='yes' />
+                <param name='display_overlay' value='yes' />
+                <param name='display_count' value='yes' />
+                <param name='language' value='en-US' />
+            </object>
+        </div>
 
-        <!-- Dynamic Cell Overlay Grid -->
+        <!-- Selection & Permanent Border Overlay Grid -->
         <div class="grid-overlay-container" id="gridContainer">
             <!-- Permanent Rectangle 1: Row 8, Columns 5-7 -->
             <div class="perm-overlay perm-overlay-row8-c57"></div>
@@ -148,7 +168,13 @@
     </div>
 </div>
 
-<script>
+<script type='text/javascript'>
+    // Tableau Embed Initialization
+    var divElement = document.getElementById('viz1790228867547');
+    var vizElement = divElement.getElementsByTagName('object')[0];
+    vizElement.style.width = '100%';
+    vizElement.style.height = (divElement.offsetWidth * 0.75) + 'px';
+
     const ROWS = 8;
     const COLS = 11;
 
@@ -168,12 +194,8 @@
         "18-24", "25-34", "35-44", "45-54", "55-64", "65+", "TOTAL"
     ];
 
-    let selectedCellIndex = null;
-    let vizElement = null;
-
     document.addEventListener("DOMContentLoaded", () => {
         buildGrid();
-        initTableau();
     });
 
     function buildGrid() {
@@ -190,31 +212,22 @@
         }
     }
 
-    function initTableau() {
-        vizElement = document.getElementById("tableauViz");
-        vizElement.addEventListener("firstinteractive", () => {
-            vizElement.addEventListener("markselectionchanged", handleTableauSelection);
-        });
-    }
-
     function getGroupDescription(row, col) {
         if (row === 8) {
-            // Row 8 logic
+            // Row 8 logic: columns 5-7 evaluate to "AVERAGE PERSON", columns 1-4 and 8-11 evaluate to "AVERAGE [RACE] PERSON"
             if (col >= 5 && col <= 7) {
                 return "AVERAGE PERSON";
             } else {
-                // Cols 1-4 and 8-11: race regardless of sex
                 const race = RACES[col - 1];
                 return `AVERAGE ${race} PERSON`;
             }
         } else {
-            // Rows 1-7 logic
+            // Rows 1-7 logic: columns 5-7 evaluate to "A [AGE] PERSON"
             const age = AGE_GROUPS[row - 1];
             const race = RACES[col - 1];
             const sex = SEXES[col - 1];
 
             if (col >= 5 && col <= 7) {
-                // Columns 5-7 display PERSON instead of ALL
                 return `A ${age} PERSON`;
             } else {
                 return `A ${age} ${race} ${sex}`;
@@ -223,7 +236,6 @@
     }
 
     async function handleCellClick(row, col, cellElement) {
-        // Clear previous temporary selection border
         document.querySelectorAll(".grid-cell.selected").forEach(c => c.classList.remove("selected"));
         cellElement.classList.add("selected");
 
@@ -231,57 +243,15 @@
         await updateCardDetails(groupLabel, row, col);
     }
 
-    async function handleTableauSelection(event) {
-        const marks = await event.getMarksAsync();
-        if (!marks || marks.length === 0 || !marks[0].pairs) return;
-
-        // Extract aggregate values and measures from selected mark
-        const pairs = marks[0].pairs;
-        let rriVal = null;
-        let popCount = null;
-        let row = 1;
-        let col = 1;
-
-        pairs.forEach(pair => {
-            const fieldName = pair.fieldName;
-            if (fieldName === "AGG(RRI)" || fieldName === "RRI") {
-                rriVal = pair.formattedValue || pair.value;
-            }
-            if (fieldName === "County Pop Count" || fieldName === "SUM(County Pop Count)") {
-                popCount = parseFloat(pair.value);
-            }
-            if (fieldName === "Row") row = parseInt(pair.value, 10) || 1;
-            if (fieldName === "Col") col = parseInt(pair.value, 10) || 1;
-        });
-
-        const groupLabel = getGroupDescription(row, col);
-        renderSentence(groupLabel, rriVal, popCount);
-    }
-
     async function updateCardDetails(groupLabel, row, col) {
         try {
-            const sheet = vizElement.workbook.activeSheet;
-            // Fetch underlying summary data for selected cell coordinates
-            const markData = await sheet.getSummaryDataAsync();
-            
+            // Placeholder values until Tableau JS API event handles active mark data
             let rriVal = "N/A";
-            let popCount = 0;
-
-            // Find matching data row from Tableau payload
-            if (markData && markData.data) {
-                const columns = markData.columns;
-                const rriIdx = columns.findIndex(c => c.fieldName === "AGG(RRI)" || c.fieldName === "RRI");
-                const popIdx = columns.findIndex(c => c.fieldName === "County Pop Count" || c.fieldName === "SUM(County Pop Count)");
-
-                if (markData.data.length > 0) {
-                    if (rriIdx !== -1) rriVal = markData.data[0][rriIdx].formattedValue || markData.data[0][rriIdx].value;
-                    if (popIdx !== -1) popCount = parseFloat(markData.data[0][popIdx].value);
-                }
-            }
+            let popCount = 1000; 
 
             renderSentence(groupLabel, rriVal, popCount);
         } catch (err) {
-            console.error("Error querying Tableau worksheet data:", err);
+            console.error("Error updating details card:", err);
             renderSentence(groupLabel, "N/A", 0);
         }
     }

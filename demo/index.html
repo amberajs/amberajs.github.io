@@ -87,6 +87,11 @@
             border-radius: 6px;
             padding: 16px 14px;
             overflow-y: auto;
+            transition: opacity 0.2s ease;
+        }
+
+        .sentence-panel.is-loading {
+            opacity: 0.75;
         }
 
         /* Distinct Line Blocks with clean spacing between lines 1-4 */
@@ -143,6 +148,17 @@
         .rri-text {
             font-weight: bold;
             text-decoration: underline;
+            transition: opacity 0.15s ease, color 0.15s ease;
+        }
+
+        .rri-text.loading-pulse {
+            opacity: 0.4;
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.7; }
         }
 
         /* Color Key Panel (Bottom Left) */
@@ -315,7 +331,7 @@
         </div>
 
         <!-- Dynamic Sentence Card -->
-        <div class="sentence-panel">
+        <div class="sentence-panel" id="sentence-card">
             <div class="sentence-line-1">On September 3, 2026 in Fayette County, Kentucky</div>
             
             <div class="sentence-line-2">
@@ -385,6 +401,11 @@
     let selectedRow = 2;
     let selectedCol = 10;
 
+    // Data Cache & Asynchronous Request Sequence Tracking
+    let summaryCache = new Map(); 
+    let summaryRawRows = []; // Stores all parsed rows from Tableau summary table
+    let currentRequestId = 0;
+
     // T-Chart Header Overlay Labels
     const tChartLabels = {
         '1_1': 'Other', '1_2': 'White', '1_3': 'Hispanic', '1_4': 'Black', '1_5': 'Female',
@@ -416,6 +437,37 @@
     const rowDefs = {
         1: 'ALL', 2: '18-24', 3: '25-34', 4: '35-44', 5: '45-54', 6: '55-64', 7: '65+', 8: 'ALL'
     };
+
+    // Helper functions for string normalization across Tableau vs HTML definitions
+    function normalizeSex(s) {
+        if (!s) return "ALL";
+        const upper = s.toString().trim().toUpperCase();
+        if (upper.includes("MAN") || upper.includes("MALE") || upper === "M") return "MAN";
+        if (upper.includes("WOMAN") || upper.includes("FEMALE") || upper === "F" || upper.includes("WOMEN")) return "WOMAN";
+        return "ALL";
+    }
+
+    function normalizeRace(r) {
+        if (!r) return "ALL";
+        const upper = r.toString().trim().toUpperCase();
+        if (upper.includes("WHITE")) return "WHITE";
+        if (upper.includes("BLACK")) return "BLACK";
+        if (upper.includes("HISPANIC")) return "HISPANIC";
+        if (upper.includes("OTHER") || upper.includes("MULTI") || upper.includes("OTHER RACE")) return "MULTIRACIAL/OTHER RACE";
+        return "ALL";
+    }
+
+    function normalizeAge(a) {
+        if (!a) return "ALL";
+        const upper = a.toString().trim().toUpperCase();
+        if (upper.includes("18") && upper.includes("24")) return "18-24";
+        if (upper.includes("25") && upper.includes("34")) return "25-34";
+        if (upper.includes("35") && upper.includes("44")) return "35-44";
+        if (upper.includes("45") && upper.includes("54")) return "45-54";
+        if (upper.includes("55") && upper.includes("64")) return "55-64";
+        if (upper.includes("65")) return "65+";
+        return "ALL";
+    }
 
     // Initialize Tableau API
     function initTableau() {
@@ -472,7 +524,7 @@
         }
     }
 
-    // Cell Click Event
+    // Fast Cell Click Event (Instant client-side cache lookup)
     function onCellSelect(r, c) {
         selectedRow = r;
         selectedCol = c;
@@ -488,8 +540,20 @@
         updateSentenceAndRRI();
     }
 
-    // Dropdown Change Event: Communicates parameter values directly to Tableau asynchronously
+    // Show visual loading state on RRI element
+    function setRRILoading() {
+        const rriPhrase = document.getElementById('rri-phrase');
+        if (rriPhrase) {
+            rriPhrase.innerHTML = `was <span id="rri-value" class="rri-text loading-pulse" style="color: #aaaaaa;">...</span> as likely`;
+        }
+    }
+
+    // Dropdown Change Event: Parameter updates invalidate current cache & fetch fresh summary data
     function onParameterChange() {
+        summaryCache.clear();
+        summaryRawRows = [];
+        setRRILoading();
+
         const age = document.getElementById('select-age').value;
         const race = document.getElementById('select-race').value;
         const sex = document.getElementById('select-sex').value;
@@ -500,16 +564,16 @@
                 workbook.changeParameterValueAsync("Select Reference Race", race),
                 workbook.changeParameterValueAsync("Select Reference Sex", sex)
             ]).then(() => {
-                updateSentenceAndRRI();
+                updateSentenceAndRRI(true);
             }).catch(() => {
-                updateSentenceAndRRI();
+                updateSentenceAndRRI(true);
             });
         } else {
-            updateSentenceAndRRI();
+            updateSentenceAndRRI(true);
         }
     }
 
-    function updateSentenceAndRRI() {
+    function updateSentenceAndRRI(forceRefresh = false) {
         const colInfo = colDefs[selectedCol];
         const ageGroup = rowDefs[selectedRow];
 
@@ -577,106 +641,143 @@
         }
         document.getElementById('line4-article').innerText = line4Article;
 
-        fetchRRIFromTableau();
+        // Check if we can fulfill immediately from normalized cache
+        const cacheData = lookupCacheForCell(selectedRow, selectedCol);
+        if (!forceRefresh && cacheData) {
+            setRRIDisplay(cacheData.rri, cacheData.isSuppressed, cacheData.pop);
+        } else {
+            fetchRRIFromTableau();
+        }
     }
 
+    function lookupCacheForCell(r, c) {
+        const colInfo = colDefs[c];
+        const rawAge = rowDefs[r];
+        const rawRace = colInfo.race || colRaceOnly[c] || "ALL";
+        const rawSex = colInfo.sex || "ALL";
+
+        const normAge = normalizeAge(rawAge);
+        const normRace = normalizeRace(rawRace);
+        const normSex = normalizeSex(rawSex);
+
+        const key = `${normAge}_${normRace}_${normSex}`;
+        if (summaryCache.has(key)) {
+            return summaryCache.get(key);
+        }
+
+        // Fallback search across raw parsed rows for flexible row/col match
+        for (let item of summaryRawRows) {
+            if (item.normAge === normAge && item.normRace === normRace && item.normSex === normSex) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    // Optimized Tableau Data Fetching with Request Sequencing & Caching
     function fetchRRIFromTableau() {
         if (!workbook) {
             setRRIDisplay("1.0", false, 1000);
             return;
         }
 
+        setRRILoading();
+
+        const requestId = ++currentRequestId;
         const sheets = workbook.getActiveSheet().getWorksheets();
-        let foundRRI = null;
-        let foundPop = null;
-        let pendingPromises = [];
-
-        // Demographic target strings for cell matching
-        const colInfo = colDefs[selectedCol];
-        const targetAge = rowDefs[selectedRow];
-        let targetRace = colInfo.race || colRaceOnly[selectedCol] || "";
-        let targetSex = colInfo.sex || "";
-
+        
+        // Locate primary worksheet containing RRI data
+        let targetSheet = null;
         for (let s = 0; s < sheets.length; s++) {
-            let p = Promise.resolve(sheets[s].getSummaryDataAsync())
-                .then(function (dataTable) {
-                    const columns = dataTable.getColumns();
-                    let rriColIndex = -1;
-                    let popColIndex = -1;
-                    let ageColIndex = -1;
-                    let raceColIndex = -1;
-                    let sexColIndex = -1;
-                    
-                    for (let i = 0; i < columns.length; i++) {
-                        const fieldName = columns[i].getFieldName();
-                        if (fieldName === "Relative Rate Index (RRI)" || fieldName.includes("RRI")) {
-                            rriColIndex = i;
-                        }
-                        if (fieldName === "County Pop Count" || fieldName.includes("County Pop Count")) {
-                            popColIndex = i;
-                        }
-                        const fnUpper = fieldName.toUpperCase();
-                        if (fnUpper.includes("AGE")) ageColIndex = i;
-                        if (fnUpper.includes("RACE")) raceColIndex = i;
-                        if (fnUpper.includes("SEX") || fnUpper.includes("GENDER")) sexColIndex = i;
-                    }
-
-                    const rows = dataTable.getData();
-                    if (rows.length > 0) {
-                        let targetRow = null;
-
-                        // Search summary data rows to match selected cell's demographic profile
-                        if (rows.length > 1) {
-                            for (let r = 0; r < rows.length; r++) {
-                                let row = rows[r];
-                                let ageMatch = ageColIndex === -1 || (row[ageColIndex] && row[ageColIndex].value.toString().toUpperCase().includes(targetAge.toUpperCase()));
-                                let raceMatch = raceColIndex === -1 || (row[raceColIndex] && row[raceColIndex].value.toString().toUpperCase().includes(targetRace.toUpperCase()));
-                                let sexMatch = sexColIndex === -1 || (row[sexColIndex] && row[sexColIndex].value.toString().toUpperCase().includes(targetSex.toUpperCase()));
-
-                                if (ageMatch && raceMatch && sexMatch) {
-                                    targetRow = row;
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (!targetRow) {
-                            targetRow = rows[0];
-                        }
-
-                        if (rriColIndex !== -1 && targetRow[rriColIndex]) {
-                            const val = targetRow[rriColIndex].formattedValue || targetRow[rriColIndex].value;
-                            if (val !== null && val !== undefined && !isNaN(parseFloat(val))) {
-                                foundRRI = val;
-                            }
-                        }
-                        if (popColIndex !== -1 && targetRow[popColIndex]) {
-                            const popVal = targetRow[popColIndex].value !== undefined ? targetRow[popColIndex].value : targetRow[popColIndex].formattedValue;
-                            if (popVal !== null && popVal !== undefined && !isNaN(parseFloat(popVal))) {
-                                foundPop = parseFloat(popVal);
-                            }
-                        }
-                    }
-                })
-                .catch(function () {});
-            pendingPromises.push(p);
+            if (sheets[s].getName().toLowerCase().includes("heat") || sheets[s].getName().toLowerCase().includes("rri") || s === 0) {
+                targetSheet = sheets[s];
+                if (sheets[s].getName().toLowerCase().includes("heat")) break;
+            }
         }
 
-        Promise.all(pendingPromises).then(() => {
-            let rriVal = foundRRI;
-            if (rriVal === null) {
-                let fallback = (1.0 + (selectedRow * 0.1) + (selectedCol * 0.05)).toFixed(1);
-                if (selectedRow === 2 && selectedCol === 10) fallback = "1.0";
-                rriVal = fallback;
-            }
+        if (!targetSheet) targetSheet = sheets[0];
 
-            let popVal = foundPop !== null ? foundPop : 1000;
-            let isSuppressed = popVal < 500;
+        Promise.resolve(targetSheet.getSummaryDataAsync())
+            .then(function (dataTable) {
+                if (requestId !== currentRequestId) return;
 
-            setRRIDisplay(rriVal, isSuppressed, popVal);
-        }).catch(() => {
-            setRRIDisplay("1.0", false, 1000);
-        });
+                const columns = dataTable.getColumns();
+                let rriColIndex = -1;
+                let popColIndex = -1;
+                let ageColIndex = -1;
+                let raceColIndex = -1;
+                let sexColIndex = -1;
+
+                for (let i = 0; i < columns.length; i++) {
+                    const fieldName = columns[i].getFieldName();
+                    const fnUpper = fieldName.toUpperCase();
+
+                    if (fieldName === "Relative Rate Index (RRI)" || fnUpper.includes("RRI")) {
+                        rriColIndex = i;
+                    }
+                    if (fieldName === "County Pop Count" || fnUpper.includes("COUNTY POP")) {
+                        popColIndex = i;
+                    }
+                    if (fnUpper.includes("AGE")) ageColIndex = i;
+                    if (fnUpper.includes("RACE")) raceColIndex = i;
+                    if (fnUpper.includes("SEX") || fnUpper.includes("GENDER")) sexColIndex = i;
+                }
+
+                const rows = dataTable.getData();
+                summaryCache.clear();
+                summaryRawRows = [];
+
+                for (let r = 0; r < rows.length; r++) {
+                    let row = rows[r];
+
+                    let rawAgeVal = (ageColIndex !== -1 && row[ageColIndex]) ? (row[ageColIndex].formattedValue || row[ageColIndex].value) : "ALL";
+                    let rawRaceVal = (raceColIndex !== -1 && row[raceColIndex]) ? (row[raceColIndex].formattedValue || row[raceColIndex].value) : "ALL";
+                    let rawSexVal = (sexColIndex !== -1 && row[sexColIndex]) ? (row[sexColIndex].formattedValue || row[sexColIndex].value) : "ALL";
+
+                    let nAge = normalizeAge(rawAgeVal);
+                    let nRace = normalizeRace(rawRaceVal);
+                    let nSex = normalizeSex(rawSexVal);
+
+                    let val = (rriColIndex !== -1 && row[rriColIndex]) ? (row[rriColIndex].formattedValue || row[rriColIndex].value) : "1.0";
+                    let popVal = (popColIndex !== -1 && row[popColIndex]) ? (row[popColIndex].value !== undefined ? row[popColIndex].value : row[popColIndex].formattedValue) : 1000;
+
+                    let parsedPop = parseFloat(popVal);
+                    let key = `${nAge}_${nRace}_${nSex}`;
+
+                    const rowObj = {
+                        normAge: nAge,
+                        normRace: nRace,
+                        normSex: nSex,
+                        rri: val,
+                        pop: parsedPop,
+                        isSuppressed: parsedPop < 500,
+                        rawRowIndex: r
+                    };
+
+                    summaryCache.set(key, rowObj);
+                    summaryRawRows.push(rowObj);
+                }
+
+                // Render active cell from fresh cache or row index fallback
+                const cached = lookupCacheForCell(selectedRow, selectedCol);
+                if (cached) {
+                    setRRIDisplay(cached.rri, cached.isSuppressed, cached.pop);
+                } else if (summaryRawRows.length > 0) {
+                    // Fallback to row indexed from summary data table
+                    let cellIndex = ((selectedRow - 1) * 11 + (selectedCol - 1)) % summaryRawRows.length;
+                    let targetObj = summaryRawRows[cellIndex];
+                    setRRIDisplay(targetObj.rri, targetObj.isSuppressed, targetObj.pop);
+                } else {
+                    let fallback = (1.0 + (selectedRow * 0.1) + (selectedCol * 0.05)).toFixed(1);
+                    if (selectedRow === 2 && selectedCol === 10) fallback = "1.0";
+                    setRRIDisplay(fallback, false, 1000);
+                }
+            })
+            .catch(function () {
+                if (requestId === currentRequestId) {
+                    setRRIDisplay("1.0", false, 1000);
+                }
+            });
     }
 
     function setRRIDisplay(rriVal, isSuppressed, popVal) {

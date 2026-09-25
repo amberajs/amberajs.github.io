@@ -70,7 +70,7 @@
             text-decoration: underline;
         }
 
-        /* Sentence Card Panel */
+        /* Sentence Card Panel (~6/8 to 7/8 of remaining left height) */
         .sentence-panel {
             flex: 1;
             display: flex;
@@ -90,7 +90,7 @@
             opacity: 0.75;
         }
 
-        /* Sentence Lines */
+        /* Distinct Line Blocks with clean spacing between lines 1-4 */
         .sentence-line-1 {
             font-family: 'Ubuntu', sans-serif;
             font-size: 0.95rem;
@@ -214,6 +214,7 @@
             border: 1px solid #222;
         }
 
+        /* Offsets Tableau footer completely outside the frame */
         .tableau-wrapper {
             position: absolute;
             top: 0px;
@@ -228,29 +229,14 @@
             height: 100% !important;
         }
 
-        /* Static Layer for Overlay Labels & Permanent Borders */
-        .static-overlay-layer {
-            position: absolute;
-            top: 6px;
-            left: 0px;
-            width: 100%;
-            height: calc(100% - 6px);
-            z-index: 10;
-            display: grid;
-            grid-template-rows: repeat(8, 1fr);
-            grid-template-columns: repeat(11, 1fr);
-            pointer-events: none;
-            box-sizing: border-box;
-        }
-
-        /* Dynamic 88 Interactive Grid Layer */
+        /* 88-Cell Interactive Grid & Overlay Labels Container */
         .grid-overlay {
             position: absolute;
             top: 6px;
             left: 0px;
             width: 100%;
             height: calc(100% - 6px);
-            z-index: 20;
+            z-index: 10;
             display: grid;
             grid-template-rows: repeat(8, 1fr);
             grid-template-columns: repeat(11, 1fr);
@@ -280,7 +266,7 @@
             z-index: 30;
         }
 
-        /* Permanent Gray Borders */
+        /* Permanent Gray Borders for specific regions */
         .permanent-border-r8c57 {
             position: absolute;
             grid-row: 8;
@@ -318,18 +304,11 @@
             text-align: center;
             z-index: 25;
             white-space: nowrap;
-        }
-
-        .overlay-label.col-header { 
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-        
-        .overlay-label.row-header { 
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
@@ -343,6 +322,7 @@
             <a href="https://github.com/amberajs/arrest_stats" target="_blank">view source code &gt;</a>
         </div>
 
+        <!-- Dynamic Sentence Card -->
         <div class="sentence-panel" id="sentence-card">
             <div class="sentence-line-1">On September 3, 2026 in Fayette County, Kentucky</div>
             
@@ -379,6 +359,7 @@
             </div>
         </div>
 
+        <!-- Color Key Panel -->
         <div class="key-panel">
             <div class="key-title">RRI Key</div>
             <div class="key-list">
@@ -399,46 +380,46 @@
             <div id="tableauViz"></div>
         </div>
 
-        <!-- Static Layer for Overlay Labels & Permanent Borders -->
-        <div class="static-overlay-layer">
+        <!-- HTML Interactive 88 Cell & T-Chart Label Grid Layer -->
+        <div class="grid-overlay" id="interactive-grid">
+            <!-- Permanent Gray Borders (explicit grid placement) -->
             <div class="permanent-border-r1c6"></div>
             <div class="permanent-border-r8c57"></div>
 
-            <!-- Column Headers (Row 1) -->
-            <div class="overlay-label col-header" style="grid-row: 1; grid-column: 1;">OTHER</div>
-            <div class="overlay-label col-header" style="grid-row: 1; grid-column: 2;">WHITE</div>
-            <div class="overlay-label col-header" style="grid-row: 1; grid-column: 3;">HISPANIC</div>
-            <div class="overlay-label col-header" style="grid-row: 1; grid-column: 4;">BLACK</div>
-            <div class="overlay-label col-header" style="grid-row: 1; grid-column: 5;">FEMALE</div>
-            <div class="overlay-label col-header" style="grid-row: 1; grid-column: 6;">ALL</div>
-            <div class="overlay-label col-header" style="grid-row: 1; grid-column: 7;">MALE</div>
-            <div class="overlay-label col-header" style="grid-row: 1; grid-column: 8;">BLACK</div>
-            <div class="overlay-label col-header" style="grid-row: 1; grid-column: 9;">HISPANIC</div>
-            <div class="overlay-label col-header" style="grid-row: 1; grid-column: 10;">WHITE</div>
-            <div class="overlay-label col-header" style="grid-row: 1; grid-column: 11;">OTHER</div>
+            <!-- Column Headers (Row 1, Cols 1..11) -->
+            <div class="overlay-label" style="grid-row: 1; grid-column: 1;">OTHER</div>
+            <div class="overlay-label" style="grid-row: 1; grid-column: 2;">WHITE</div>
+            <div class="overlay-label" style="grid-row: 1; grid-column: 3;">HISPANIC</div>
+            <div class="overlay-label" style="grid-row: 1; grid-column: 4;">BLACK</div>
+            <div class="overlay-label" style="grid-row: 1; grid-column: 5;">FEMALE</div>
+            <div class="overlay-label" style="grid-row: 1; grid-column: 6;">ALL</div>
+            <div class="overlay-label" style="grid-row: 1; grid-column: 7;">MALE</div>
+            <div class="overlay-label" style="grid-row: 1; grid-column: 8;">BLACK</div>
+            <div class="overlay-label" style="grid-row: 1; grid-column: 9;">HISPANIC</div>
+            <div class="overlay-label" style="grid-row: 1; grid-column: 10;">WHITE</div>
+            <div class="overlay-label" style="grid-row: 1; grid-column: 11;">OTHER</div>
 
-            <!-- Row Headers (Column 6) -->
-            <div class="overlay-label row-header" style="grid-row: 2; grid-column: 6;">18-24</div>
-            <div class="overlay-label row-header" style="grid-row: 3; grid-column: 6;">25-34</div>
-            <div class="overlay-label row-header" style="grid-row: 4; grid-column: 6;">35-44</div>
-            <div class="overlay-label row-header" style="grid-row: 5; grid-column: 6;">45-54</div>
-            <div class="overlay-label row-header" style="grid-row: 6; grid-column: 6;">55-64</div>
-            <div class="overlay-label row-header" style="grid-row: 7; grid-column: 6;">65+</div>
-            <div class="overlay-label row-header" style="grid-row: 8; grid-column: 6;">ALL</div>
+            <!-- Row Headers (Column 6, Rows 2..8) -->
+            <div class="overlay-label" style="grid-row: 2; grid-column: 6;">18-24</div>
+            <div class="overlay-label" style="grid-row: 3; grid-column: 6;">25-34</div>
+            <div class="overlay-label" style="grid-row: 4; grid-column: 6;">35-44</div>
+            <div class="overlay-label" style="grid-row: 5; grid-column: 6;">45-54</div>
+            <div class="overlay-label" style="grid-row: 6; grid-column: 6;">55-64</div>
+            <div class="overlay-label" style="grid-row: 7; grid-column: 6;">65+</div>
+            <div class="overlay-label" style="grid-row: 8; grid-column: 6;">ALL</div>
         </div>
-
-        <!-- Dynamic 88 Interactive Grid Overlay Layer -->
-        <div class="grid-overlay" id="interactive-grid"></div>
     </div>
 </div>
 
 <script>
+    // Global Tableau API References & State
     let viz = null;
     let workbook = null;
     let isVizReady = false;
-    let selectedCell = { row: 2, col: 10 };
-    let rriCache = {};
+    let selectedCell = { row: 2, col: 10 }; // Default: 18-24 White Man
+    let rriCache = {}; // In-memory map: "row_col" -> RRI numeric value or null
 
+    // Matrix Population Definitions (8 Rows x 11 Columns)
     const COL_MAP = {
         1:  { race: "OTHER",    sex: "F",   desc: "OTHER WOMAN" },
         2:  { race: "WHITE",    sex: "F",   desc: "WHITE WOMAN" },
@@ -464,17 +445,18 @@
         8: { age: "ALL",   prefix: "An average" }
     };
 
+    // Initialize HTML Interactive Grid Overlay & Tableau Viz on DOM Load
     document.addEventListener("DOMContentLoaded", () => {
         buildInteractiveGrid();
         initTableauViz();
     });
 
+    // Build 88 Interactive Cell Overlay click targets with explicit grid-row and grid-column
     function buildInteractiveGrid() {
         const gridContainer = document.getElementById("interactive-grid");
         if (!gridContainer) return;
 
-        gridContainer.innerHTML = "";
-
+        // Append 88 interactive cell overlays over the existing static T-chart labels
         for (let r = 1; r <= 8; r++) {
             for (let c = 1; c <= 11; c++) {
                 const cell = document.createElement("div");
@@ -494,6 +476,7 @@
         }
     }
 
+    // Initialize Tableau Viz & Handshake
     function initTableauViz() {
         const containerDiv = document.getElementById("tableauViz");
         if (!containerDiv) return;
@@ -521,10 +504,71 @@
                 viz = new tableau.Viz(containerDiv, url, options);
             }
         } catch (e) {
-            console.error("Tableau initialization deferred:", e);
+            console.error("Tableau initialization error:", e);
         }
     }
 
+    // Normalization helper functions to bridge Tableau dimension strings with HTML
+    function normalizeRace(val) {
+        if (!val) return "ALL";
+        let s = String(val).toUpperCase().trim();
+        if (s.includes("WHITE")) return "WHITE";
+        if (s.includes("BLACK")) return "BLACK";
+        if (s.includes("HISPANIC")) return "HISPANIC";
+        if (s.includes("OTHER") || s.includes("MULTI")) return "OTHER";
+        return "ALL";
+    }
+
+    function normalizeSex(val) {
+        if (!val) return "ALL";
+        let s = String(val).toUpperCase().trim();
+        if (s === "M" || s === "MALE" || s === "MAN") return "M";
+        if (s === "F" || s === "FEMALE" || s === "WOMAN") return "F";
+        return "ALL";
+    }
+
+    function normalizeAge(val) {
+        if (!val) return "ALL";
+        let s = String(val).toUpperCase().trim();
+        if (s.includes("18")) return "18-24";
+        if (s.includes("25")) return "25-34";
+        if (s.includes("35")) return "35-44";
+        if (s.includes("45")) return "45-54";
+        if (s.includes("55")) return "55-64";
+        if (s.includes("65")) return "65+";
+        return "ALL";
+    }
+
+    // Match Tableau data row back to matrix (row, col) cell key
+    function findMatrixKey(age, race, sex) {
+        let nAge = normalizeAge(age);
+        let nRace = normalizeRace(race);
+        let nSex = normalizeSex(sex);
+
+        for (let r = 1; r <= 8; r++) {
+            for (let c = 1; c <= 11; c++) {
+                let colInfo = COL_MAP[c];
+                let rowInfo = ROW_MAP[r];
+
+                if (r === 8) {
+                    if (colInfo.race === nRace && (nSex === "ALL" || colInfo.sex === nSex)) {
+                        return `${r}_${c}`;
+                    }
+                } else if (r === 1) {
+                    if (colInfo.race === nRace && colInfo.sex === nSex && (nAge === "ALL" || !age)) {
+                        return `${r}_${c}`;
+                    }
+                } else {
+                    if (rowInfo.age === nAge && colInfo.race === nRace && colInfo.sex === nSex) {
+                        return `${r}_${c}`;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    // Fetch Summary Data from Tableau Sheets to Populate Cache
     async function fetchTableauRRIData() {
         if (!isVizReady || !workbook) return;
 
@@ -538,7 +582,7 @@
                 sheets = [activeSheet];
             }
 
-            rriCache = {};
+            rriCache = {}; // Reset cache
 
             for (const sheet of sheets) {
                 try {
@@ -546,48 +590,50 @@
                     const columns = summaryData.getColumns();
                     const data = summaryData.getData();
 
-                    let rriIdx = columns.findIndex(c => c.getFieldName().includes("Relative Rate Index") || c.getFieldName().includes("RRI"));
-                    let ageIdx = columns.findIndex(c => c.getFieldName().includes("Age"));
-                    let raceIdx = columns.findIndex(c => c.getFieldName().includes("Race"));
-                    let sexIdx = columns.findIndex(c => c.getFieldName().includes("Sex"));
+                    let rriIdx = columns.findIndex(c => {
+                        const name = c.getFieldName().toLowerCase();
+                        return name.includes("relative rate index") || name.includes("rri");
+                    });
+
+                    let ageIdx = columns.findIndex(c => c.getFieldName().toLowerCase().includes("age"));
+                    let raceIdx = columns.findIndex(c => c.getFieldName().toLowerCase().includes("race"));
+                    let sexIdx = columns.findIndex(c => c.getFieldName().toLowerCase().includes("sex"));
 
                     data.forEach(row => {
-                        let val = rriIdx !== -1 ? row[rriIdx].value : null;
-                        let age = ageIdx !== -1 ? row[ageIdx].value : null;
-                        let race = raceIdx !== -1 ? row[raceIdx].value : null;
-                        let sex = sexIdx !== -1 ? row[sexIdx].value : null;
+                        let rawVal = rriIdx !== -1 ? row[rriIdx] : null;
+                        let val = null;
 
-                        let matchedKey = findMatrixKey(age, race, sex);
+                        if (rawVal) {
+                            if (typeof rawVal.value === "number" && !isNaN(rawVal.value)) {
+                                val = rawVal.value;
+                            } else if (rawVal.value !== null && rawVal.value !== undefined && rawVal.value !== "%null%") {
+                                let parsed = parseFloat(rawVal.value);
+                                if (!isNaN(parsed)) val = parsed;
+                            } else if (rawVal.formattedValue && rawVal.formattedValue !== "Suppressed" && rawVal.formattedValue !== "%null%" && rawVal.formattedValue !== "Null") {
+                                let parsed = parseFloat(rawVal.formattedValue);
+                                if (!isNaN(parsed)) val = parsed;
+                            }
+                        }
+
+                        let ageVal = ageIdx !== -1 && row[ageIdx] ? row[ageIdx].value || row[ageIdx].formattedValue : null;
+                        let raceVal = raceIdx !== -1 && row[raceIdx] ? row[raceIdx].value || row[raceIdx].formattedValue : null;
+                        let sexVal = sexIdx !== -1 && row[sexIdx] ? row[sexIdx].value || row[sexIdx].formattedValue : null;
+
+                        let matchedKey = findMatrixKey(ageVal, raceVal, sexVal);
                         if (matchedKey) {
-                            rriCache[matchedKey] = (val !== null && !isNaN(val)) ? parseFloat(val) : null;
+                            rriCache[matchedKey] = val;
                         }
                     });
                 } catch (err) {
-                    console.warn("Sheet data notice:", err);
+                    console.warn("Sheet data extraction notice:", err);
                 }
             }
         } catch (err) {
-            console.error("Data extraction error:", err);
+            console.error("Error fetching Tableau summary data:", err);
         }
     }
 
-    function findMatrixKey(age, race, sex) {
-        for (let r = 1; r <= 8; r++) {
-            for (let c = 1; c <= 11; c++) {
-                let rAge = ROW_MAP[r].age;
-                let cRace = COL_MAP[c].race;
-                let cSex = COL_MAP[c].sex;
-
-                if (r === 8) {
-                    if (cRace === race && (sex === "ALL" || !sex)) return `${r}_${c}`;
-                } else if (rAge === age && cRace === race && cSex === sex) {
-                    return `${r}_${c}`;
-                }
-            }
-        }
-        return null;
-    }
-
+    // Interaction 1: Handle Cell Selection
     function onCellClick(row, col) {
         selectedCell = { row, col };
 
@@ -598,6 +644,7 @@
         updateSentenceCard();
     }
 
+    // Interaction 2: Dropdown Selection -> Tableau Parameters
     async function onParameterChange() {
         if (!isVizReady || !workbook) return;
 
@@ -620,13 +667,14 @@
             await fetchTableauRRIData();
             updateSentenceCard();
         } catch (err) {
-            console.error("Parameter update error:", err);
+            console.error("Error changing Tableau parameters:", err);
         } finally {
             if (sentenceCard) sentenceCard.classList.remove("is-loading");
             if (rriValSpan) rriValSpan.classList.remove("loading-pulse");
         }
     }
 
+    // Update HTML Sentence Card & RRI Display
     function updateSentenceCard() {
         const r = selectedCell.row;
         const c = selectedCell.col;
@@ -662,11 +710,15 @@
 
         const rriSpan = document.getElementById("rri-value");
         if (rriSpan) {
-            if (rri !== undefined && rri !== null) {
+            if (rri !== undefined && rri !== null && !isNaN(rri)) {
                 rriSpan.innerText = `${rri.toFixed(1)}x`;
                 rriSpan.style.color = (rri > 1.0) ? "#67000D" : "#FFFFFF";
-            } else {
+            } else if (rri === null) {
                 rriSpan.innerText = "Suppressed";
+                rriSpan.style.color = "#FFFFFF";
+            } else {
+                // Default baseline fallback if cache key not yet populated
+                rriSpan.innerText = "1.0x";
                 rriSpan.style.color = "#FFFFFF";
             }
         }

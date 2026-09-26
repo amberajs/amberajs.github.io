@@ -70,7 +70,7 @@
             text-decoration: underline;
         }
 
-        /* Sentence Card Panel (~6/8 to 7/8 of remaining left height) */
+        /* Sentence Card Panel */
         .sentence-panel {
             flex: 1;
             display: flex;
@@ -90,7 +90,7 @@
             opacity: 0.75;
         }
 
-        /* Distinct Line Blocks with clean spacing between lines 1-4 */
+        /* Sentence Line Styling */
         .sentence-line-1 {
             font-family: 'Ubuntu', sans-serif;
             font-size: 0.95rem;
@@ -157,7 +157,7 @@
             100% { opacity: 0.7; }
         }
 
-        /* Color Key Panel (Bottom Left) */
+        /* Color Key Panel */
         .key-panel {
             flex-shrink: 0;
             background: #111;
@@ -202,7 +202,7 @@
             border-radius: 1px;
         }
 
-        /* RIGHT PANEL (3/4 Width ~ 75%) */
+        /* RIGHT PANEL (3/4 Width) */
         .right-panel {
             flex: 0 0 75%;
             width: 75%;
@@ -214,7 +214,6 @@
             border: 1px solid #222;
         }
 
-        /* Offsets Tableau footer completely outside the frame */
         .tableau-wrapper {
             position: absolute;
             top: 0px;
@@ -266,7 +265,7 @@
             z-index: 30;
         }
 
-        /* Permanent Gray Borders for specific regions */
+        /* Permanent Gray Borders */
         .permanent-border-r8c57 {
             position: absolute;
             grid-row: 8;
@@ -291,7 +290,7 @@
             height: 100%;
         }
 
-        /* Overlay Labels */
+        /* T-Chart Label Styling & Grid Positioning Rules */
         .overlay-label {
             color: #FFFFFF;
             font-size: 0.95rem;
@@ -309,6 +308,28 @@
             align-items: center;
             justify-content: center;
         }
+
+        /* Column Header Positions (Row 1) */
+        .c1  { grid-row: 1; grid-column: 1; }
+        .c2  { grid-row: 1; grid-column: 2; }
+        .c3  { grid-row: 1; grid-column: 3; }
+        .c4  { grid-row: 1; grid-column: 4; }
+        .c5  { grid-row: 1; grid-column: 5; }
+        .c6  { grid-row: 1; grid-column: 6; }
+        .c7  { grid-row: 1; grid-column: 7; }
+        .c8  { grid-row: 1; grid-column: 8; }
+        .c9  { grid-row: 1; grid-column: 9; }
+        .c10 { grid-row: 1; grid-column: 10; }
+        .c11 { grid-row: 1; grid-column: 11; }
+
+        /* Row Header Positions (Column 6) */
+        .r2  { grid-row: 2; grid-column: 6; }
+        .r3  { grid-row: 3; grid-column: 6; }
+        .r4  { grid-row: 4; grid-column: 6; }
+        .r5  { grid-row: 5; grid-column: 6; }
+        .r6  { grid-row: 6; grid-column: 6; }
+        .r7  { grid-row: 7; grid-column: 6; }
+        .r8  { grid-row: 8; grid-column: 6; }
     </style>
 </head>
 <body>
@@ -381,31 +402,31 @@
 
         <!-- HTML Interactive 88 Cell & T-Chart Label Grid Layer -->
         <div class="grid-overlay" id="interactive-grid">
-            <!-- Permanent Gray Borders (explicit grid placement) -->
-            <div class="permanent-border-r1c6"></div>
-            <div class="permanent-border-r8c57"></div>
+            <!-- Permanent Gray Region Borders -->
+            <div class="permanent-border-r1c6 c6"></div>
+            <div class="permanent-border-r8c57" style="grid-row: 8; grid-column: 5 / span 3;"></div>
 
-            <!-- Column Headers (Row 1, Cols 1..11) -->
-            <div class="overlay-label" style="grid-row: 1; grid-column: 1;">OTHER</div>
-            <div class="overlay-label" style="grid-row: 1; grid-column: 2;">WHITE</div>
-            <div class="overlay-label" style="grid-row: 1; grid-column: 3;">HISPANIC</div>
-            <div class="overlay-label" style="grid-row: 1; grid-column: 4;">BLACK</div>
-            <div class="overlay-label" style="grid-row: 1; grid-column: 5;">FEMALE</div>
-            <div class="overlay-label" style="grid-row: 1; grid-column: 6;">ALL</div>
-            <div class="overlay-label" style="grid-row: 1; grid-column: 7;">MALE</div>
-            <div class="overlay-label" style="grid-row: 1; grid-column: 8;">BLACK</div>
-            <div class="overlay-label" style="grid-row: 1; grid-column: 9;">HISPANIC</div>
-            <div class="overlay-label" style="grid-row: 1; grid-column: 10;">WHITE</div>
-            <div class="overlay-label" style="grid-row: 1; grid-column: 11;">OTHER</div>
+            <!-- Column Headers (Row 1) -->
+            <div class="overlay-label c1">OTHER</div>
+            <div class="overlay-label c2">WHITE</div>
+            <div class="overlay-label c3">HISPANIC</div>
+            <div class="overlay-label c4">BLACK</div>
+            <div class="overlay-label c5">FEMALE</div>
+            <div class="overlay-label c6">ALL</div>
+            <div class="overlay-label c7">MALE</div>
+            <div class="overlay-label c8">BLACK</div>
+            <div class="overlay-label c9">HISPANIC</div>
+            <div class="overlay-label c10">WHITE</div>
+            <div class="overlay-label c11">OTHER</div>
 
-            <!-- Row Headers (Column 6, Rows 2..8) -->
-            <div class="overlay-label" style="grid-row: 2; grid-column: 6;">18-24</div>
-            <div class="overlay-label" style="grid-row: 3; grid-column: 6;">25-34</div>
-            <div class="overlay-label" style="grid-row: 4; grid-column: 6;">35-44</div>
-            <div class="overlay-label" style="grid-row: 5; grid-column: 6;">45-54</div>
-            <div class="overlay-label" style="grid-row: 6; grid-column: 6;">55-64</div>
-            <div class="overlay-label" style="grid-row: 7; grid-column: 6;">65+</div>
-            <div class="overlay-label" style="grid-row: 8; grid-column: 6;">ALL</div>
+            <!-- Row Headers (Column 6) -->
+            <div class="overlay-label r2">18-24</div>
+            <div class="overlay-label r3">25-34</div>
+            <div class="overlay-label r4">35-44</div>
+            <div class="overlay-label r5">45-54</div>
+            <div class="overlay-label r6">55-64</div>
+            <div class="overlay-label r7">65+</div>
+            <div class="overlay-label r8">ALL</div>
         </div>
     </div>
 </div>
@@ -418,7 +439,7 @@
     let selectedCell = { row: 2, col: 10 }; // Default: 18-24 White Man
     let rriCache = {}; // In-memory map: "row_col" -> RRI numeric value or null
 
-    // Matrix Population Definitions (8 Rows x 11 Columns)
+    // Matrix Population Mapping Definitions (8 Rows x 11 Columns)
     const COL_MAP = {
         1:  { race: "OTHER",    sex: "F",   desc: "OTHER WOMAN" },
         2:  { race: "WHITE",    sex: "F",   desc: "WHITE WOMAN" },
@@ -450,12 +471,11 @@
         initTableauViz();
     });
 
-    // Build 88 Interactive Cell Overlay click targets with explicit grid-row and grid-column
+    // Dynamically append 88 interactive cell overlays directly into the grid
     function buildInteractiveGrid() {
         const gridContainer = document.getElementById("interactive-grid");
         if (!gridContainer) return;
 
-        // Append 88 interactive cell overlays over the existing static T-chart labels
         for (let r = 1; r <= 8; r++) {
             for (let c = 1; c <= 11; c++) {
                 const cell = document.createElement("div");
@@ -581,7 +601,7 @@
                 sheets = [activeSheet];
             }
 
-            rriCache = {}; // Reset cache
+            rriCache = {}; // Clear old cache
 
             for (const sheet of sheets) {
                 try {
@@ -716,7 +736,6 @@
                 rriSpan.innerText = "Suppressed";
                 rriSpan.style.color = "#FFFFFF";
             } else {
-                // Default baseline fallback if cache key not yet populated
                 rriSpan.innerText = "1.0x";
                 rriSpan.style.color = "#FFFFFF";
             }

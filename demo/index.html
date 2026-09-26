@@ -24,16 +24,7 @@
             font-family: 'Ubuntu', sans-serif;
         }
 
-        /* Horizontal Split Container (1/4 Left, 3/4 Right) */
-        #app-container {
-            display: flex;
-            flex-direction: row;
-            width: 100vw;
-            height: 100vh;
-            padding: 0px 12px;
-            gap: 12px;
-            background-color: #000000;
-        }
+        /\* Base Horizontal Layout \*/ #app-container { display: flex; flex-direction: row; width: 100vw; height: 100vh; padding: 12px; gap: 12px; background-color: #000000; }
 
         /* LEFT PANEL (1/4 Width ~ 25%) */
         .left-panel {
@@ -202,31 +193,9 @@
             border-radius: 1px;
         }
 
-        /* RIGHT PANEL (3/4 Width) */
-        .right-panel {
-            flex: 0 0 75%;
-            width: 75%;
-            height: 100vh;
-            position: relative;
-            overflow: hidden;
-            background: #000000;
-            border-radius: 0px;
-            border: none;
-        }
+       /\* Right Panel Frame \*/ .right-panel { flex: 0 0 75%; width: 75%; height: 100%; position: relative; overflow: hidden; background: #000000; border-radius: 6px; border: 1px solid #222; }
 
-        .tableau-wrapper {
-            position: absolute;
-            top: 0px;
-            left: 0px;
-            width: 100%;
-            height: calc(100% +29px);
-            z-index: 1;
-        }
-
-        #tableauViz {
-            width: 100% !important;
-            height: 100% !important;
-        }
+       /\* Wrapper Offset for Toolbar Crop \*/ .tableau-wrapper { position: absolute; top: 0px; left: 0px; width: 100%; height: calc(100% + 29px); z-index: 1; } /\* FORCE Tableau's generated iframe to expand 100% height \*/ #tableauViz, #tableauViz iframe { width: 100% !important; height: 100% !important; }
 
         /* 88-Cell Interactive Grid & Overlay Labels Container */
         .grid-overlay {

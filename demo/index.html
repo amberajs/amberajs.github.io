@@ -214,16 +214,19 @@
             border: none;
         }
 
+        /* Fixed calc syntax: spaces around + required */
         .tableau-wrapper {
             position: absolute;
             top: 0px;
             left: 0px;
             width: 100%;
-            height: calc(100% +29px);
+            height: calc(100% + 29px);
             z-index: 1;
         }
 
-        #tableauViz {
+        #tableauViz,
+        #tableauViz iframe,
+        #tableauViz object {
             width: 100% !important;
             height: 100% !important;
         }

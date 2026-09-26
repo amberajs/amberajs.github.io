@@ -30,7 +30,7 @@
             flex-direction: row;
             width: 100vw;
             height: 100vh;
-            padding: 12px;
+            padding: 0px 12px;
             gap: 12px;
             background-color: #000000;
         }
@@ -206,12 +206,12 @@
         .right-panel {
             flex: 0 0 75%;
             width: 75%;
-            height: 100%;
+            height: 100vh;
             position: relative;
             overflow: hidden;
             background: #000000;
-            border-radius: 6px;
-            border: 1px solid #222;
+            border-radius: 0px;
+            border: none;
         }
 
         .tableau-wrapper {
@@ -234,7 +234,7 @@
             top: 0px;
             left: 0px;
             width: 100%;
-            height: calc(100% - 6px);
+            height: 100%;
             z-index: 10;
             display: grid;
             grid-template-rows: repeat(8, 1fr);

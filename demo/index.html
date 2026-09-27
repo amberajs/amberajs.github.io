@@ -221,7 +221,6 @@
             border: none;
         }
 
-        /* Fixed calc syntax: spaces around + required */
         .tableau-wrapper {
             position: absolute;
             top: 0px;
@@ -241,7 +240,7 @@
         /* 88-Cell Interactive Grid Container */
         .grid-overlay {
             position: absolute;
-            top: 1px;
+            top: 0px;
             left: 0px;
             width: 100%;
             height: 100%;
@@ -253,7 +252,7 @@
             box-sizing: border-box;
         }
 
-        /* Visible Borders and Tactical Click Animation */
+        /* Cell Overlay Base (Borders set dynamically by JS) */
         .cell-overlay {
             pointer-events: auto;
             position: relative;
@@ -264,39 +263,77 @@
             justify-content: center;
             margin: 0;
             padding: 0;
-            border: 3px solid #000000; /* Uniform visible borders covering Tableau divider lines */
-            transition: transform 0.08s ease, background-color 0.1s ease, border-color 0.1s ease, box-shadow 0.1s ease;
+            border: 1px solid #222222;
+            transition: transform 0.08s ease, background-color 0.1s ease, border-color 0.15s ease, box-shadow 0.15s ease;
         }
 
         .cell-overlay:hover {
-            border: 1px dashed rgba(255, 255, 255, 0.7);
-            background-color: rgba(255, 255, 255, 0.12);
+            border: 1.5px dashed #FFFFFF !important;
+            background-color: rgba(255, 255, 255, 0.15);
+            z-index: 20;
         }
 
         .cell-overlay:active {
             transform: scale(0.90);
-            background-color: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 12px rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 0.35);
         }
 
+        /* HIGH-VISIBILITY SELECTION HIGHLIGHT */
         .cell-overlay.selected {
-            border: 2px solid #FFFFFF !important;
-            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.8), 0 0 8px rgba(255, 255, 255, 0.4);
-            z-index: 30;
+            border: 3px solid #FFFFFF !important;
+            box-shadow: 0 0 16px #FFFFFF, inset 0 0 12px rgba(255, 255, 255, 0.7) !important;
+            z-index: 40 !important;
         }
 
-        /* Merged appearance for Row 8, Columns 5-7 (looks like a single unified cell) */
-        .cell-overlay[data-row="8"][data-col="5"] {
-            border-right: none;
-        }
-        .cell-overlay[data-row="8"][data-col="6"] {
-            border-left: none;
-            border-right: none;
-        }
-        .cell-overlay[data-row="8"][data-col="7"] {
-            border-left: none;
+        /* MERGED RECTANGLE SELECTION HIGHLIGHT FOR ROW 8, COLS 5-7 */
+        .cell-overlay[data-row="8"][data-col="5"].selected {
+            border-right: none !important;
+            border-top: 3px solid #FFFFFF !important;
+            border-bottom: 3px solid #FFFFFF !important;
+            border-left: 3px solid #FFFFFF !important;
+            box-shadow: -8px 0 16px #FFFFFF, inset 4px 0 12px rgba(255, 255, 255, 0.7) !important;
         }
 
+        .cell-overlay[data-row="8"][data-col="6"].selected {
+            border-left: none !important;
+            border-right: none !important;
+            border-top: 3px solid #FFFFFF !important;
+            border-bottom: 3px solid #FFFFFF !important;
+            box-shadow: 0 0 16px #FFFFFF, inset 0 0 12px rgba(255, 255, 255, 0.7) !important;
+        }
+
+        .cell-overlay[data-row="8"][data-col="7"].selected {
+            border-left: none !important;
+            border-top: 3px solid #FFFFFF !important;
+            border-bottom: 3px solid #FFFFFF !important;
+            border-right: 3px solid #FFFFFF !important;
+            box-shadow: 8px 0 16px #FFFFFF, inset -4px 0 12px rgba(255, 255, 255, 0.7) !important;
+        }
+
+        /* Permanent Gray Region Borders */
+        .permanent-border-r8c57 {
+            position: absolute;
+            grid-row: 8;
+            grid-column: 5 / span 3;
+            border: 2px solid #555555;
+            pointer-events: none;
+            z-index: 15;
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+        }
+
+        .permanent-border-r1c6 {
+            position: absolute;
+            grid-row: 1;
+            grid-column: 6;
+            border: 2px solid #555555;
+            pointer-events: none;
+            z-index: 15;
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+        }
 
         /* T-Chart Label Styling & Grid Positioning Rules */
         .overlay-label {
@@ -413,6 +450,9 @@
 
         <!-- HTML Interactive 88 Cell & T-Chart Label Grid Layer -->
         <div class="grid-overlay" id="interactive-grid">
+            <!-- Permanent Gray Region Borders -->
+            <div class="permanent-border-r1c6 c6"></div>
+            <div class="permanent-border-r8c57" style="grid-row: 8; grid-column: 5 / span 3;"></div>
 
             <!-- Column Headers (Row 1) -->
             <div class="overlay-label c1">OTHER</div>
@@ -473,7 +513,6 @@
         8: { age: "ALL",   prefix: "An average" }
     };
 
-    // Initialize HTML Interactive Grid Overlay & Tableau Viz on DOM Load
     document.addEventListener("DOMContentLoaded", () => {
         buildInteractiveGrid();
         initTableauViz();
@@ -493,7 +532,34 @@
         if (card) card.classList.remove("is-loading");
     }
 
-    // Dynamically append 88 interactive cell overlays directly into the grid
+    // Helper: Match RRI numeric value to the exact RRI Key color
+    function getRRIColor(rri) {
+        if (rri === null || rri === undefined) return "#1A1A1A"; // Suppressed
+        if (rri < 1.0) return "#CCCCCC";                        // Less Likely
+        if (rri === 1.0) return "#FFFFFF";                      // Baseline
+        if (rri > 1.0 && rri < 1.5) return "#FEE0D2";           // Some Disparity
+        if (rri >= 1.5 && rri < 2.5) return "#FC9272";          // Moderate
+        if (rri >= 2.5 && rri < 5.0) return "#DE2D26";          // High Disparity
+        if (rri >= 5.0) return "#67000D";                       // Extreme Disparity
+        return "#333333";
+    }
+
+    // Update borders of all 88 HTML cells dynamically based on local memory RRI values
+    function updateCellBorders() {
+        for (let r = 1; r <= 8; r++) {
+            for (let c = 1; c <= 11; c++) {
+                const cell = document.querySelector(`.cell-overlay[data-row="${r}"][data-col="${c}"]`);
+                if (!cell) continue;
+
+                const cacheKey = `${r}_${c}`;
+                const val = rriCache[cacheKey];
+                const borderColor = getRRIColor(val);
+
+                cell.style.borderColor = borderColor;
+            }
+        }
+    }
+
     function buildInteractiveGrid() {
         const gridContainer = document.getElementById("interactive-grid");
         if (!gridContainer) return;
@@ -517,7 +583,6 @@
         }
     }
 
-    // Initialize Tableau Viz & Handshake
     function initTableauViz() {
         const containerDiv = document.getElementById("tableauViz");
         if (!containerDiv) return;
@@ -536,6 +601,7 @@
                     isVizReady = true;
                     fetchTableauRRIData().then(() => {
                         updateSentenceCard();
+                        updateCellBorders();
                         hideLoading();
                     });
                 }
@@ -552,7 +618,6 @@
         }
     }
 
-    // Normalization helper functions to bridge Tableau dimension strings with HTML
     function normalizeRace(val) {
         if (!val) return "ALL";
         let s = String(val).toUpperCase().trim();
@@ -583,7 +648,6 @@
         return "ALL";
     }
 
-    // Match Tableau data row back to matrix (row, col) cell key
     function findMatrixKey(age, race, sex) {
         let nAge = normalizeAge(age);
         let nRace = normalizeRace(race);
@@ -612,7 +676,6 @@
         return null;
     }
 
-    // Fetch Summary Data from Tableau Sheets to Populate Cache
     async function fetchTableauRRIData() {
         if (!isVizReady || !workbook) return;
 
@@ -677,13 +740,21 @@
         }
     }
 
-    // Interaction 1: Handle Cell Selection
     function onCellClick(row, col) {
         selectedCell = { row, col };
 
         document.querySelectorAll(".cell-overlay").forEach(c => c.classList.remove("selected"));
-        const target = document.querySelector(`.cell-overlay[data-row="${row}"][data-col="${col}"]`);
-        if (target) target.classList.add("selected");
+
+        // MERGED SELECTION LOGIC FOR ROW 8, COLS 5-7
+        if (row === 8 && col >= 5 && col <= 7) {
+            [5, 6, 7].forEach(c => {
+                const target = document.querySelector(`.cell-overlay[data-row="8"][data-col="${c}"]`);
+                if (target) target.classList.add("selected");
+            });
+        } else {
+            const target = document.querySelector(`.cell-overlay[data-row="${row}"][data-col="${col}"]`);
+            if (target) target.classList.add("selected");
+        }
 
         showLoading();
         updateSentenceCard();
@@ -692,16 +763,14 @@
         }, 150);
     }
 
-    // Interaction 2: Dropdown Selection -> Tableau Parameters (Passes exact uppercase strings)
     async function onParameterChange() {
         if (!isVizReady || !workbook) return;
 
         showLoading();
 
-        // Exact parameter values as defined in Tableau
-        const ageVal = document.getElementById("select-age").value;   // "18-24", "25-34", etc.
-        const raceVal = document.getElementById("select-race").value; // "WHITE", "BLACK", "HISPANIC", "OTHER", "ALL"
-        const sexVal = document.getElementById("select-sex").value;   // "M", "F", "ALL"
+        const ageVal = document.getElementById("select-age").value;
+        const raceVal = document.getElementById("select-race").value;
+        const sexVal = document.getElementById("select-sex").value;
 
         try {
             await Promise.all([
@@ -712,6 +781,7 @@
 
             await fetchTableauRRIData();
             updateSentenceCard();
+            updateCellBorders(); // Dynamically re-color all 88 cell borders from memory
         } catch (err) {
             console.error("Error changing Tableau parameters:", err);
         } finally {
@@ -719,7 +789,6 @@
         }
     }
 
-    // Update HTML Sentence Card & RRI Display
     function updateSentenceCard() {
         const r = selectedCell.row;
         const c = selectedCell.col;
@@ -742,7 +811,6 @@
             let raceLabel = colInfo.race === "ALL" ? "" : colInfo.race + " ";
             descText = `${raceLabel}${sexTerm}`.trim();
         } else {
-            // Omit "ALL" from Cols 5 & 7 (Rows 2-7)
             let raceLabel = (colInfo.race === "ALL") ? "" : colInfo.race + " ";
             descText = `${rowInfo.age} year old ${raceLabel}${sexTerm}`.replace(/\s+/g, ' ').trim();
         }

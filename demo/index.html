@@ -209,7 +209,7 @@
             border-radius: 1px;
         }
 
-        /* RIGHT PANEL (3/4 Width - 75%) */
+        /* RIGHT PANEL (3/4 Width) */
         .right-panel {
             flex: 0 0 75%;
             width: 75%;
@@ -221,7 +221,7 @@
             border: none;
         }
 
-        /* Tableau Embed Container */
+        /* Tableau Embed Wrapper: Height matches 100% + 29px to clip bottom toolbar */
         .tableau-wrapper {
             position: absolute;
             top: 0px;
@@ -238,13 +238,13 @@
             height: 100% !important;
         }
 
-        /* 88-Cell Interactive Grid Overlay Container */
+        /* 88-Cell Interactive Grid Container - Height calc(100% + 29px) locks row proportions 1:1 with Tableau */
         .grid-overlay {
             position: absolute;
             top: 0px;
             left: 0px;
             width: 100%;
-            height: 100%;
+            height: calc(100% + 29px);
             z-index: 10;
             display: grid;
             grid-template-rows: repeat(8, 1fr);
@@ -253,7 +253,7 @@
             box-sizing: border-box;
         }
 
-        /* Cell Overlay Items */
+        /* Cell Overlay Base: Clean 2px white internal grid lines ONLY. Zero outer perimeter borders! */
         .cell-overlay {
             pointer-events: auto;
             position: relative;
@@ -264,58 +264,65 @@
             justify-content: center;
             margin: 0;
             padding: 0;
-            /* Internal grid lines only: 2px solid white on right and bottom */
-            border-right: 2px solid #FFFFFF;
             border-bottom: 2px solid #FFFFFF;
+            border-right: 2px solid #FFFFFF;
             border-top: none;
             border-left: none;
-            transition: transform 0.08s ease, background-color 0.1s ease, box-shadow 0.15s ease;
+            transition: transform 0.08s ease, background-color 0.12s ease, box-shadow 0.15s ease;
         }
 
-        /* Remove right border on Column 11 (rightmost outer edge) */
-        .cell-overlay[data-col="11"] {
-            border-right: none;
-        }
-
-        /* Remove bottom border on Row 8 (bottommost outer edge) */
+        /* Remove bottom outer border on last row (Row 8) */
         .cell-overlay[data-row="8"] {
-            border-bottom: none;
+            border-bottom: none !important;
         }
 
-        /* Hover Feedback: Gentle white highlight fill (No dotted border) */
+        /* Remove right outer border on last column (Col 11) */
+        .cell-overlay[data-col="11"] {
+            border-right: none !important;
+        }
+
+        /* Hover Feedback: Subtle white glow fill with ZERO dotted lines */
         .cell-overlay:hover {
-            background-color: rgba(255, 255, 255, 0.20);
+            background-color: rgba(255, 255, 255, 0.20) !important;
             z-index: 20;
         }
 
-        /* Active Click Effect: Press down animation */
+        /* Tactile Click Animation */
         .cell-overlay:active {
             transform: scale(0.90);
-            background-color: rgba(255, 255, 255, 0.35);
         }
 
-        /* Selection Highlight (Bright White Outline + Inner/Outer Glow) */
+        /* Bright Glowing Selection Highlight on Click */
         .cell-overlay.selected {
-            border: 3px solid #FFFFFF !important;
-            box-shadow: 0 0 16px #FFFFFF, inset 0 0 12px rgba(255, 255, 255, 0.7) !important;
+            outline: 3px solid #FFFFFF !important;
+            outline-offset: -3px;
+            box-shadow: 0 0 18px #FFFFFF, inset 0 0 12px rgba(255, 255, 255, 0.8) !important;
             z-index: 40 !important;
         }
 
-        /* Special Styling for Row 8, Columns 5-7 (Big Merged Baseline Cell) */
-        .cell-overlay.big-cell-r8 {
+        /* Single Unified Big Cell Overlay for Row 8, Cols 5-7 */
+        #merged-border-r8 {
             grid-row: 8;
             grid-column: 5 / span 3;
-            /* Border rules: right border separates from Col 8, no bottom border */
-            border-right: 2px solid #FFFFFF;
-            border-bottom: none;
-            border-top: none;
-            border-left: none;
-            /* Solid background color dynamically updated from Tableau RRI */
-            background-color: #FFFFFF;
-            z-index: 12;
+            background-color: #FFFFFF; /* Equal Baseline default */
+            z-index: 15;
+            transition: background-color 0.2s ease, transform 0.08s ease, box-shadow 0.15s ease;
         }
 
-        /* T-Chart Label Overlay Layer */
+        /* Permanent Gray Region Divider Lines (For T-Chart Region Division) */
+        .permanent-border-r1c6 {
+            position: absolute;
+            grid-row: 1;
+            grid-column: 6;
+            border: 2px solid #555555;
+            pointer-events: none;
+            z-index: 15;
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* T-Chart Overlay Labels - High z-index (50) guarantees labels stay crisp and visible over all color blocks & highlights */
         .overlay-label {
             color: #FFFFFF;
             font-size: 0.95rem;
@@ -325,7 +332,7 @@
             text-shadow: 2px 2px 4px #000000, -2px -2px 4px #000000, 0 0 6px #000000;
             text-transform: uppercase;
             text-align: center;
-            z-index: 25;
+            z-index: 50 !important; /* Always on top of color blocks and selected highlights */
             white-space: nowrap;
             width: 100%;
             height: 100%;
@@ -412,11 +419,11 @@
             <div class="key-title">RRI Key</div>
             <div class="key-list">
                 <div class="key-item"><div class="key-color" style="background:#CCCCCC;"></div>Less Likely [0-1.0)</div>
-                <div class="key-item"><div class="key-color" style="background:#FFFFFF;"></div>Equal Baseline [1.0]</div>
+                <div class="key-item"><div class="key-color" style="background:#FFFFFF;"></div>Baseline [1.0]</div>
                 <div class="key-item"><div class="key-color" style="background:#FEE0D2;"></div>Some Disparity (1.0-1.5]</div>
                 <div class="key-item"><div class="key-color" style="background:#FC9272;"></div>Moderate Disparity [1.5-2.5)</div>
                 <div class="key-item"><div class="key-color" style="background:#DE2D26;"></div>High Disparity [2.5-5.0)</div>
-                <div class="key-item"><div class="key-color" style="background:#67000D;"></div>Extreme Disparity [5.0+]</div>
+                <div class="key-item"><div class="key-color" style="background:#67000D;"></div>Extreme Disparity [5.0+)</div>
                 <div class="key-item"><div class="key-color" style="background:#1A1A1A;"></div>Suppressed (Pop &lt; 500)</div>
             </div>
         </div>
@@ -428,8 +435,14 @@
             <div id="tableauViz"></div>
         </div>
 
-        <!-- HTML Interactive Grid & T-Chart Overlay Layer -->
+        <!-- HTML Interactive 88 Cell & T-Chart Label Grid Layer -->
         <div class="grid-overlay" id="interactive-grid">
+            <!-- Permanent Gray Region Divider Lines -->
+            <div class="permanent-border-r1c6 c6"></div>
+
+            <!-- Single Unified Big Cell Overlay for Row 8, Columns 5-7 -->
+            <div class="cell-overlay" id="merged-border-r8" data-row="8" data-col="6"></div>
+
             <!-- Column Headers (Row 1) -->
             <div class="overlay-label c1">OTHER</div>
             <div class="overlay-label c2">WHITE</div>
@@ -461,7 +474,7 @@
     let workbook = null;
     let isVizReady = false;
     let selectedCell = { row: 2, col: 10 }; // Default: 18-24 White Man
-    let rriCache = {}; // In-memory map: "row_col" -> RRI numeric value or null
+    let rriCache = {}; // In-memory map: "row_col" -> RRI numeric value
 
     // Matrix Population Mapping Definitions (8 Rows x 11 Columns)
     const COL_MAP = {
@@ -508,9 +521,9 @@
         if (card) card.classList.remove("is-loading");
     }
 
-    // Helper: Match RRI numeric value to the exact RRI Key color
+    // Match RRI numeric value to exact user-defined RRI color key thresholds
     function getRRIColor(rri) {
-        if (rri === null || rri === undefined) return "#1A1A1A"; // Suppressed (Census Population < 500)
+        if (rri === null || rri === undefined || isNaN(rri)) return "#1A1A1A"; // Suppressed (Pop < 500)
         if (rri < 1.0) return "#CCCCCC";                        // Less Likely (RRI < 1)
         if (rri === 1.0) return "#FFFFFF";                      // Equal Baseline (RRI = 1)
         if (rri > 1.0 && rri <= 1.5) return "#FEE0D2";          // Some Disparity (1 < RRI <= 1.5)
@@ -520,40 +533,32 @@
         return "#FFFFFF";
     }
 
-    // Update Big Cell (Row 8, Cols 5-7) Background Color dynamically based on Tableau RRI
+    // Update big cell background color from Tableau RRI value (defaults to #FFFFFF Equal Baseline)
     function updateBigCellColor() {
-        const bigCell = document.querySelector('.cell-overlay.big-cell-r8');
+        const bigCell = document.getElementById("merged-border-r8");
         if (!bigCell) return;
 
-        const val = rriCache["8_6"] ?? rriCache["8_5"] ?? rriCache["8_7"];
-        const bgColor = getRRIColor(val);
-        bigCell.style.backgroundColor = bgColor;
+        // Try lookup for Row 8 Col 6 (or Col 5 / 7)
+        let rri = rriCache["8_6"] ?? rriCache["8_5"] ?? rriCache["8_7"];
+        
+        // Baseline aggregate row defaults to 1.0 (#FFFFFF Equal Baseline) if Tableau output is 1.0 or unmapped
+        if (rri === undefined || rri === null || isNaN(rri)) {
+            rri = 1.0; 
+        }
+
+        const color = getRRIColor(rri);
+        bigCell.style.backgroundColor = color;
     }
 
-    // Build the 88-cell overlay grid (Row 8 Cols 5-7 rendered as 1 merged cell element)
+    // Build Interactive Grid (85 standard individual cell overlays + 1 merged big cell)
     function buildInteractiveGrid() {
         const gridContainer = document.getElementById("interactive-grid");
         if (!gridContainer) return;
 
         for (let r = 1; r <= 8; r++) {
             for (let c = 1; c <= 11; c++) {
-                // Skip individual cells 5, 6, 7 on Row 8 as they are merged into one big cell
-                if (r === 8 && c >= 5 && c <= 7) {
-                    if (c === 5) {
-                        const bigCell = document.createElement("div");
-                        bigCell.className = "cell-overlay big-cell-r8";
-                        bigCell.dataset.row = 8;
-                        bigCell.dataset.col = 6; // Center coordinate
-
-                        if (selectedCell.row === 8 && selectedCell.col >= 5 && selectedCell.col <= 7) {
-                            bigCell.classList.add("selected");
-                        }
-
-                        bigCell.addEventListener("click", () => onCellClick(8, 6));
-                        gridContainer.appendChild(bigCell);
-                    }
-                    continue;
-                }
+                // Skip rows 8 cols 5, 6, 7 because #merged-border-r8 handles them as one unified big cell!
+                if (r === 8 && c >= 5 && c <= 7) continue;
 
                 const cell = document.createElement("div");
                 cell.className = "cell-overlay";
@@ -569,6 +574,12 @@
                 cell.addEventListener("click", () => onCellClick(r, c));
                 gridContainer.appendChild(cell);
             }
+        }
+
+        // Attach click listener to the single merged big cell
+        const bigCell = document.getElementById("merged-border-r8");
+        if (bigCell) {
+            bigCell.addEventListener("click", () => onCellClick(8, 6));
         }
     }
 
@@ -732,11 +743,11 @@
     function onCellClick(row, col) {
         selectedCell = { row, col };
 
-        // Clear previous selections
+        // Clear selection class on all cells
         document.querySelectorAll(".cell-overlay").forEach(c => c.classList.remove("selected"));
 
         if (row === 8 && col >= 5 && col <= 7) {
-            const bigCell = document.querySelector('.cell-overlay.big-cell-r8');
+            const bigCell = document.getElementById("merged-border-r8");
             if (bigCell) bigCell.classList.add("selected");
         } else {
             const target = document.querySelector(`.cell-overlay[data-row="${row}"][data-col="${col}"]`);
@@ -766,7 +777,7 @@
 
             await fetchTableauRRIData();
             updateSentenceCard();
-            updateBigCellColor(); // Update big cell color block
+            updateBigCellColor();
         } catch (err) {
             console.error("Error changing Tableau parameters:", err);
         } finally {
@@ -807,7 +818,12 @@
         if (descEl) descEl.innerText = descText.toUpperCase();
 
         const cacheKey = `${r}_${c}`;
-        const rri = rriCache[cacheKey];
+        let rri = rriCache[cacheKey];
+
+        // Default baseline row 8 to 1.0x if unmapped
+        if (r === 8 && (rri === undefined || rri === null)) {
+            rri = 1.0;
+        }
 
         const rriSpan = document.getElementById("rri-value");
         if (rriSpan) {

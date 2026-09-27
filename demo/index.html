@@ -252,7 +252,7 @@
             box-sizing: border-box;
         }
 
-        /* Cell Overlay Base (Borders set dynamically by JS) */
+        /* Cell Overlay Base (Borders set dynamically by JS based on cell value) */
         .cell-overlay {
             pointer-events: auto;
             position: relative;
@@ -263,7 +263,7 @@
             justify-content: center;
             margin: 0;
             padding: 0;
-            border: 1px solid #222222;
+            border: 1.5px solid #222222;
             transition: transform 0.08s ease, background-color 0.1s ease, border-color 0.15s ease, box-shadow 0.15s ease;
         }
 
@@ -278,36 +278,23 @@
             background-color: rgba(255, 255, 255, 0.35);
         }
 
-        /* HIGH-VISIBILITY SELECTION HIGHLIGHT */
+        /* HIGH-VISIBILITY INDIVIDUAL SELECTION HIGHLIGHT */
         .cell-overlay.selected {
             border: 3px solid #FFFFFF !important;
             box-shadow: 0 0 16px #FFFFFF, inset 0 0 12px rgba(255, 255, 255, 0.7) !important;
             z-index: 40 !important;
         }
 
-        /* MERGED RECTANGLE SELECTION HIGHLIGHT FOR ROW 8, COLS 5-7 */
-        .cell-overlay[data-row="8"][data-col="5"].selected {
+        /* Merged baseline styling for Row 8, Columns 5-7 (no internal vertical borders) */
+        .cell-overlay[data-row="8"][data-col="5"] {
             border-right: none !important;
-            border-top: 3px solid #FFFFFF !important;
-            border-bottom: 3px solid #FFFFFF !important;
-            border-left: 3px solid #FFFFFF !important;
-            box-shadow: -8px 0 16px #FFFFFF, inset 4px 0 12px rgba(255, 255, 255, 0.7) !important;
         }
-
-        .cell-overlay[data-row="8"][data-col="6"].selected {
+        .cell-overlay[data-row="8"][data-col="6"] {
             border-left: none !important;
             border-right: none !important;
-            border-top: 3px solid #FFFFFF !important;
-            border-bottom: 3px solid #FFFFFF !important;
-            box-shadow: 0 0 16px #FFFFFF, inset 0 0 12px rgba(255, 255, 255, 0.7) !important;
         }
-
-        .cell-overlay[data-row="8"][data-col="7"].selected {
+        .cell-overlay[data-row="8"][data-col="7"] {
             border-left: none !important;
-            border-top: 3px solid #FFFFFF !important;
-            border-bottom: 3px solid #FFFFFF !important;
-            border-right: 3px solid #FFFFFF !important;
-            box-shadow: 8px 0 16px #FFFFFF, inset -4px 0 12px rgba(255, 255, 255, 0.7) !important;
         }
 
         /* Permanent Gray Region Borders */
@@ -321,6 +308,14 @@
             box-sizing: border-box;
             width: 100%;
             height: 100%;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        /* SINGLE UNIFIED RECTANGLE SELECTION HIGHLIGHT FOR ROW 8, COLS 5-7 */
+        .permanent-border-r8c57.selected {
+            border: 3px solid #FFFFFF !important;
+            box-shadow: 0 0 16px #FFFFFF, inset 0 0 12px rgba(255, 255, 255, 0.7) !important;
+            z-index: 40 !important;
         }
 
         .permanent-border-r1c6 {
@@ -452,7 +447,7 @@
         <div class="grid-overlay" id="interactive-grid">
             <!-- Permanent Gray Region Borders -->
             <div class="permanent-border-r1c6 c6"></div>
-            <div class="permanent-border-r8c57" style="grid-row: 8; grid-column: 5 / span 3;"></div>
+            <div class="permanent-border-r8c57" id="merged-border-r8"></div>
 
             <!-- Column Headers (Row 1) -->
             <div class="overlay-label c1">OTHER</div>
@@ -544,7 +539,7 @@
         return "#333333";
     }
 
-    // Update borders of all 88 HTML cells dynamically based on local memory RRI values
+    // Update borders of all 88 HTML cells dynamically based on local temp-memory RRI values
     function updateCellBorders() {
         for (let r = 1; r <= 8; r++) {
             for (let c = 1; c <= 11; c++) {
@@ -743,14 +738,14 @@
     function onCellClick(row, col) {
         selectedCell = { row, col };
 
+        // Clear previous selections from individual cells and merged border
         document.querySelectorAll(".cell-overlay").forEach(c => c.classList.remove("selected"));
+        const mergedBorder = document.getElementById("merged-border-r8");
+        if (mergedBorder) mergedBorder.classList.remove("selected");
 
-        // MERGED SELECTION LOGIC FOR ROW 8, COLS 5-7
+        // UNIFIED RECTANGLE SELECTION LOGIC FOR ROW 8, COLS 5-7
         if (row === 8 && col >= 5 && col <= 7) {
-            [5, 6, 7].forEach(c => {
-                const target = document.querySelector(`.cell-overlay[data-row="8"][data-col="${c}"]`);
-                if (target) target.classList.add("selected");
-            });
+            if (mergedBorder) mergedBorder.classList.add("selected");
         } else {
             const target = document.querySelector(`.cell-overlay[data-row="${row}"][data-col="${col}"]`);
             if (target) target.classList.add("selected");
@@ -781,7 +776,7 @@
 
             await fetchTableauRRIData();
             updateSentenceCard();
-            updateCellBorders(); // Dynamically re-color all 88 cell borders from memory
+            updateCellBorders(); // Dynamically re-color all cell borders from temp memory
         } catch (err) {
             console.error("Error changing Tableau parameters:", err);
         } finally {
@@ -811,6 +806,7 @@
             let raceLabel = colInfo.race === "ALL" ? "" : colInfo.race + " ";
             descText = `${raceLabel}${sexTerm}`.trim();
         } else {
+            // Omit "ALL" from Cols 5 & 7 (Rows 2-7)
             let raceLabel = (colInfo.race === "ALL") ? "" : colInfo.race + " ";
             descText = `${rowInfo.age} year old ${raceLabel}${sexTerm}`.replace(/\s+/g, ' ').trim();
         }
@@ -850,3 +846,4 @@
 </script>
 </body>
 </html>
+

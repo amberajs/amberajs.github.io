@@ -83,11 +83,28 @@
             border-radius: 6px;
             padding: 16px 14px;
             overflow-y: auto;
+            position: relative;
             transition: opacity 0.2s ease;
         }
 
         .sentence-panel.is-loading {
-            opacity: 0.75;
+            opacity: 0.8;
+        }
+
+        /* Animated Spinner Indicator */
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #DE2D26;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         /* Sentence Line Styling */
@@ -145,16 +162,6 @@
             font-weight: bold;
             text-decoration: underline;
             transition: opacity 0.15s ease, color 0.15s ease;
-        }
-
-        .rri-text.loading-pulse {
-            opacity: 0.4;
-            animation: pulse 1s infinite alternate;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 0.3; }
-            100% { opacity: 0.7; }
         }
 
         /* Color Key Panel */
@@ -231,7 +238,7 @@
             height: 100% !important;
         }
 
-        /* 88-Cell Interactive Grid & Overlay Labels Container */
+        /* 88-Cell Interactive Grid Container */
         .grid-overlay {
             position: absolute;
             top: 0px;
@@ -246,6 +253,7 @@
             box-sizing: border-box;
         }
 
+        /* Visible Borders and Tactical Click Animation */
         .cell-overlay {
             pointer-events: auto;
             position: relative;
@@ -256,19 +264,40 @@
             justify-content: center;
             margin: 0;
             padding: 0;
+            border: 1px solid #333333; /* Uniform visible borders covering Tableau divider lines */
+            transition: transform 0.08s ease, background-color 0.1s ease, border-color 0.1s ease, box-shadow 0.1s ease;
         }
 
         .cell-overlay:hover {
-            border: 1px dashed rgba(255, 255, 255, 0.6);
+            border: 1px dashed rgba(255, 255, 255, 0.7);
+            background-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .cell-overlay:active {
+            transform: scale(0.90);
+            background-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.9);
         }
 
         .cell-overlay.selected {
             border: 2px solid #FFFFFF !important;
-            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.8);
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.8), 0 0 8px rgba(255, 255, 255, 0.4);
             z-index: 30;
         }
 
-        /* Permanent Gray Borders */
+        /* Merged appearance for Row 8, Columns 5-7 (looks like a single unified cell) */
+        .cell-overlay[data-row="8"][data-col="5"] {
+            border-right: none;
+        }
+        .cell-overlay[data-row="8"][data-col="6"] {
+            border-left: none;
+            border-right: none;
+        }
+        .cell-overlay[data-row="8"][data-col="7"] {
+            border-left: none;
+        }
+
+        /* Permanent Gray Region Borders */
         .permanent-border-r8c57 {
             position: absolute;
             grid-row: 8;
@@ -347,6 +376,9 @@
 
         <!-- Dynamic Sentence Card -->
         <div class="sentence-panel" id="sentence-card">
+            <!-- Animated Loading Spinner -->
+            <div id="loading-spinner" class="spinner" style="display: none;"></div>
+
             <div class="sentence-line-1">On September 3, 2026 in Fayette County, Kentucky</div>
             
             <div class="sentence-line-2">
@@ -474,6 +506,20 @@
         initTableauViz();
     });
 
+    function showLoading() {
+        const spinner = document.getElementById("loading-spinner");
+        const card = document.getElementById("sentence-card");
+        if (spinner) spinner.style.display = "block";
+        if (card) card.classList.add("is-loading");
+    }
+
+    function hideLoading() {
+        const spinner = document.getElementById("loading-spinner");
+        const card = document.getElementById("sentence-card");
+        if (spinner) spinner.style.display = "none";
+        if (card) card.classList.remove("is-loading");
+    }
+
     // Dynamically append 88 interactive cell overlays directly into the grid
     function buildInteractiveGrid() {
         const gridContainer = document.getElementById("interactive-grid");
@@ -503,6 +549,7 @@
         const containerDiv = document.getElementById("tableauViz");
         if (!containerDiv) return;
 
+        showLoading();
         const url = "https://public.tableau.com/views/demo_17890907558550/Dashboard4";
         
         const options = {
@@ -516,6 +563,7 @@
                     isVizReady = true;
                     fetchTableauRRIData().then(() => {
                         updateSentenceCard();
+                        hideLoading();
                     });
                 }
             }
@@ -527,6 +575,7 @@
             }
         } catch (e) {
             console.error("Tableau initialization error:", e);
+            hideLoading();
         }
     }
 
@@ -663,21 +712,23 @@
         const target = document.querySelector(`.cell-overlay[data-row="${row}"][data-col="${col}"]`);
         if (target) target.classList.add("selected");
 
+        showLoading();
         updateSentenceCard();
+        setTimeout(() => {
+            hideLoading();
+        }, 150);
     }
 
-    // Interaction 2: Dropdown Selection -> Tableau Parameters
+    // Interaction 2: Dropdown Selection -> Tableau Parameters (Passes exact uppercase strings)
     async function onParameterChange() {
         if (!isVizReady || !workbook) return;
 
-        const ageVal = document.getElementById("select-age").value;
-        const raceVal = document.getElementById("select-race").value;
-        const sexVal = document.getElementById("select-sex").value;
+        showLoading();
 
-        const sentenceCard = document.getElementById("sentence-card");
-        const rriValSpan = document.getElementById("rri-value");
-        if (sentenceCard) sentenceCard.classList.add("is-loading");
-        if (rriValSpan) rriValSpan.classList.add("loading-pulse");
+        // Exact parameter values as defined in Tableau
+        const ageVal = document.getElementById("select-age").value;   // "18-24", "25-34", etc.
+        const raceVal = document.getElementById("select-race").value; // "WHITE", "BLACK", "HISPANIC", "OTHER", "ALL"
+        const sexVal = document.getElementById("select-sex").value;   // "M", "F", "ALL"
 
         try {
             await Promise.all([
@@ -691,8 +742,7 @@
         } catch (err) {
             console.error("Error changing Tableau parameters:", err);
         } finally {
-            if (sentenceCard) sentenceCard.classList.remove("is-loading");
-            if (rriValSpan) rriValSpan.classList.remove("loading-pulse");
+            hideLoading();
         }
     }
 
@@ -719,7 +769,9 @@
             let raceLabel = colInfo.race === "ALL" ? "" : colInfo.race + " ";
             descText = `${raceLabel}${sexTerm}`.trim();
         } else {
-            descText = `${rowInfo.age} year old ${colInfo.race} ${sexTerm}`;
+            // Omit "ALL" from Cols 5 & 7 (Rows 2-7)
+            let raceLabel = (colInfo.race === "ALL") ? "" : colInfo.race + " ";
+            descText = `${rowInfo.age} year old ${raceLabel}${sexTerm}`.replace(/\s+/g, ' ').trim();
         }
 
         const prefixEl = document.getElementById("line2-prefix");

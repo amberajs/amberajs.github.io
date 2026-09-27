@@ -238,7 +238,19 @@
         }
 
         /* 88-Cell Interactive Grid Container */
-    .grid-overlay { position: absolute; top: 0px; left: 0px; width: 100%; /\* Match the exact vertical height calculation of .tableau-wrapper \*/ height: calc(100% + 29px); z-index: 10; display: grid; grid-template-rows: repeat(8, 1fr); grid-template-columns: repeat(11, 1fr); pointer-events: none; box-sizing: border-box; /\* Clips any overflow so row 8 hits the bottom frame edge perfectly \*/ clip-path: inset(0 0 29px 0); }
+        .grid-overlay {
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            display: grid;
+            grid-template-rows: repeat(8, 1fr);
+            grid-template-columns: repeat(11, 1fr);
+            pointer-events: none;
+            box-sizing: border-box;
+        }
 
         /* Cell Overlay Base (Borders set dynamically by JS based on cell value) */
         .cell-overlay {
@@ -517,13 +529,13 @@
 
     // Helper: Match RRI numeric value to the exact RRI Key color
     function getRRIColor(rri) {
-        if (rri === null || rri === undefined) return "#1A1A1A"; // Suppressed
-        if (rri < 1.0) return "#CCCCCC";                        // Less Likely
-        if (rri === 1.0) return "#FFFFFF";                      // Baseline
-        if (rri > 1.0 && rri < 1.5) return "#FEE0D2";           // Some Disparity
-        if (rri >= 1.5 && rri < 2.5) return "#FC9272";          // Moderate
-        if (rri >= 2.5 && rri < 5.0) return "#DE2D26";          // High Disparity
-        if (rri >= 5.0) return "#67000D";                       // Extreme Disparity
+        if (rri === null || rri === undefined) return "#1A1A1A"; // Suppressed (Census Population < 500)
+        if (rri < 1.0) return "#CCCCCC";                        // Less Likely (RRI < 1)
+        if (rri === 1.0) return "#FFFFFF";                      // Equal Baseline (RRI = 1)
+        if (rri > 1.0 && rri <= 1.5) return "#FEE0D2";          // Some Disparity (1 < RRI <= 1.5)
+        if (rri > 1.5 && rri < 2.5) return "#FC9272";           // Moderate Disparity (1.5 <= RRI < 2.5)
+        if (rri >= 2.5 && rri < 5.0) return "#DE2D26";          // High Disparity (2.5 <= RRI < 5)
+        if (rri >= 5.0) return "#67000D";                       // Extreme Disparity (RRI >= 5)
         return "#333333";
     }
 
@@ -682,7 +694,7 @@
 
                     let rriIdx = columns.findIndex(c => {
                         const name = c.getFieldName().toLowerCase();
-                        return name.includes("relative rate index") || name.includes("rri");
+                        return name.includes("relative rate index (rri)") || name.includes("relative rate index") || name.includes("rri");
                     });
 
                     let ageIdx = columns.findIndex(c => c.getFieldName().toLowerCase().includes("age"));
@@ -726,7 +738,7 @@
     function onCellClick(row, col) {
         selectedCell = { row, col };
 
-        // Clear previous selections from individual cells and merged border
+        // Clear previous highlights
         document.querySelectorAll(".cell-overlay").forEach(c => c.classList.remove("selected"));
         const mergedBorder = document.getElementById("merged-border-r8");
         if (mergedBorder) mergedBorder.classList.remove("selected");
@@ -834,4 +846,3 @@
 </script>
 </body>
 </html>
-

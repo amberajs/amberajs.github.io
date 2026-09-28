@@ -221,7 +221,6 @@
             border: none;
         }
 
-        /* Tableau Embed Wrapper: +29px height pushes Tableau's bottom toolbar offscreen */
         .tableau-wrapper {
             position: absolute;
             top: 0px;
@@ -238,7 +237,7 @@
             height: 100% !important;
         }
 
-        /* 88-Cell Interactive Grid Container (100% of visible right-panel height) */
+        /* 88-Cell Interactive Grid Container */
         .grid-overlay {
             position: absolute;
             top: 0px;
@@ -253,7 +252,7 @@
             box-sizing: border-box;
         }
 
-        /* Internal Grid Lines Only: 2px solid #FFFFFF between cells, no outer perimeter borders */
+        /* Cell Overlay Base (Top & Left 2px White Grid Lines - No Outer Perimeter Lines) */
         .cell-overlay {
             pointer-events: auto;
             position: relative;
@@ -271,57 +270,71 @@
             transition: transform 0.08s ease, background-color 0.1s ease, box-shadow 0.15s ease;
         }
 
-        /* Remove right border on column 11 (outer right edge) */
-        .cell-overlay[data-col="11"] {
-            border-right: none !important;
+        /* Outer Perimeter Border Elimination */
+        .cell-overlay[data-row="1"] {
+            border-top: none !important;
+        }
+        .cell-overlay[data-col="1"] {
+            border-left: none !important;
         }
 
-        /* Remove bottom border on row 8 (outer bottom edge) */
-        .cell-overlay[data-row="8"] {
-            border-bottom: none !important;
-        }
-
-        /* Clean Hover Effect: subtle white fill, NO dotted borders */
         .cell-overlay:hover {
             background-color: rgba(255, 255, 255, 0.20);
             z-index: 20;
         }
 
-        /* Tactile Click Animation */
         .cell-overlay:active {
             transform: scale(0.90);
             background-color: rgba(255, 255, 255, 0.35);
         }
 
-        /* HIGH-VISIBILITY SELECTION HIGHLIGHT */
+        /* HIGH-VISIBILITY INDIVIDUAL SELECTION HIGHLIGHT */
         .cell-overlay.selected {
             border: 3px solid #FFFFFF !important;
             box-shadow: 0 0 16px #FFFFFF, inset 0 0 12px rgba(255, 255, 255, 0.7) !important;
             z-index: 40 !important;
         }
 
-        /* ROW 8, COLS 5-7 UNIFIED BIG CELL COLOR MASK */
-        .big-cell-mask {
+        /* Merged baseline styling for Row 8, Columns 5-7 (no internal vertical borders) */
+        .cell-overlay[data-row="8"][data-col="6"],
+        .cell-overlay[data-row="8"][data-col="7"] {
+            border-left: none !important;
+        }
+
+        /* Permanent Gray Region Borders */
+        .permanent-border-r8c57 {
             position: absolute;
             grid-row: 8;
             grid-column: 5 / span 3;
-            background-color: #FFFFFF; /* Default: 1.0x Equal Baseline */
+            border: 2px solid #555555;
             pointer-events: none;
             z-index: 15;
             box-sizing: border-box;
             width: 100%;
             height: 100%;
-            transition: background-color 0.2s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
         }
 
-        /* Click highlight on the Row 8 Big Cell */
-        .big-cell-mask.selected {
+        /* SINGLE UNIFIED RECTANGLE SELECTION HIGHLIGHT FOR ROW 8, COLS 5-7 */
+        .permanent-border-r8c57.selected {
             border: 3px solid #FFFFFF !important;
             box-shadow: 0 0 16px #FFFFFF, inset 0 0 12px rgba(255, 255, 255, 0.7) !important;
             z-index: 40 !important;
         }
 
-        /* T-Chart Overlay Labels (Always Crisp & Visible on top of everything) */
+        .permanent-border-r1c6 {
+            position: absolute;
+            grid-row: 1;
+            grid-column: 6;
+            border: 2px solid #555555;
+            pointer-events: none;
+            z-index: 15;
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* T-Chart Label Styling & Grid Positioning Rules */
         .overlay-label {
             color: #FFFFFF;
             font-size: 0.95rem;
@@ -331,7 +344,7 @@
             text-shadow: 2px 2px 4px #000000, -2px -2px 4px #000000, 0 0 6px #000000;
             text-transform: uppercase;
             text-align: center;
-            z-index: 50 !important; /* Higher than selection highlights & color mask */
+            z-index: 50 !important;
             white-space: nowrap;
             width: 100%;
             height: 100%;
@@ -381,7 +394,7 @@
             <div class="sentence-line-1">On September 3, 2026 in Fayette County, Kentucky</div>
             
             <div class="sentence-line-2">
-                <span id="line2-prefix">An</span> <span id="cell-desc" class="bold-desc">18-24 year old WHITE MAN</span> <span id="rri-phrase">was <span id="rri-value" class="rri-text" style="color: #FFFFFF;">1.0x</span> as likely</span>
+                <span id="line2-prefix">An</span> <span id="cell-desc" class="bold-desc">18-24 year old WHITE MAN</span> <span id="rri-phrase">was <span id="rri-value" class="rri-text" style="color: #FFFFFF;">Loading...</span> as likely</span>
             </div>
             
             <div class="sentence-line-3">to be incarcerated at Fayette County Detention Center</div>
@@ -434,10 +447,11 @@
             <div id="tableauViz"></div>
         </div>
 
-        <!-- HTML Interactive Grid Layer (11 cols x 8 rows) -->
+        <!-- HTML Interactive 88 Cell & T-Chart Label Grid Layer -->
         <div class="grid-overlay" id="interactive-grid">
-            <!-- Row 8 Big Cell Color Mask (Spans Cols 5-7) -->
-            <div class="big-cell-mask" id="big-cell-r8"></div>
+            <!-- Permanent Gray Region Borders -->
+            <div class="permanent-border-r1c6 c6"></div>
+            <div class="permanent-border-r8c57" id="merged-border-r8"></div>
 
             <!-- Column Headers (Row 1) -->
             <div class="overlay-label c1">OTHER</div>
@@ -472,7 +486,7 @@
     let selectedCell = { row: 2, col: 10 }; // Default: 18-24 White Man
     let rriCache = {}; // In-memory map: "row_col" -> RRI numeric value or null
 
-    // Matrix Population Mapping Definitions (8 Rows x 11 Columns)
+    // Matrix Population Mapping Definitions (Rows 1-7 vs Row 8)
     const COL_MAP = {
         1:  { race: "OTHER",    sex: "F",   desc: "OTHER WOMAN" },
         2:  { race: "WHITE",    sex: "F",   desc: "WHITE WOMAN" },
@@ -485,6 +499,21 @@
         9:  { race: "HISPANIC", sex: "M",   desc: "HISPANIC MAN" },
         10: { race: "WHITE",    sex: "M",   desc: "WHITE MAN" },
         11: { race: "OTHER",    sex: "M",   desc: "OTHER MAN" }
+    };
+
+    // Row 8 Map (Unsegmented by Sex: Bottom Left Col 1-5, Bottom Center Col 6, Bottom Right Col 7-11)
+    const ROW8_COL_MAP = {
+        1:  { race: "OTHER",    sex: "ALL", desc: "OTHER PERSON" },
+        2:  { race: "WHITE",    sex: "ALL", desc: "WHITE PERSON" },
+        3:  { race: "HISPANIC", sex: "ALL", desc: "HISPANIC PERSON" },
+        4:  { race: "BLACK",    sex: "ALL", desc: "BLACK PERSON" },
+        5:  { race: "ALL",      sex: "ALL", desc: "PERSON" },
+        6:  { race: "ALL",      sex: "ALL", desc: "PERSON" },
+        7:  { race: "ALL",      sex: "ALL", desc: "PERSON" },
+        8:  { race: "BLACK",    sex: "ALL", desc: "BLACK PERSON" },
+        9:  { race: "HISPANIC", sex: "ALL", desc: "HISPANIC PERSON" },
+        10: { race: "WHITE",    sex: "ALL", desc: "WHITE PERSON" },
+        11: { race: "OTHER",    sex: "ALL", desc: "OTHER PERSON" }
     };
 
     const ROW_MAP = {
@@ -517,25 +546,26 @@
         if (card) card.classList.remove("is-loading");
     }
 
-    // Match RRI numeric value to the exact RRI Key color
+    // Helper: Match RRI numeric value to the exact RRI Key color
     function getRRIColor(rri) {
-        if (rri === null || rri === undefined) return "#FFFFFF"; // Default Baseline for aggregate/unmapped
-        if (rri < 1.0) return "#CCCCCC";                        // Less Likely
-        if (rri === 1.0) return "#FFFFFF";                      // Equal Baseline
-        if (rri > 1.0 && rri <= 1.5) return "#FEE0D2";          // Some Disparity
-        if (rri > 1.5 && rri < 2.5) return "#FC9272";           // Moderate
-        if (rri >= 2.5 && rri < 5.0) return "#DE2D26";          // High Disparity
-        if (rri >= 5.0) return "#67000D";                       // Extreme Disparity
+        if (rri === null || rri === undefined) return "#1A1A1A"; // Suppressed (Census Population < 500)
+        if (rri < 1.0) return "#CCCCCC";                        // Less Likely (RRI < 1)
+        if (rri === 1.0) return "#FFFFFF";                      // Equal Baseline (RRI = 1)
+        if (rri > 1.0 && rri <= 1.5) return "#FEE0D2";          // Some Disparity (1 < RRI <= 1.5)
+        if (rri > 1.5 && rri < 2.5) return "#FC9272";           // Moderate Disparity (1.5 <= RRI < 2.5)
+        if (rri >= 2.5 && rri < 5.0) return "#DE2D26";          // High Disparity (2.5 <= RRI < 5)
+        if (rri >= 5.0) return "#67000D";                       // Extreme Disparity (RRI >= 5)
         return "#FFFFFF";
     }
 
-    // Update Big Cell Color Mask (Row 8, Cols 5-7) based on Tableau RRI value
     function updateBigCellColor() {
-        const bigCell = document.getElementById("big-cell-r8");
+        const bigCell = document.getElementById("merged-border-r8");
         if (!bigCell) return;
 
-        const val = rriCache["8_6"] || rriCache["8_5"] || rriCache["8_7"];
-        bigCell.style.backgroundColor = getRRIColor(val);
+        // Big cell represents Grand Total across Row 8 (Cols 5, 6, 7)
+        const val = rriCache["8_6"] ?? rriCache["8_5"] ?? rriCache["8_7"];
+        const bgColor = getRRIColor(val);
+        bigCell.style.backgroundColor = bgColor;
     }
 
     function buildInteractiveGrid() {
@@ -544,30 +574,6 @@
 
         for (let r = 1; r <= 8; r++) {
             for (let c = 1; c <= 11; c++) {
-                // If in Row 8 Cols 5, 6, 7, treat as ONE single big merged cell
-                if (r === 8 && (c === 5 || c === 6 || c === 7)) {
-                    if (c === 6) { // Create only once for the center anchor
-                        const bigCellBtn = document.createElement("div");
-                        bigCellBtn.className = "cell-overlay";
-                        bigCellBtn.style.gridRow = "8";
-                        bigCellBtn.style.gridColumn = "5 / span 3";
-                        bigCellBtn.dataset.row = "8";
-                        bigCellBtn.dataset.col = "6";
-                        bigCellBtn.style.borderRight = "none";
-                        bigCellBtn.style.borderBottom = "none";
-
-                        if (selectedCell.row === 8 && selectedCell.col >= 5 && selectedCell.col <= 7) {
-                            bigCellBtn.classList.add("selected");
-                            const bigMask = document.getElementById("big-cell-r8");
-                            if (bigMask) bigMask.classList.add("selected");
-                        }
-
-                        bigCellBtn.addEventListener("click", () => onCellClick(8, 6));
-                        gridContainer.appendChild(bigCellBtn);
-                    }
-                    continue;
-                }
-
                 const cell = document.createElement("div");
                 cell.className = "cell-overlay";
                 cell.style.gridRow = r;
@@ -620,64 +626,6 @@
         }
     }
 
-    function normalizeRace(val) {
-        if (!val) return "ALL";
-        let s = String(val).toUpperCase().trim();
-        if (s.includes("WHITE")) return "WHITE";
-        if (s.includes("BLACK")) return "BLACK";
-        if (s.includes("HISPANIC")) return "HISPANIC";
-        if (s.includes("OTHER") || s.includes("MULTI")) return "OTHER";
-        return "ALL";
-    }
-
-    function normalizeSex(val) {
-        if (!val) return "ALL";
-        let s = String(val).toUpperCase().trim();
-        if (s === "M" || s === "MALE" || s === "MAN") return "M";
-        if (s === "F" || s === "FEMALE" || s === "WOMAN") return "F";
-        return "ALL";
-    }
-
-    function normalizeAge(val) {
-        if (!val) return "ALL";
-        let s = String(val).toUpperCase().trim();
-        if (s.includes("18")) return "18-24";
-        if (s.includes("25")) return "25-34";
-        if (s.includes("35")) return "35-44";
-        if (s.includes("45")) return "45-54";
-        if (s.includes("55")) return "55-64";
-        if (s.includes("65")) return "65+";
-        return "ALL";
-    }
-
-    function findMatrixKey(age, race, sex) {
-        let nAge = normalizeAge(age);
-        let nRace = normalizeRace(race);
-        let nSex = normalizeSex(sex);
-
-        for (let r = 1; r <= 8; r++) {
-            for (let c = 1; c <= 11; c++) {
-                let colInfo = COL_MAP[c];
-                let rowInfo = ROW_MAP[r];
-
-                if (r === 8) {
-                    if (colInfo.race === nRace && (nSex === "ALL" || colInfo.sex === nSex)) {
-                        return `${r}_${c}`;
-                    }
-                } else if (r === 1) {
-                    if (colInfo.race === nRace && colInfo.sex === nSex && (nAge === "ALL" || !age)) {
-                        return `${r}_${c}`;
-                    }
-                } else {
-                    if (rowInfo.age === nAge && colInfo.race === nRace && colInfo.sex === nSex) {
-                        return `${r}_${c}`;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
     async function fetchTableauRRIData() {
         if (!isVizReady || !workbook) return;
 
@@ -695,18 +643,20 @@
 
             for (const sheet of sheets) {
                 try {
+                    const rawSheetName = sheet.getName().toLowerCase();
+                    const sheetName = rawSheetName.trim ? rawSheetName.trim() : rawSheetName;
                     const summaryData = await sheet.getSummaryDataAsync({ maxRows: 0, ignoreSelection: true });
                     const columns = summaryData.getColumns();
                     const data = summaryData.getData();
 
-                    let rriIdx = columns.findIndex(c => {
-                        const name = c.getFieldName().toLowerCase();
+                    let rriIdx = columns.findIndex(col => {
+                        const name = col.getFieldName().toLowerCase();
                         return name.includes("relative rate index (rri)") || name.includes("relative rate index") || name.includes("rri");
                     });
 
-                    let ageIdx = columns.findIndex(c => c.getFieldName().toLowerCase().includes("age"));
-                    let raceIdx = columns.findIndex(c => c.getFieldName().toLowerCase().includes("race"));
-                    let sexIdx = columns.findIndex(c => c.getFieldName().toLowerCase().includes("sex"));
+                    let ageIdx = columns.findIndex(col => col.getFieldName().toLowerCase().includes("age"));
+                    let raceIdx = columns.findIndex(col => col.getFieldName().toLowerCase().includes("race"));
+                    let sexIdx = columns.findIndex(col => col.getFieldName().toLowerCase().includes("sex"));
 
                     data.forEach(row => {
                         let rawVal = rriIdx !== -1 ? row[rriIdx] : null;
@@ -728,15 +678,68 @@
                         let raceVal = raceIdx !== -1 && row[raceIdx] ? row[raceIdx].value || row[raceIdx].formattedValue : null;
                         let sexVal = sexIdx !== -1 && row[sexIdx] ? row[sexIdx].value || row[sexIdx].formattedValue : null;
 
-                        let matchedKey = findMatrixKey(ageVal, raceVal, sexVal);
-                        if (matchedKey) {
-                            rriCache[matchedKey] = val;
+                        // Sheet-Specific 6-Sheet Architecture Resolver
+                        let r = 1, c = 1;
+
+                        function getRowFromAge(age) {
+                            if (!age || String(age).toUpperCase().includes("ALL")) return 1;
+                            let s = String(age).toUpperCase();
+                            if (s.includes("18")) return 2;
+                            if (s.includes("25")) return 3;
+                            if (s.includes("35")) return 4;
+                            if (s.includes("45")) return 5;
+                            if (s.includes("55")) return 6;
+                            if (s.includes("65")) return 7;
+                            return 1;
                         }
+
+                        function getColFemale(race) {
+                            if (!race || String(race).toUpperCase().includes("ALL")) return 5;
+                            let s = String(race).toUpperCase();
+                            if (s.includes("OTHER") || s.includes("MULTI")) return 1;
+                            if (s.includes("WHITE")) return 2;
+                            if (s.includes("HISPANIC")) return 3;
+                            if (s.includes("BLACK")) return 4;
+                            return 5;
+                        }
+
+                        function getColMale(race) {
+                            if (!race || String(race).toUpperCase().includes("ALL")) return 7;
+                            let s = String(race).toUpperCase();
+                            if (s.includes("BLACK")) return 8;
+                            if (s.includes("HISPANIC")) return 9;
+                            if (s.includes("WHITE")) return 10;
+                            if (s.includes("OTHER") || s.includes("MULTI")) return 11;
+                            return 7;
+                        }
+
+                        if (sheetName.includes("female") && !sheetName.includes("bottom")) {
+                            r = getRowFromAge(ageVal);
+                            c = getColFemale(raceVal);
+                        } else if (sheetName.includes("center") && !sheetName.includes("bottom")) {
+                            r = getRowFromAge(ageVal);
+                            c = 6;
+                        } else if (sheetName.includes("male") && !sheetName.includes("bottom")) {
+                            r = getRowFromAge(ageVal);
+                            c = getColMale(raceVal);
+                        } else if (sheetName.includes("bottom") && sheetName.includes("left")) {
+                            r = 8;
+                            c = getColFemale(raceVal);
+                        } else if (sheetName.includes("bottom") && sheetName.includes("center")) {
+                            r = 8;
+                            c = 6;
+                        } else if (sheetName.includes("bottom") && sheetName.includes("right")) {
+                            r = 8;
+                            c = getColMale(raceVal);
+                        }
+
+                        rriCache[`${r}_${c}`] = val;
                     });
                 } catch (err) {
-                    console.warn("Sheet data extraction notice:", err);
+                    console.warn("Sheet data extraction notice for " + sheet.getName() + ":", err);
                 }
             }
+            console.log("RRI Cache extraction complete. Total mapped keys:", Object.keys(rriCache).length);
         } catch (err) {
             console.error("Error fetching Tableau summary data:", err);
         }
@@ -745,16 +748,14 @@
     function onCellClick(row, col) {
         selectedCell = { row, col };
 
-        // Clear previous selections
+        // Clear previous highlights
         document.querySelectorAll(".cell-overlay").forEach(c => c.classList.remove("selected"));
-        const bigMask = document.getElementById("big-cell-r8");
-        if (bigMask) bigMask.classList.remove("selected");
+        const mergedBorder = document.getElementById("merged-border-r8");
+        if (mergedBorder) mergedBorder.classList.remove("selected");
 
-        // Unified selection for Row 8, Cols 5-7
+        // UNIFIED RECTANGLE SELECTION LOGIC FOR ROW 8, COLS 5-7
         if (row === 8 && col >= 5 && col <= 7) {
-            const bigBtn = document.querySelector(`.cell-overlay[data-row="8"][data-col="6"]`);
-            if (bigBtn) bigBtn.classList.add("selected");
-            if (bigMask) bigMask.classList.add("selected");
+            if (mergedBorder) mergedBorder.classList.add("selected");
         } else {
             const target = document.querySelector(`.cell-overlay[data-row="${row}"][data-col="${col}"]`);
             if (target) target.classList.add("selected");
@@ -777,11 +778,11 @@
         const sexVal = document.getElementById("select-sex").value;
 
         try {
-            await Promise.all([
-                workbook.changeParameterValueAsync("Select Reference Age", ageVal),
-                workbook.changeParameterValueAsync("Select Reference Race", raceVal),
-                workbook.changeParameterValueAsync("Select Reference Sex", sexVal)
-            ]);
+            await workbook.changeParameterValueAsync("Select Reference Age", ageVal);
+            await workbook.changeParameterValueAsync("Select Reference Race", raceVal);
+            await workbook.changeParameterValueAsync("Select Reference Sex", sexVal);
+
+            await new Promise(r => setTimeout(r, 350));
 
             await fetchTableauRRIData();
             updateSentenceCard();
@@ -797,25 +798,22 @@
         const r = selectedCell.row;
         const c = selectedCell.col;
 
-        const colInfo = COL_MAP[c];
+        const colInfo = (r === 8) ? ROW8_COL_MAP[c] : COL_MAP[c];
         const rowInfo = ROW_MAP[r];
 
         if (!colInfo || !rowInfo) return;
 
         let prefix = rowInfo.prefix;
-        let sexTerm = "MAN";
-        if (c === 6 || (r === 8 && (c === 5 || c === 7))) {
-            sexTerm = "PERSON";
-        } else if (c <= 5) {
-            sexTerm = "WOMAN";
-        }
+        let descText = colInfo.desc;
 
-        let descText = "";
-        if (r === 1 || r === 8) {
-            let raceLabel = colInfo.race === "ALL" ? "" : colInfo.race + " ";
-            descText = `${raceLabel}${sexTerm}`.trim();
-        } else {
+        if (r > 1 && r < 8) {
             let raceLabel = (colInfo.race === "ALL") ? "" : colInfo.race + " ";
+            let sexTerm = "MAN";
+            if (c === 6) {
+                sexTerm = "PERSON";
+            } else if (c <= 5) {
+                sexTerm = "WOMAN";
+            }
             descText = `${rowInfo.age} year old ${raceLabel}${sexTerm}`.replace(/\s+/g, ' ').trim();
         }
 
@@ -836,8 +834,8 @@
                 rriSpan.innerText = "Suppressed";
                 rriSpan.style.color = "#FFFFFF";
             } else {
-                rriSpan.innerText = "1.0x";
-                rriSpan.style.color = "#FFFFFF";
+                rriSpan.innerText = "Failed to load";
+                rriSpan.style.color = "#DE2D26";
             }
         }
 

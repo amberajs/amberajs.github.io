@@ -252,7 +252,7 @@
             box-sizing: border-box;
         }
 
-        /* Cell Overlay Base (Top & Left 2px White Grid Lines - No Outer Perimeter Lines) */
+        /* Clean Interior 2px White Grid Lines (Leading Edge border-top & border-left) */
         .cell-overlay {
             pointer-events: auto;
             position: relative;
@@ -267,10 +267,10 @@
             border-left: 2px solid #FFFFFF;
             border-bottom: none;
             border-right: none;
-            transition: transform 0.08s ease, background-color 0.1s ease, box-shadow 0.15s ease;
+            transition: transform 0.08s ease, background-color 0.1s ease, border-color 0.15s ease, box-shadow 0.15s ease;
         }
 
-        /* Outer Perimeter Border Elimination */
+        /* Suppress outer perimeter lines */
         .cell-overlay[data-row="1"] {
             border-top: none !important;
         }
@@ -278,6 +278,7 @@
             border-left: none !important;
         }
 
+        /* Clean Hover Effect: Fills cell with translucent white highlight (no dotted borders) */
         .cell-overlay:hover {
             background-color: rgba(255, 255, 255, 0.20);
             z-index: 20;
@@ -295,18 +296,21 @@
             z-index: 40 !important;
         }
 
-        /* Merged baseline styling for Row 8, Columns 5-7 (no internal vertical borders) */
+        /* Big Cell Merged Styling (Row 8, Cols 5-7) */
+        .cell-overlay[data-row="8"][data-col="5"],
         .cell-overlay[data-row="8"][data-col="6"],
         .cell-overlay[data-row="8"][data-col="7"] {
             border-left: none !important;
+            border-right: none !important;
         }
 
-        /* Permanent Gray Region Borders */
+        /* Permanent Big Cell Region Overlay (Spans Cols 5-7 on Row 8) */
         .permanent-border-r8c57 {
             position: absolute;
             grid-row: 8;
             grid-column: 5 / span 3;
-            border: 2px solid #555555;
+            border-top: 2px solid #FFFFFF;
+            background-color: #FFFFFF; /* Dynamic Mask to cover Tableau dividers */
             pointer-events: none;
             z-index: 15;
             box-sizing: border-box;
@@ -315,7 +319,7 @@
             transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
         }
 
-        /* SINGLE UNIFIED RECTANGLE SELECTION HIGHLIGHT FOR ROW 8, COLS 5-7 */
+        /* UNIFIED RECTANGLE SELECTION HIGHLIGHT FOR BIG CELL */
         .permanent-border-r8c57.selected {
             border: 3px solid #FFFFFF !important;
             box-shadow: 0 0 16px #FFFFFF, inset 0 0 12px rgba(255, 255, 255, 0.7) !important;
@@ -326,7 +330,8 @@
             position: absolute;
             grid-row: 1;
             grid-column: 6;
-            border: 2px solid #555555;
+            border-top: 2px solid #FFFFFF;
+            border-left: 2px solid #FFFFFF;
             pointer-events: none;
             z-index: 15;
             box-sizing: border-box;
@@ -344,7 +349,7 @@
             text-shadow: 2px 2px 4px #000000, -2px -2px 4px #000000, 0 0 6px #000000;
             text-transform: uppercase;
             text-align: center;
-            z-index: 50 !important;
+            z-index: 50 !important; /* Always above color masks and selection outlines */
             white-space: nowrap;
             width: 100%;
             height: 100%;
@@ -431,9 +436,9 @@
             <div class="key-title">RRI Key</div>
             <div class="key-list">
                 <div class="key-item"><div class="key-color" style="background:#CCCCCC;"></div>Less Likely [0-1.0)</div>
-                <div class="key-item"><div class="key-color" style="background:#FFFFFF;"></div>Baseline [1.0]</div>
+                <div class="key-item"><div class="key-color" style="background:#FFFFFF;"></div>Equal Baseline [1.0]</div>
                 <div class="key-item"><div class="key-color" style="background:#FEE0D2;"></div>Some Disparity (1.0-1.5)</div>
-                <div class="key-item"><div class="key-color" style="background:#FC9272;"></div>Moderate [1.5-2.5)</div>
+                <div class="key-item"><div class="key-color" style="background:#FC9272;"></div>Moderate Disparity [1.5-2.5)</div>
                 <div class="key-item"><div class="key-color" style="background:#DE2D26;"></div>High Disparity [2.5-5.0)</div>
                 <div class="key-item"><div class="key-color" style="background:#67000D;"></div>Extreme Disparity [5.0+)</div>
                 <div class="key-item"><div class="key-color" style="background:#1A1A1A;"></div>Suppressed (Pop &lt; 500)</div>
@@ -486,7 +491,7 @@
     let selectedCell = { row: 2, col: 10 }; // Default: 18-24 White Man
     let rriCache = {}; // In-memory map: "row_col" -> RRI numeric value or null
 
-    // Matrix Population Mapping Definitions (Rows 1-7 vs Row 8)
+    // Matrix Population Mapping Definitions (Rows 1-7)
     const COL_MAP = {
         1:  { race: "OTHER",    sex: "F",   desc: "OTHER WOMAN" },
         2:  { race: "WHITE",    sex: "F",   desc: "WHITE WOMAN" },
@@ -501,21 +506,6 @@
         11: { race: "OTHER",    sex: "M",   desc: "OTHER MAN" }
     };
 
-    // Row 8 Map (Unsegmented by Sex: Bottom Left Col 1-5, Bottom Center Col 6, Bottom Right Col 7-11)
-    const ROW8_COL_MAP = {
-        1:  { race: "OTHER",    sex: "ALL", desc: "OTHER PERSON" },
-        2:  { race: "WHITE",    sex: "ALL", desc: "WHITE PERSON" },
-        3:  { race: "HISPANIC", sex: "ALL", desc: "HISPANIC PERSON" },
-        4:  { race: "BLACK",    sex: "ALL", desc: "BLACK PERSON" },
-        5:  { race: "ALL",      sex: "ALL", desc: "PERSON" },
-        6:  { race: "ALL",      sex: "ALL", desc: "PERSON" },
-        7:  { race: "ALL",      sex: "ALL", desc: "PERSON" },
-        8:  { race: "BLACK",    sex: "ALL", desc: "BLACK PERSON" },
-        9:  { race: "HISPANIC", sex: "ALL", desc: "HISPANIC PERSON" },
-        10: { race: "WHITE",    sex: "ALL", desc: "WHITE PERSON" },
-        11: { race: "OTHER",    sex: "ALL", desc: "OTHER PERSON" }
-    };
-
     const ROW_MAP = {
         1: { age: "ALL",   prefix: "An average" },
         2: { age: "18-24", prefix: "An" },
@@ -525,6 +515,21 @@
         6: { age: "55-64", prefix: "A" },
         7: { age: "65+",   prefix: "A" },
         8: { age: "ALL",   prefix: "An average" }
+    };
+
+    // Row 8 Unsegmented Column Mapping (Does NOT divide by sex)
+    const ROW8_COL_MAP = {
+        1:  { desc: "OTHER PERSON" },
+        2:  { desc: "WHITE PERSON" },
+        3:  { desc: "HISPANIC PERSON" },
+        4:  { desc: "BLACK PERSON" },
+        5:  { desc: "PERSON" },
+        6:  { desc: "PERSON" },
+        7:  { desc: "PERSON" },
+        8:  { desc: "BLACK PERSON" },
+        9:  { desc: "HISPANIC PERSON" },
+        10: { desc: "WHITE PERSON" },
+        11: { desc: "OTHER PERSON" }
     };
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -548,7 +553,8 @@
 
     // Helper: Match RRI numeric value to the exact RRI Key color
     function getRRIColor(rri) {
-        if (rri === null || rri === undefined) return "#1A1A1A"; // Suppressed (Census Population < 500)
+        if (rri === null) return "#1A1A1A";                    // Suppressed (Census Population < 500)
+        if (rri === undefined || isNaN(rri)) return "#FFFFFF";    // Fallback baseline
         if (rri < 1.0) return "#CCCCCC";                        // Less Likely (RRI < 1)
         if (rri === 1.0) return "#FFFFFF";                      // Equal Baseline (RRI = 1)
         if (rri > 1.0 && rri <= 1.5) return "#FEE0D2";          // Some Disparity (1 < RRI <= 1.5)
@@ -558,14 +564,15 @@
         return "#FFFFFF";
     }
 
+    // Update Big Cell background color block to mask Tableau divider lines
     function updateBigCellColor() {
-        const bigCell = document.getElementById("merged-border-r8");
-        if (!bigCell) return;
+        const mergedBorder = document.getElementById("merged-border-r8");
+        if (!mergedBorder) return;
 
-        // Big cell represents Grand Total across Row 8 (Cols 5, 6, 7)
-        const val = rriCache["8_6"] ?? rriCache["8_5"] ?? rriCache["8_7"];
-        const bgColor = getRRIColor(val);
-        bigCell.style.backgroundColor = bgColor;
+        // Big cell RRI is from Row 8 Col 6 (or Col 5 / Col 7)
+        const bigRRI = rriCache["8_6"] !== undefined ? rriCache["8_6"] : (rriCache["8_5"] !== undefined ? rriCache["8_5"] : rriCache["8_7"]);
+        const fillColor = getRRIColor(bigRRI);
+        mergedBorder.style.backgroundColor = fillColor;
     }
 
     function buildInteractiveGrid() {
@@ -626,6 +633,65 @@
         }
     }
 
+    // Direct 1:1 Worksheet-to-Grid Coordinate Resolver
+    function getMatrixCoords(sheetName, ageVal, raceVal, sexVal) {
+        const s = String(sheetName).toLowerCase().trim();
+        const ageStr = ageVal ? String(ageVal).toUpperCase().trim() : '';
+        const raceStr = raceVal ? String(raceVal).toUpperCase().trim() : '';
+
+        // Row Determination
+        let r = 1;
+        if (s.includes("bottom")) {
+            r = 8;
+        } else if (!ageVal || ageStr === 'ALL' || ageStr === '%NULL%' || ageStr === 'NULL' || ageStr === 'TOTAL' || ageStr === 'GRAND TOTAL' || ageStr === 'SUM' || ageStr === '*') {
+            r = 1;
+        } else if (ageStr.includes('18')) { r = 2; }
+        else if (ageStr.includes('25')) { r = 3; }
+        else if (ageStr.includes('35')) { r = 4; }
+        else if (ageStr.includes('45')) { r = 5; }
+        else if (ageStr.includes('55')) { r = 6; }
+        else if (ageStr.includes('65')) { r = 7; }
+        else { r = 1; }
+
+        // Column Determination
+        let c = 6;
+        if (s === "female" || (s.includes("female") && !s.includes("bottom"))) {
+            if (!raceVal || raceStr === 'ALL' || raceStr === '%NULL%' || raceStr === 'NULL' || raceStr === 'TOTAL' || raceStr === 'GRAND TOTAL' || raceStr === 'SUM' || raceStr === '*') { c = 5; }
+            else if (raceStr.includes('OTHER') || raceStr.includes('MULTI')) { c = 1; }
+            else if (raceStr.includes('WHITE')) { c = 2; }
+            else if (raceStr.includes('HISPANIC')) { c = 3; }
+            else if (raceStr.includes('BLACK')) { c = 4; }
+            else { c = 5; }
+        } else if (s === "center" || (s.includes("center") && !s.includes("bottom"))) {
+            c = 6;
+        } else if (s === "male" || (s.includes("male") && !s.includes("bottom"))) {
+            if (!raceVal || raceStr === 'ALL' || raceStr === '%NULL%' || raceStr === 'NULL' || raceStr === 'TOTAL' || raceStr === 'GRAND TOTAL' || raceStr === 'SUM' || raceStr === '*') { c = 7; }
+            else if (raceStr.includes('BLACK')) { c = 8; }
+            else if (raceStr.includes('HISPANIC')) { c = 9; }
+            else if (raceStr.includes('WHITE')) { c = 10; }
+            else if (raceStr.includes('OTHER') || raceStr.includes('MULTI')) { c = 11; }
+            else { c = 7; }
+        } else if (s === "bottom left" || (s.includes("bottom") && s.includes("left"))) {
+            if (!raceVal || raceStr === 'ALL' || raceStr === '%NULL%' || raceStr === 'NULL' || raceStr === 'TOTAL' || raceStr === 'GRAND TOTAL' || raceStr === 'SUM' || raceStr === '*') { c = 5; }
+            else if (raceStr.includes('OTHER') || raceStr.includes('MULTI')) { c = 1; }
+            else if (raceStr.includes('WHITE')) { c = 2; }
+            else if (raceStr.includes('HISPANIC')) { c = 3; }
+            else if (raceStr.includes('BLACK')) { c = 4; }
+            else { c = 5; }
+        } else if (s === "bottom center" || (s.includes("bottom") && s.includes("center"))) {
+            c = 6;
+        } else if (s === "bottom right" || (s.includes("bottom") && s.includes("right"))) {
+            if (!raceVal || raceStr === 'ALL' || raceStr === '%NULL%' || raceStr === 'NULL' || raceStr === 'TOTAL' || raceStr === 'GRAND TOTAL' || raceStr === 'SUM' || raceStr === '*') { c = 7; }
+            else if (raceStr.includes('BLACK')) { c = 8; }
+            else if (raceStr.includes('HISPANIC')) { c = 9; }
+            else if (raceStr.includes('WHITE')) { c = 10; }
+            else if (raceStr.includes('OTHER') || raceStr.includes('MULTI')) { c = 11; }
+            else { c = 7; }
+        }
+
+        return { r, c };
+    }
+
     async function fetchTableauRRIData() {
         if (!isVizReady || !workbook) return;
 
@@ -643,20 +709,19 @@
 
             for (const sheet of sheets) {
                 try {
-                    const rawSheetName = sheet.getName().toLowerCase();
-                    const sheetName = rawSheetName.trim ? rawSheetName.trim() : rawSheetName;
+                    const sheetName = sheet.getName();
                     const summaryData = await sheet.getSummaryDataAsync({ maxRows: 0, ignoreSelection: true });
                     const columns = summaryData.getColumns();
                     const data = summaryData.getData();
 
-                    let rriIdx = columns.findIndex(col => {
-                        const name = col.getFieldName().toLowerCase();
+                    let rriIdx = columns.findIndex(c => {
+                        const name = c.getFieldName().toLowerCase();
                         return name.includes("relative rate index (rri)") || name.includes("relative rate index") || name.includes("rri");
                     });
 
-                    let ageIdx = columns.findIndex(col => col.getFieldName().toLowerCase().includes("age"));
-                    let raceIdx = columns.findIndex(col => col.getFieldName().toLowerCase().includes("race"));
-                    let sexIdx = columns.findIndex(col => col.getFieldName().toLowerCase().includes("sex"));
+                    let ageIdx = columns.findIndex(c => c.getFieldName().toLowerCase().includes("age"));
+                    let raceIdx = columns.findIndex(c => c.getFieldName().toLowerCase().includes("race"));
+                    let sexIdx = columns.findIndex(c => c.getFieldName().toLowerCase().includes("sex"));
 
                     data.forEach(row => {
                         let rawVal = rriIdx !== -1 ? row[rriIdx] : null;
@@ -678,68 +743,22 @@
                         let raceVal = raceIdx !== -1 && row[raceIdx] ? row[raceIdx].value || row[raceIdx].formattedValue : null;
                         let sexVal = sexIdx !== -1 && row[sexIdx] ? row[sexIdx].value || row[sexIdx].formattedValue : null;
 
-                        // Sheet-Specific 6-Sheet Architecture Resolver
-                        let r = 1, c = 1;
+                        const coords = getMatrixCoords(sheetName, ageVal, raceVal, sexVal);
+                        if (coords) {
+                            rriCache[] = val;
 
-                        function getRowFromAge(age) {
-                            if (!age || String(age).toUpperCase().includes("ALL")) return 1;
-                            let s = String(age).toUpperCase();
-                            if (s.includes("18")) return 2;
-                            if (s.includes("25")) return 3;
-                            if (s.includes("35")) return 4;
-                            if (s.includes("45")) return 5;
-                            if (s.includes("55")) return 6;
-                            if (s.includes("65")) return 7;
-                            return 1;
+                            // Explicit mapping across all 3 segments of Big Cell on Row 8
+                            if (coords.r === 8 && (coords.c === 5 || coords.c === 6 || coords.c === 7)) {
+                                rriCache["8_5"] = val;
+                                rriCache["8_6"] = val;
+                                rriCache["8_7"] = val;
+                            }
                         }
-
-                        function getColFemale(race) {
-                            if (!race || String(race).toUpperCase().includes("ALL")) return 5;
-                            let s = String(race).toUpperCase();
-                            if (s.includes("OTHER") || s.includes("MULTI")) return 1;
-                            if (s.includes("WHITE")) return 2;
-                            if (s.includes("HISPANIC")) return 3;
-                            if (s.includes("BLACK")) return 4;
-                            return 5;
-                        }
-
-                        function getColMale(race) {
-                            if (!race || String(race).toUpperCase().includes("ALL")) return 7;
-                            let s = String(race).toUpperCase();
-                            if (s.includes("BLACK")) return 8;
-                            if (s.includes("HISPANIC")) return 9;
-                            if (s.includes("WHITE")) return 10;
-                            if (s.includes("OTHER") || s.includes("MULTI")) return 11;
-                            return 7;
-                        }
-
-                        if (sheetName.includes("female") && !sheetName.includes("bottom")) {
-                            r = getRowFromAge(ageVal);
-                            c = getColFemale(raceVal);
-                        } else if (sheetName.includes("center") && !sheetName.includes("bottom")) {
-                            r = getRowFromAge(ageVal);
-                            c = 6;
-                        } else if (sheetName.includes("male") && !sheetName.includes("bottom")) {
-                            r = getRowFromAge(ageVal);
-                            c = getColMale(raceVal);
-                        } else if (sheetName.includes("bottom") && sheetName.includes("left")) {
-                            r = 8;
-                            c = getColFemale(raceVal);
-                        } else if (sheetName.includes("bottom") && sheetName.includes("center")) {
-                            r = 8;
-                            c = 6;
-                        } else if (sheetName.includes("bottom") && sheetName.includes("right")) {
-                            r = 8;
-                            c = getColMale(raceVal);
-                        }
-
-                        rriCache[`${r}_${c}`] = val;
                     });
                 } catch (err) {
                     console.warn("Sheet data extraction notice for " + sheet.getName() + ":", err);
                 }
             }
-            console.log("RRI Cache extraction complete. Total mapped keys:", Object.keys(rriCache).length);
         } catch (err) {
             console.error("Error fetching Tableau summary data:", err);
         }
@@ -757,7 +776,7 @@
         if (row === 8 && col >= 5 && col <= 7) {
             if (mergedBorder) mergedBorder.classList.add("selected");
         } else {
-            const target = document.querySelector(`.cell-overlay[data-row="${row}"][data-col="${col}"]`);
+            const target = document.querySelector();
             if (target) target.classList.add("selected");
         }
 
@@ -778,10 +797,12 @@
         const sexVal = document.getElementById("select-sex").value;
 
         try {
+            // Sequential calls prevent Tableau Public API race conditions
             await workbook.changeParameterValueAsync("Select Reference Age", ageVal);
             await workbook.changeParameterValueAsync("Select Reference Race", raceVal);
             await workbook.changeParameterValueAsync("Select Reference Sex", sexVal);
 
+            // Pause briefly for Tableau's Fixed LOD calculation to complete
             await new Promise(r => setTimeout(r, 350));
 
             await fetchTableauRRIData();
@@ -798,23 +819,21 @@
         const r = selectedCell.row;
         const c = selectedCell.col;
 
-        const colInfo = (r === 8) ? ROW8_COL_MAP[c] : COL_MAP[c];
-        const rowInfo = ROW_MAP[r];
+        let prefix = "An average";
+        let descText = "";
 
-        if (!colInfo || !rowInfo) return;
-
-        let prefix = rowInfo.prefix;
-        let descText = colInfo.desc;
-
-        if (r > 1 && r < 8) {
-            let raceLabel = (colInfo.race === "ALL") ? "" : colInfo.race + " ";
-            let sexTerm = "MAN";
-            if (c === 6) {
-                sexTerm = "PERSON";
-            } else if (c <= 5) {
-                sexTerm = "WOMAN";
-            }
-            descText = `${rowInfo.age} year old ${raceLabel}${sexTerm}`.replace(/\s+/g, ' ').trim();
+        if (r === 8) {
+            // Unsegmented Row 8 Column Mapping
+            prefix = "An average";
+            descText = ROW8_COL_MAP[c] ? ROW8_COL_MAP[c].desc : "PERSON";
+        } else if (r === 1) {
+            prefix = "An average";
+            descText = COL_MAP[c] ? COL_MAP[c].desc : "PERSON";
+        } else {
+            const colInfo = COL_MAP[c];
+            const rowInfo = ROW_MAP[r];
+            prefix = rowInfo ? rowInfo.prefix : "A";
+            descText = .replace(/\s+/g, ' ').trim();
         }
 
         const prefixEl = document.getElementById("line2-prefix");
@@ -822,13 +841,13 @@
         if (prefixEl) prefixEl.innerText = prefix;
         if (descEl) descEl.innerText = descText.toUpperCase();
 
-        const cacheKey = `${r}_${c}`;
+        const cacheKey = ;
         const rri = rriCache[cacheKey];
 
         const rriSpan = document.getElementById("rri-value");
         if (rriSpan) {
             if (rri !== undefined && rri !== null && !isNaN(rri)) {
-                rriSpan.innerText = `${rri.toFixed(1)}x`;
+                rriSpan.innerText = ;
                 rriSpan.style.color = (rri > 1.0) ? "#67000D" : "#FFFFFF";
             } else if (rri === null) {
                 rriSpan.innerText = "Suppressed";

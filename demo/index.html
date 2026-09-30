@@ -274,7 +274,7 @@
             transition: transform 0.08s ease, background-color 0.1s ease, box-shadow 0.15s ease;
         }
 
-        /* Fill corner gaps at 4-way grid junctions */
+        /* Fill intersection gaps created by border-radius */
         .cell-overlay::after {
             content: '';
             position: absolute;
@@ -292,7 +292,6 @@
             z-index: 20;
         }
 
-        /* Suppress individual cell hover backgrounds for Row 8 Cols 5-7 */
         .cell-overlay[data-row="8"][data-col="5"]:hover,
         .cell-overlay[data-row="8"][data-col="6"]:hover,
         .cell-overlay[data-row="8"][data-col="7"]:hover {
@@ -309,16 +308,6 @@
             box-shadow: 0 0 16px #FFFFFF, inset 0 0 12px rgba(255, 255, 255, 0.7) !important;
             z-index: 40 !important;
         }
-
-        /* Row 8 Big Cell Merged Region (Cols 5-7) */
-        /* Row 8 Individual Cell Borders */
-        /* (Uncomment below if you want Row 8 merged with no internal borders) */
-        /*
-        .cell-overlay[data-row="8"][data-col="6"],
-        .cell-overlay[data-row="8"][data-col="7"] {
-            border-left: none !important;
-        }
-        */
 
         .permanent-border-r8c57 {
             position: absolute;
@@ -627,7 +616,6 @@
         }
     }
 
-        /* Streamlined Worksheet Coordinate Mapping with Complete Null/Total Handling */
     function isAll(v) {
         if (!v) return true;
         const st = String(v).toUpperCase().trim();

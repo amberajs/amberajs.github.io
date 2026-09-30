@@ -247,7 +247,7 @@
         /* --- INTERACTIVE GRID OVERLAY --- */
         .grid-overlay {
             position: absolute;
-            top: 1px;
+            top:  0px;
             left: 0px;
             width: 100%;
             height: 100%;
@@ -305,15 +305,20 @@
 
         .cell-overlay.selected {
             border: 3px solid #FFFFFF !important;
+            border-radius: 0px !important;
             box-shadow: 0 0 16px #FFFFFF, inset 0 0 12px rgba(255, 255, 255, 0.7) !important;
             z-index: 40 !important;
+        }
+
+        .cell-overlay.selected::after {
+            display: none !important;
         }
 
         .permanent-border-r8c57 {
             position: absolute;
             grid-row: 8;
             grid-column: 5 / span 3;
-            border: 2px solid #555555;
+            border: none;
             pointer-events: none;
             z-index: 15;
             box-sizing: border-box;
@@ -325,25 +330,15 @@
         .permanent-border-r8c57.hover {
             border: 2px dashed #FFFFFF !important;
             background-color: rgba(255, 255, 255, 0.15) !important;
+            border-radius: 0px !important;
             z-index: 25 !important;
         }
 
         .permanent-border-r8c57.selected {
             border: 3px solid #FFFFFF !important;
+            border-radius: 0px !important;
             box-shadow: 0 0 16px #FFFFFF, inset 0 0 12px rgba(255, 255, 255, 0.7) !important;
             z-index: 40 !important;
-        }
-
-        .permanent-border-r1c6 {
-            position: absolute;
-            grid-row: 1;
-            grid-column: 6;
-            border: 2px solid #555555;
-            pointer-events: none;
-            z-index: 15;
-            box-sizing: border-box;
-            width: 100%;
-            height: 100%;
         }
 
         /* --- T-CHART OVERLAY LABELS --- */
@@ -455,7 +450,6 @@
         </div>
 
         <div class="grid-overlay" id="interactive-grid">
-            <div class="permanent-border-r1c6 c6"></div>
             <div class="permanent-border-r8c57" id="merged-border-r8"></div>
 
             <div class="overlay-label c1">OTHER</div>

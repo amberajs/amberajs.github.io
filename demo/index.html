@@ -278,10 +278,23 @@
         .cell-overlay::after {
             content: '';
             position: absolute;
-            top: -4px;
-            left: -4px;
-            width: 7px;
-            height: 7px;
+            top: -6px;
+            left: -6px;
+            width: 12px;
+            height: 12px;
+            background-color: #000000;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Right-edge column 11 corner gap filler */
+        .cell-overlay[data-col="11"]::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 12px;
+            height: 12px;
             background-color: #000000;
             pointer-events: none;
             z-index: 2;
@@ -310,7 +323,8 @@
             z-index: 40 !important;
         }
 
-        .cell-overlay.selected::after {
+        .cell-overlay.selected::after,
+        .cell-overlay.selected::before {
             display: none !important;
         }
 

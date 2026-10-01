@@ -155,7 +155,7 @@
 
         .rri-text {
             font-weight: bold;
-            text-decoration: underline;
+            text-decoration: highlight;
             padding: 1px 5px;
             border-radius: 3px;
             transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease;
@@ -215,7 +215,7 @@
             background: #000000;
         }
 
-        /* 1px Black Top Mask Overlay */
+        /* 1px Black Top Mask Overlay
         .right-panel::before {
             content: '';
             position: absolute;
@@ -226,7 +226,7 @@
             background-color: #000000;
             z-index: 15;
             pointer-events: none;
-        }
+        } */
 
         .tableau-wrapper {
             position: absolute;
@@ -639,32 +639,32 @@
         const raceStr = raceVal ? String(raceVal).toUpperCase().trim() : '';
 
         let c = 6;
-        if (s === "female" || (s.includes("female") && !s.includes("bottom"))) {
+        if (s === "Female" || (s.includes("Female") && !s.includes("Bottom"))) {
             if (isAll(raceVal)) { c = 5; }
             else if (raceStr.includes('OTHER')) { c = 1; }
             else if (raceStr.includes('WHITE')) { c = 2; }
             else if (raceStr.includes('HISPANIC')) { c = 3; }
             else if (raceStr.includes('BLACK')) { c = 4; }
             else { c = 5; }
-        } else if (s === "male" || (s.includes("male") && !s.includes("bottom"))) {
+        } else if (s === "Male" || (s.includes("Male") && !s.includes("Bottom"))) {
             if (isAll(raceVal)) { c = 7; }
             else if (raceStr.includes('BLACK')) { c = 8; }
             else if (raceStr.includes('HISPANIC')) { c = 9; }
             else if (raceStr.includes('WHITE')) { c = 10; }
             else if (raceStr.includes('OTHER')) { c = 11; }
             else { c = 7; }
-        } else if (s === "center" || (s.includes("center") && !s.includes("bottom"))) {
+        } else if (s === "Bottom Center" || (s.includes("Center") && !s.includes("Bottom"))) {
             c = 6;
-        } else if (s === "bottom left" || (s.includes("bottom") && s.includes("left"))) {
+        } else if (s === "Bottom Left" || (s.includes("Bottom") && s.includes("Left"))) {
             if (isAll(raceVal)) { c = 5; }
             else if (raceStr.includes('OTHER')) { c = 1; }
             else if (raceStr.includes('WHITE')) { c = 2; }
             else if (raceStr.includes('HISPANIC')) { c = 3; }
             else if (raceStr.includes('BLACK')) { c = 4; }
             else { c = 5; }
-        } else if (s === "bottom center" || (s.includes("bottom") && s.includes("center"))) {
+        } else if (s === "Bottom Center" || (s.includes("Bottom") && s.includes("Center"))) {
             c = 6;
-        } else if (s === "bottom right" || (s.includes("bottom") && s.includes("right"))) {
+        } else if (s === "Bottom Right" || (s.includes("Bottom") && s.includes("Right"))) {
             if (isAll(raceVal)) { c = 7; }
             else if (raceStr.includes('BLACK')) { c = 8; }
             else if (raceStr.includes('HISPANIC')) { c = 9; }
@@ -824,7 +824,7 @@
         if (rriSpan) {
             if (rri !== undefined && rri !== null && !isNaN(rri)) {
                 rriSpan.innerText = `${rri.toFixed(1)}x`;
-                rriSpan.style.color = (rri > 1.0) ? "#67000D" : "#FFFFFF";
+                rriSpan.style.color = (rri > 1.0) ? "#DE2D26" : "#FFFFFF";
             } else if (rri === null) {
                 rriSpan.innerText = "Suppressed";
                 rriSpan.style.color = "#FFFFFF";

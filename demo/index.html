@@ -215,7 +215,7 @@
             background: #000000;
         }
 
-        /* 1px Black Top Mask Overlay
+        /* 1px Black Top Mask Overlay */
         .right-panel::before {
             content: '';
             position: absolute;
@@ -226,7 +226,7 @@
             background-color: #000000;
             z-index: 15;
             pointer-events: none;
-        } */
+        }
 
         .tableau-wrapper {
             position: absolute;
@@ -275,16 +275,18 @@
         }
 
         .cell-overlay-gaps {
-    pointer-events: none;
-    position: relative;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0;
-    padding: 0;
-    border: 3px solid #000000 !important;
-    background-color: #000000; 
+            pointer-events: auto;
+            position: relative;
+            cursor: pointer;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+            border: 4px solid #000000 !important;
+            transition: transform 0.08s ease, background-color 0.1s ease, box-shadow 0.15s ease;
+        }
 }
 
         .cell-overlay:hover {

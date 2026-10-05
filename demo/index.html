@@ -290,9 +290,9 @@
         } */
 }
 
-    .cell-overlay:hover {
+ .cell-overlay:hover {
+            border: 2px solid #FFFFFF !important;
             background-color: rgba(255, 255, 255, 0.15) !important;
-            box-shadow: inset 0 0 0 2px #FFFFFF !important;
             border-radius: 0px !important;
             z-index: 25 !important;
         }
@@ -304,17 +304,17 @@
         }
 
         .cell-overlay:active {
-            transform: scale(0.90);
-            background-color: rgba(255, 255, 255, 0.35);
+            transform: none !important;
+            background-color: rgba(255, 255, 255, 0.15) !important;
         }
 
       .cell-overlay.selected {
+            border: 3px solid #FFFFFF !important;
             border-radius: 0px !important;
-            box-shadow: 0 0 16px #FFFFFF, inset 0 0 0 3px #FFFFFF, inset 0 0 12px rgba(255, 255, 255, 0.7) !important;
+            box-shadow: 0 0 16px #FFFFFF, inset 0 0 12px rgba(255, 255, 255, 0.7) !important;
             background-color: transparent !important;
             z-index: 40 !important;
         }
-
         .cell-overlay.selected::after,
         .cell-overlay.selected::before {
             display: none !important;
@@ -334,7 +334,7 @@
         }
 
         .permanent-border-r8c57.hover {
-            border: 2px #FFFFFF !important;
+            border: 2px solid #FFFFFF !important;
             background-color: rgba(255, 255, 255, 0.15) !important;
             border-radius: 0px !important;
             z-index: 25 !important;

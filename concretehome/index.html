@@ -1,192 +1,938 @@
-```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diamond Concrete Flooring | Backed by the Smiley Smooth Guarantee</title>
+    <meta name="description" content="Commercial & Residential resinous flooring across Kentucky. Heavy-duty dustless diamond grinding and high-performance epoxy/polyaspartic coatings.">
 
-    
-    
-    
-    
+    <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
 
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
-    <link rel="stylesheet" />
+    <style>
+        :root {
+            --bg-dark: #05070a;
+            --accent-blue: #2563eb;
+            --text-white: #ffffff;
+            --text-gray: #94a3b8;
+            --font-display: 'Plus Jakarta Sans', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --transition-fast: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
 
-    
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    
-    <div></div>
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: var(--font-body);
+            background-color: var(--bg-dark);
+            color: var(--text-white);
+        }
 
-    
-    <header>
-        <div>
-            
-            <div>
+        /* --- 1. FULLSCREEN HERO BACKDROP --- */
+        .hero-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(rgba(5, 7, 10, 0.45), rgba(5, 7, 10, 0.65)), 
+                        url('floor1.jpeg') center/cover no-repeat;
+            z-index: 1;
+            transition: filter 0.5s ease, transform 0.5s ease;
+        }
+
+        body.active-overlay .hero-bg {
+            filter: blur(28px) brightness(0.25);
+            transform: scale(1.05);
+        }
+
+        /* --- 2. TOP HEADER (TOP LEFT AND TOP RIGHT CLEAN SEPARATION) --- */
+        .top-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 80px;
+            padding: 0 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.3s ease;
+        }
+
+        .top-header.modal-open {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Top Left: Guarantee Button */
+        .header-left-guarantee {
+            position: relative;
+        }
+
+        .guarantee-btn-clean {
+            background: none;
+            border: none;
+            color: var(--text-white);
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            transition: var(--transition-fast);
+        }
+
+        .guarantee-btn-clean:hover {
+            color: var(--accent-blue);
+        }
+
+        .guarantee-popover {
+            visibility: hidden;
+            opacity: 0;
+            width: 360px;
+            background: rgba(15, 23, 42, 0.96);
+            color: #f1f5f9;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 20px;
+            position: absolute;
+            top: 130%;
+            left: 0;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+            backdrop-filter: blur(16px);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            transition: var(--transition-fast);
+            transform: translateY(-8px);
+            pointer-events: none;
+            z-index: 120;
+        }
+
+        .guarantee-popover strong {
+            color: var(--accent-blue);
+            display: block;
+            margin-bottom: 6px;
+            font-size: 1.05rem;
+            font-family: var(--font-display);
+        }
+
+        .header-left-guarantee:hover .guarantee-popover {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Top Center Brand (Appears when submenu is active) */
+        .top-center-title {
+            font-family: var(--font-display);
+            font-size: 1.6rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-white);
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: var(--transition-fast);
+            pointer-events: none;
+            text-align: center;
+        }
+
+        body.active-overlay .top-center-title {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        /* Top Right: Client Portal Link */
+        .header-right-portal {
+            color: var(--text-white);
+            text-decoration: none;
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            transition: var(--transition-fast);
+        }
+
+        .header-right-portal:hover {
+            color: var(--accent-blue);
+        }
+
+        /* --- 3. HERO CENTER CONTENT (LARGER FONT) --- */
+        .hero-center-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+            width: 92%;
+            max-width: 1200px;
+            transition: var(--transition-fast);
+        }
+
+        body.active-overlay .hero-center-box {
+            opacity: 0;
+            transform: translate(-50%, -58%);
+            pointer-events: none;
+        }
+
+        .hero-title-main {
+            font-family: var(--font-display);
+            font-size: clamp(3.5rem, 8vw, 6.5rem);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--text-white);
+            line-height: 1.02;
+            text-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
+
+        .hero-tagline-sub {
+            font-family: var(--font-body);
+            font-weight: 500;
+            font-size: clamp(1.4rem, 3vw, 2.2rem);
+            color: #e2e8f0;
+            margin-top: 20px;
+            letter-spacing: 1px;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.9);
+        }
+
+        /* --- 4. SUBMENU OVERLAYS (FITTED NO-SCROLL) --- */
+        .submenu-overlay {
+            position: fixed;
+            top: 95px;
+            bottom: 105px;
+            left: 0;
+            width: 100vw;
+            z-index: 30;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 60px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: var(--transition-fast);
+        }
+
+        .submenu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .submenu-card-container {
+            max-width: 1300px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+
+        .submenu-header-title {
+            font-family: var(--font-display);
+            font-size: 2.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-white);
+            margin-bottom: 20px;
+            display: inline-block;
+            position: relative;
+        }
+
+        .submenu-header-title::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 80px;
+            height: 4px;
+            background-color: var(--accent-blue);
+        }
+
+        /* Bullets Flex Grid */
+        .bullets-grid {
+            list-style: none;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px 40px;
+            margin-bottom: 24px;
+        }
+
+        .bullets-grid li {
+            font-size: 1.25rem;
+            line-height: 1.5;
+            color: var(--text-gray);
+            padding-left: 28px;
+            position: relative;
+        }
+
+        .bullets-grid li::before {
+            content: "—";
+            position: absolute;
+            left: 0;
+            color: var(--accent-blue);
+            font-weight: 700;
+        }
+
+        .bullets-grid li strong {
+            color: var(--text-white);
+            font-weight: 600;
+        }
+
+        .quote-btn-action {
+            display: inline-block;
+            align-self: flex-start;
+            background: var(--accent-blue);
+            color: var(--text-white);
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 16px 42px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: var(--transition-fast);
+            margin-bottom: 24px;
+        }
+
+        .quote-btn-action:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4);
+        }
+
+        /* 3 Cover Cards Row */
+        .cover-cards-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+            width: 100%;
+        }
+
+        .cover-card-item {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cover-card-item:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent-blue);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            background: rgba(15, 23, 42, 0.85);
+        }
+
+        .cover-card-img-wrap {
+            width: 100%;
+            height: 150px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .cover-card-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .cover-card-item:hover .cover-card-img-wrap img {
+            transform: scale(1.08);
+        }
+
+        .cover-card-content {
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .cover-card-title {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-white);
+            text-transform: uppercase;
+        }
+
+        .cover-card-quote {
+            font-style: italic;
+            font-size: 1.05rem;
+            color: var(--text-gray);
+            line-height: 1.45;
+            transition: color 0.2s ease;
+        }
+
+        .cover-card-item:hover .cover-card-quote {
+            color: var(--text-white);
+        }
+
+        .cover-card-badge {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        /* Contact Form (No Scroll Fit) */
+        .contact-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .form-field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-field-group.full {
+            grid-column: span 2;
+        }
+
+        .form-field-group label {
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-gray);
+        }
+
+        .form-field-group input, .form-field-group textarea, .form-field-group select {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 14px 18px;
+            border-radius: 4px;
+            color: var(--text-white);
+            font-family: inherit;
+            font-size: 1.1rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-field-group input:focus, .form-field-group textarea:focus, .form-field-group select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* --- 5. BOTTOM NAVIGATION BAR (EVENLY SPREAD ACROSS ENTIRE BOTTOM) --- */
+        .bottom-nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100vw;
+            height: 95px;
+            z-index: 100;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(5, 7, 10, 0.92);
+            backdrop-filter: blur(16px);
+        }
+
+        .bottom-tab-item {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.65);
+            font-family: var(--font-display);
+            font-size: clamp(1.4rem, 2.5vw, 2.1rem);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            cursor: pointer;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: var(--transition-fast);
+            text-decoration: none;
+        }
+
+        .bottom-tab-item:hover, .bottom-tab-item.active {
+            color: var(--text-white);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Active Blue Line Indicator */
+        .bottom-tab-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%) scaleX(0);
+            width: 60%;
+            height: 4px;
+            background-color: var(--accent-blue);
+            transition: transform 0.3s ease;
+        }
+
+        .bottom-tab-item:hover::after, .bottom-tab-item.active::after {
+            transform: translateX(-50%) scaleX(1);
+        }
+
+        /* --- 6. PROJECT GRID & CUSTOMER REVIEW MODAL --- */
+        .modal-grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(5, 7, 10, 0.95);
+            backdrop-filter: blur(28px);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s;
+        }
+
+        .modal-grid-overlay.is-open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-exit-button {
+            position: absolute;
+            top: 35px;
+            right: 45px;
+            background: none;
+            border: none;
+            color: var(--text-white);
+            font-size: 3rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, color 0.2s ease;
+            z-index: 1010;
+            line-height: 1;
+        }
+
+        .modal-exit-button:hover {
+            color: var(--accent-blue);
+            transform: scale(1.1);
+        }
+
+        .grid-modal-container {
+            max-width: 1100px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .grid-modal-title {
+            font-family: var(--font-display);
+            font-size: 2.2rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-white);
+            margin-bottom: 24px;
+        }
+
+        .project-2x2-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 20px;
+            height: 500px;
+        }
+
+        .grid-photo-slot {
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .grid-photo-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Final Grid Slot: Customer Review Card */
+        .grid-review-slot {
+            background: rgba(37, 99, 235, 0.12);
+            border: 1px solid var(--accent-blue);
+            border-radius: 8px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .review-stars {
+            color: #f59e0b;
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+        }
+
+        .review-text-full {
+            font-style: italic;
+            font-size: 1.25rem;
+            color: var(--text-white);
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .review-author-name {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 900px) {
+            .top-header { padding: 0 20px; }
+            .hero-title-main { font-size: 3rem; }
+            .hero-tagline-sub { font-size: 1.2rem; }
+            .bullets-grid { grid-template-columns: 1fr; }
+            .cover-cards-row { grid-template-columns: 1fr; }
+            .contact-form-grid { grid-template-columns: 1fr; }
+            .form-field-group.full { grid-column: span 1; }
+            .project-2x2-grid { grid-template-columns: 1fr; height: auto; }
+            .bottom-tab-item { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body id="bodyRoot">
+
+    <!-- 1. FULLSCREEN HERO BACKDROP -->
+    <div class="hero-bg"></div>
+
+    <!-- 2. TOP HEADER (TOP-LEFT & TOP-RIGHT CLEANLY SEPARATED) -->
+    <header class="top-header" id="topHeader">
+        <!-- Top Left: Guarantee Button & Hover Tooltip -->
+        <div class="header-left-guarantee">
+            <button class="guarantee-btn-clean">
+                <span>🛡️</span> Smiley Smooth Guarantee
+            </button>
+            <div class="guarantee-popover">
                 <strong>Smiley Smooth Guarantee</strong>
-                Industrial dustless diamond mechanical grinding (ICRI CSP Standards) delivers superior bonding. 100% peeling protection, zero hot-tire pick-up, and total peace of mind on every commercial and residential slab.
+                Heavy-duty dustless diamond mechanical grinding (ICRI CSP Standards) delivers superior mechanical adhesion. Guaranteed 100% peeling protection, zero hot-tire pick-up, and total peace of mind on every commercial and residential slab.
             </div>
         </div>
 
-        <div>Diamond Concrete Flooring</div>
+        <!-- Top Center Brand (Reveals when menu active) -->
+        <div class="top-center-title">Diamond Concrete Flooring</div>
 
-        <a href="#pay">Client Pay Portal</a>
+        <!-- Top Right: Client Portal Link -->
+        <a href="#pay" class="header-right-portal" onclick="alert('Redirecting to secure Client Pay Portal...')">Client Pay Portal</a>
     </header>
 
-    
-    <div>
-        <h1>Diamond Concrete Flooring</h1>
-        <p>Backed by the Smiley Smooth Guarantee</p>
+    <!-- 3. HERO CENTER CONTENT -->
+    <div class="hero-center-box">
+        <h1 class="hero-title-main">Diamond Concrete Flooring</h1>
+        <p class="hero-tagline-sub">Backed by the Smiley Smooth Guarantee</p>
     </div>
 
-    
-    <div>
-        <div>
+    <!-- 4. SUBMENU OVERLAY: COMMERCIAL FLOORING -->
+    <div class="submenu-overlay" id="overlay-commercial">
+        <div class="submenu-card-container">
             <div>
-                <h2>Commercial Flooring</h2>
-                <ul>
-                    <li><strong>ICRI CSP 2-3 Mechanical Prep:</strong> Industrial dustless diamond grinding for maximum mechanical adhesion.</li>
-                    <li><strong>USDA &amp; FDA Compliant:</strong> Thermal-shock resistant urethane cement slurries ideal for food processing &amp; kitchens.</li>
-                    <li><strong>Moisture Vapor Mitigation:</strong> Engineered barriers to withstand deep slab moisture and heavy chemicals.</li>
-                    <li><strong>High-Traffic Safety Striping:</strong> Integrated non-slip aggregates for logistics bays and production floors.</li>
+                <h2 class="submenu-header-title">Commercial Flooring</h2>
+                <ul class="bullets-grid">
+                    <li><strong>ICRI CSP 2-3 Mechanical Prep:</strong> Industrial dustless diamond grinding for maximum bond strength.</li>
+                    <li><strong>USDA & FDA Compliant:</strong> Thermal shock resistant urethane cement slurries for food processing.</li>
+                    <li><strong>Moisture Vapor Mitigation:</strong> Specialized barriers engineered to withstand deep slab moisture pressure.</li>
+                    <li><strong>Safety & Line Striping:</strong> Integrated non-slip quartz and aluminum oxide safety aggregates.</li>
                 </ul>
-                <div>
-                    
-                </div>
+                <button class="quote-btn-action" onclick="switchSubmenu('contact')">Get a Free Quote!</button>
             </div>
 
-            
-            <div>
-                <div>
-                    <div>
-                        
+            <!-- 3 Cover Cards -->
+            <div class="cover-cards-row">
+                <div class="cover-card-item" onclick="openGridModal('comm-1')">
+                    <div class="cover-card-img-wrap">
+                        <img src="floor1.jpeg" alt="25,000 Sq. Ft. Logistics Hub">
                     </div>
-                    <div>
-                        <div>25,000 Sq. Ft. Logistics Hub</div>
-                        <div>"DCF prepped and coated our warehouse floor in 3 days. Adhesion is flawless." — Marcus V.</div>
-                        <div>View Project Grid →</div>
-                    </div>
-                </div>
-
-                <div>
-                    <div>
-                        
-                    </div>
-                    <div>
-                        <div>Food Processing Kitchen</div>
-                        <div>"Passed USDA inspection on the first try. Handles daily steam washing with zero issues." — Chef David M.</div>
-                        <div>View Project Grid →</div>
+                    <div class="cover-card-content">
+                        <div class="cover-card-title">25,000 Sq. Ft. Logistics Hub</div>
+                        <div class="cover-card-quote">"DCF prepped and coated our warehouse floor in 3 days. Adhesion is flawless." — Marcus V.</div>
+                        <div class="cover-card-badge">View Project Grid &rarr;</div>
                     </div>
                 </div>
 
-                <div>
-                    <div>
-                        
+                <div class="cover-card-item" onclick="openGridModal('comm-2')">
+                    <div class="cover-card-img-wrap">
+                        <img src="floor1.jpeg" alt="Food Processing Kitchen">
                     </div>
-                    <div>
-                        <div>Auto Showroom &amp; Service Bays</div>
-                        <div>"Stain resistant and sleek. Our clients constantly compliment the finish." — Sarah J.</div>
-                        <div>View Project Grid →</div>
+                    <div class="cover-card-content">
+                        <div class="cover-card-title">Food Processing Kitchen</div>
+                        <div class="cover-card-quote">"Passed USDA inspection on the first try. Handles daily steam washing with zero issues." — Chef David M.</div>
+                        <div class="cover-card-badge">View Project Grid &rarr;</div>
+                    </div>
+                </div>
+
+                <div class="cover-card-item" onclick="openGridModal('comm-3')">
+                    <div class="cover-card-img-wrap">
+                        <img src="floor1.jpeg" alt="Auto Showroom & Service Bays">
+                    </div>
+                    <div class="cover-card-content">
+                        <div class="cover-card-title">Auto Showroom & Bays</div>
+                        <div class="cover-card-quote">"Stain resistant and sleek. Our clients constantly compliment the finish." — Sarah J.</div>
+                        <div class="cover-card-badge">View Project Grid &rarr;</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    
-    <div>
-        <div>
+    <!-- 4. SUBMENU OVERLAY: RESIDENTIAL FLOORING -->
+    <div class="submenu-overlay" id="overlay-residential">
+        <div class="submenu-card-container">
             <div>
-                <h2>Residential Flooring</h2>
-                <ul>
-                    <li><strong>1-Day Polyaspartic Garage Systems:</strong> Rapid cure technology allows vehicle traffic within 24 hours.</li>
-                    <li><strong>100% Hot-Tire Pick-Up Proof:</strong> Industrial strength formulation guaranteed never to peel under warm tires.</li>
-                    <li><strong>Decorative Flake &amp; Metallic Finishes:</strong> Premium vinyl chip blends and seamless metallic epoxy basement floors.</li>
-                    <li><strong>UV-Stable Exterior Surfaces:</strong> Non-yellowing, weather-resistant coatings for outdoor patios and pool decks.</li>
+                <h2 class="submenu-header-title">Residential Flooring</h2>
+                <ul class="bullets-grid">
+                    <li><strong>1-Day Polyaspartic Garage Systems:</strong> Rapid cure formulation allowing vehicle parking in 24 hours.</li>
+                    <li><strong>100% Hot-Tire Pick-Up Proof:</strong> Industrial resin formulation guaranteed never to peel or lift.</li>
+                    <li><strong>Decorative Flake & Metallic:</strong> Premium vinyl chip blends, quartz granules, and metallic epoxies.</li>
+                    <li><strong>UV-Stable Exterior Surfaces:</strong> Non-yellowing, weather-resistant coatings for outdoor patios.</li>
                 </ul>
-                <div>
-                    
-                </div>
+                <button class="quote-btn-action" onclick="switchSubmenu('contact')">Get a Free Quote!</button>
             </div>
 
-            
-            <div>
-                <div>
-                    <div>
-                        
+            <!-- 3 Cover Cards -->
+            <div class="cover-cards-row">
+                <div class="cover-card-item" onclick="openGridModal('res-1')">
+                    <div class="cover-card-img-wrap">
+                        <img src="floor1.jpeg" alt="Custom 3-Car Garage">
                     </div>
-                    <div>
-                        <div>Custom 3-Car Garage</div>
-                        <div>"Our garage floor looks cleaner than our kitchen! The Smiley Guarantee delivered." — Tom &amp; Linda R.</div>
-                        <div>View Project Grid →</div>
-                    </div>
-                </div>
-
-                <div>
-                    <div>
-                        
-                    </div>
-                    <div>
-                        <div>Metallic Epoxy Basement</div>
-                        <div>"Turned a concrete floor into a luxury room. Seamless, waterproof, and gorgeous." — Brian K.</div>
-                        <div>View Project Grid →</div>
+                    <div class="cover-card-content">
+                        <div class="cover-card-title">Custom 3-Car Garage</div>
+                        <div class="cover-card-quote">"Our garage floor looks cleaner than our kitchen! The Smiley Guarantee delivered." — Tom & Linda R.</div>
+                        <div class="cover-card-badge">View Project Grid &rarr;</div>
                     </div>
                 </div>
 
-                <div>
-                    <div>
-                        
+                <div class="cover-card-item" onclick="openGridModal('res-2')">
+                    <div class="cover-card-img-wrap">
+                        <img src="floor1.jpeg" alt="Metallic Epoxy Basement">
                     </div>
-                    <div>
-                        <div>Outdoor Pool Deck &amp; Patio</div>
-                        <div>"Stays comfortable under foot and slip-resistant around the pool." — Ashley M.</div>
-                        <div>View Project Grid →</div>
+                    <div class="cover-card-content">
+                        <div class="cover-card-title">Metallic Epoxy Basement</div>
+                        <div class="cover-card-quote">"Turned concrete into a luxury living space. Seamless and waterproof." — Brian K.</div>
+                        <div class="cover-card-badge">View Project Grid &rarr;</div>
+                    </div>
+                </div>
+
+                <div class="cover-card-item" onclick="openGridModal('res-3')">
+                    <div class="cover-card-img-wrap">
+                        <img src="floor1.jpeg" alt="Outdoor Pool Deck & Patio">
+                    </div>
+                    <div class="cover-card-content">
+                        <div class="cover-card-title">Outdoor Pool Deck</div>
+                        <div class="cover-card-quote">"Stays comfortable under foot and slip-resistant around the pool." — Ashley M.</div>
+                        <div class="cover-card-badge">View Project Grid &rarr;</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    
-    <div>
-        <div>
-            <h2>Contact Us</h2>
-            <p>Have a question or need a quote? Fill out the form below and Joseph's team will get back to you promptly.</p>
+    <!-- 4. SUBMENU OVERLAY: CONTACT US -->
+    <div class="submenu-overlay" id="overlay-contact">
+        <div class="submenu-card-container" style="justify-content: flex-start; gap: 20px;">
+            <h2 class="submenu-header-title">Contact Us</h2>
+            <p style="color: var(--text-gray); font-size: 1.25rem; margin-bottom: 10px;">Have a question or need a commercial bid? Send us a message below.</p>
             
-            
+            <form class="contact-form-grid" onsubmit="event.preventDefault(); alert('Thank you! Your message has been received by Diamond Concrete Flooring.'); resetToHero();">
+                <div class="form-field-group">
+                    <label for="inputName">Your Name *</label>
+                    <input type="text" id="inputName" required placeholder="Joseph Smiley">
+                </div>
+                <div class="form-field-group">
+                    <label for="inputEmail">Email Address *</label>
+                    <input type="email" id="inputEmail" required placeholder="name@example.com">
+                </div>
+                <div class="form-field-group">
+                    <label for="inputPhone">Phone Number *</label>
+                    <input type="tel" id="inputPhone" required placeholder="(859) 555-0199">
+                </div>
+                <div class="form-field-group">
+                    <label for="inputType">Project Type</label>
+                    <select id="inputType">
+                        <option value="commercial">Commercial / Industrial B2B</option>
+                        <option value="residential">Residential Garage / Basement</option>
+                        <option value="other">General Question</option>
+                    </select>
+                </div>
+                <div class="form-field-group full">
+                    <label for="inputMsg">Project Details *</label>
+                    <textarea id="inputMsg" rows="3" required placeholder="Describe square footage, condition, or timeline..."></textarea>
+                </div>
+                <div class="form-field-group full">
+                    <button type="submit" class="quote-btn-action" style="width: 100%;">Send Message</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    
-    <nav>
-        
-        
-        
+    <!-- 5. BOTTOM NAVIGATION BAR (SPREAD EVENLY 1fr 1fr 1fr) -->
+    <nav class="bottom-nav-bar">
+        <button class="bottom-tab-item" id="tab-commercial" onmouseover="handleTabHover('commercial')" onclick="lockTab('commercial')">COMMERCIAL</button>
+        <button class="bottom-tab-item" id="tab-residential" onmouseover="handleTabHover('residential')" onclick="lockTab('residential')">RESIDENTIAL</button>
+        <button class="bottom-tab-item" id="tab-contact" onmouseover="handleTabHover('contact')" onclick="lockTab('contact')">CONTACT US</button>
     </nav>
 
-    
-    <div>
-        
-        <div>
-            <h2>Project Title</h2>
-            <div>
-                <div>
-                    
-                </div>
-                <div>
-                    
-                </div>
-                <div>
-                    
-                </div>
-                
-                <div>
-                    <div>Verified Customer Review</div>
-                    <div>"Full testimonial quote..."</div>
-                    <div>— Client Name</div>
+    <!-- 6. PROJECT GRID & CUSTOMER REVIEW MODAL -->
+    <div class="modal-grid-overlay" id="gridModal">
+        <button class="modal-exit-button" onclick="closeGridModal()">&times;</button>
+        <div class="grid-modal-container">
+            <h3 class="grid-modal-title" id="modalProjectTitle">Project Showcase</h3>
+            <div class="project-2x2-grid">
+                <div class="grid-photo-slot"><img src="floor1.jpeg" alt="Project Photo 1"></div>
+                <div class="grid-photo-slot"><img src="floor1.jpeg" alt="Project Photo 2"></div>
+                <div class="grid-photo-slot"><img src="floor1.jpeg" alt="Project Photo 3"></div>
+                <!-- Final Slot 4: Customer Review Card -->
+                <div class="grid-review-slot">
+                    <div class="review-stars">★★★★★</div>
+                    <div class="review-text-full" id="modalReviewText">"Customer Review..."</div>
+                    <div class="review-author-name" id="modalReviewAuthor">Client Name</div>
                 </div>
             </div>
         </div>
     </div>
 
-    
-    
+    <!-- JAVASCRIPT CONTROLLER -->
+    <script>
+        const bodyRoot = document.getElementById('bodyRoot');
+        const topHeader = document.getElementById('topHeader');
+        let tabIsLocked = false;
+        let activeSubmenu = null;
 
-```
+        const projectDatabase = {
+            'comm-1': {
+                title: "25,000 Sq. Ft. Logistics Hub (Lexington, KY)",
+                review: '"DCF prepped and coated our high-traffic warehouse floor in 3 days flat. Adhesion is flawless and chemical resistance is top-tier."',
+                author: "Marcus V. — Ops Director"
+            },
+            'comm-2': {
+                title: "Food Processing Kitchen Slurry",
+                review: '"Passed USDA inspection on the first try. Handles daily hot steam washing with zero cracking or lifting issues."',
+                author: "Chef David M. — Executive Chef"
+            },
+            'comm-3': {
+                title: "Auto Showroom & Service Bays",
+                review: '"Stain resistant and sleek. Our clients constantly compliment the high-gloss finish when walking in."',
+                author: "Sarah J. — General Manager"
+            },
+            'res-1': {
+                title: "Custom 3-Car Garage Flake Floor",
+                review: '"Our garage floor looks cleaner than our kitchen! The Smiley Guarantee delivered on every promise."',
+                author: "Tom & Linda R. — Homeowners"
+            },
+            'res-2': {
+                title: "Metallic Epoxy Basement Living Space",
+                review: '"Turned a dark concrete floor into a luxury living room space. Seamless, waterproof, and gorgeous look."',
+                author: "Brian K. — Homeowner"
+            },
+            'res-3': {
+                title: "Outdoor Pool Deck & Patio Coating",
+                review: '"Stays comfortable under foot in summer heat and completely slip-resistant around the pool area."',
+                author: "Ashley M. — Homeowner"
+            }
+        };
+
+        function handleTabHover(tabName) {
+            if (!tabIsLocked) {
+                switchSubmenu(tabName);
+            }
+        }
+
+        function lockTab(tabName) {
+            tabIsLocked = true;
+            switchSubmenu(tabName);
+        }
+
+        function switchSubmenu(tabName) {
+            activeSubmenu = tabName;
+            bodyRoot.classList.add('active-overlay');
+
+            document.querySelectorAll('.submenu-overlay').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.bottom-tab-item').forEach(el => el.classList.remove('active'));
+
+            const targetOverlay = document.getElementById(`overlay-${tabName}`);
+            const targetNav = document.getElementById(`tab-${tabName}`);
+
+            if (targetOverlay) targetOverlay.classList.add('active');
+            if (targetNav) targetNav.classList.add('active');
+        }
+
+        function resetToHero() {
+            tabIsLocked = false;
+            activeSubmenu = null;
+            bodyRoot.classList.remove('active-overlay');
+            document.querySelectorAll('.submenu-overlay').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.bottom-tab-item').forEach(el => el.classList.remove('active'));
+        }
+
+        // Click on background backdrop to return to main hero
+        document.querySelector('.hero-bg').addEventListener('click', resetToHero);
+
+        // Project Grid Modal
+        function openGridModal(projectKey) {
+            const data = projectDatabase[projectKey];
+            if (!data) return;
+
+            document.getElementById('modalProjectTitle').textContent = data.title;
+            document.getElementById('modalReviewText').textContent = data.review;
+            document.getElementById('modalReviewAuthor').textContent = data.author;
+
+            document.getElementById('gridModal').classList.add('is-open');
+            topHeader.classList.add('modal-open');
+        }
+
+        function closeGridModal() {
+            document.getElementById('gridModal').classList.remove('is-open');
+            topHeader.classList.remove('modal-open');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeGridModal();
+                resetToHero();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Specialty Concrete Surfaces | Commercial & Residential Resin Flooring</title>
+    <meta name="description" content="High-performance epoxy, polyaspartic, and urethane cement flooring across Kentucky. Backed by the Smiley Smooth Guarantee.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="[suspicious link removed]">
+    <link rel="preconnect" href="[suspicious link removed]" crossorigin>
+    <link href="[suspicious link removed]" rel="stylesheet">
+
+    <style>
+        :root {
+            --navy-dark: #0f172a;
+            --navy-navy: #1e293b;
+            --slate-gray: #334155;
+            --light-bg: #f8fafc;
+            --accent-blue: #2563eb;
+            --accent-blue-hover: #1d4ed8;
+            --accent-amber: #f59e0b;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --white: #ffffff;
+            --border-color: #e2e8f0;
+            --radius: 8px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            background-color: var(--light-bg);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, .brand-font {
+            font-family: 'Oswald', sans-serif;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background-color: var(--navy-dark);
+            color: #94a3b8;
+            font-size: 0.875rem;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .top-bar .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top-bar span strong {
+            color: var(--accent-amber);
+        }
+
+        /* Navigation */
+        header {
+            background-color: var(--navy-navy);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+        }
+
+        .brand-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--white);
+            line-height: 1.1;
+        }
+
+        .brand-tagline {
+            font-size: 0.75rem;
+            color: var(--accent-amber);
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--white);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            font-weight: 600;
+            border-radius: var(--radius);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-blue);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-blue-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-amber {
+            background-color: var(--accent-amber);
+            color: var(--navy-dark);
+        }
+
+        .btn-amber:hover {
+            background-color: #d97706;
+            color: var(--white);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--white);
+            border: 2px solid var(--white);
+        }
+
+        .btn-outline:hover {
+            background: var(--white);
+            color: var(--navy-dark);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.92)), 
+                        url('[suspicious link removed]') center/cover no-repeat;
+            color: var(--white);
+            padding: 100px 0 120px 0;
+        }
+
+        .hero-content {
+            max-width: 800px;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: rgba(37, 99, 235, 0.2);
+            border: 1px solid var(--accent-blue);
+            color: #93c5fd;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            font-size: 3.25rem;
+            line-height: 1.15;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #94a3b8;
+            margin-bottom: 35px;
+            max-width: 680px;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        /* Trust Bar */
+        .trust-bar {
+            background-color: var(--white);
+            padding: 30px 0;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .trust-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            text-align: center;
+        }
+
+        .trust-item h4 {
+            font-size: 1.1rem;
+            color: var(--navy-dark);
+            margin-bottom: 4px;
+        }
+
+        .trust-item p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        /* Dual Path Section */
+        .section-padding {
+            padding: 80px 0;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section-title h2 {
+            font-size: 2.25rem;
+            color: var(--navy-dark);
+        }
+
+        .section-title p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-top: 8px;
+        }
+
+        .dual-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+        }
+
+        .card-tag {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-blue);
+            margin-bottom: 10px;
+        }
+
+        .card h3 {
+            font-size: 1.75rem;
+            color: var(--navy-dark);
+            margin-bottom: 15px;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        .card-list {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .card-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-list li::before {
+            content: "✓";
+            color: var(--accent-blue);
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        /* Guarantee Spotlight */
+        .guarantee-section {
+            background-color: var(--navy-dark);
+            color: var(--white);
+            border-radius: var(--radius);
+            padding: 60px;
+            margin: 40px 0;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .guarantee-badge {
+            background-color: var(--accent-amber);
+            color: var(--navy-dark);
+            padding: 30px;
+            border-radius: var(--radius);
+            text-align: center;
+        }
+
+        .guarantee-badge h3 {
+            font-size: 2rem;
+            line-height: 1.1;
+        }
+
+        .guarantee-content h2 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: var(--white);
+        }
+
+        .guarantee-content p {
+            color: #94a3b8;
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+        }
+
+        /* Form Section */
+        .quote-form-container {
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            padding: 40px;
+            box-shadow: var(--shadow);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+
+        .form-group.full {
+            grid-column: span 2;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+            color: var(--navy-dark);
+        }
+
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+
+        .form-group input:focus, 
+        .form-group select:focus, 
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--navy-dark);
+            color: #64748b;
+            padding: 60px 0 30px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-brand h3 {
+            color: var(--white);
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .footer-brand p {
+            font-size: 0.9rem;
+            max-width: 300px;
+        }
+
+        .footer-column h4 {
+            color: var(--white);
+            margin-bottom: 16px;
+            font-size: 1rem;
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-column ul li a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .footer-column ul li a:hover {
+            color: var(--white);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 900px) {
+            .hero h1 { font-size: 2.4rem; }
+            .guarantee-section { grid-template-columns: 1fr; text-align: center; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-group.full { grid-column: span 1; }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="container">
+            <span>Serving Lexington, Central Kentucky & Regional Commercial Sites</span>
+            <span>All Projects Backed by <strong>The Smiley Smooth Guarantee</strong></span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <header>
+        <div class="container navbar">
+            <a href="#" class="brand">
+                <span class="brand-name">SPECIALTY CONCRETE SURFACES</span>
+                <span class="brand-tagline">BACKED BY THE SMILEY SMOOTH GUARANTEE</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="#commercial">Commercial</a></li>
+                <li><a href="#residential">Residential</a></li>
+                <li><a href="#guarantee">The Guarantee</a></li>
+                <li><a href="#systems">Systems</a></li>
+                <li><a href="#quote" class="btn btn-primary">Request a Bid / Quote</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <span class="badge">Commercial & Residential Concrete Coating Specialists</span>
+                <h1>High-Performance Resin Flooring & Concrete Surfaces</h1>
+                <p>Engineered urethane cement, polyaspartic, and heavy-duty epoxy systems designed for demanding commercial facilities and premium residential floors.</p>
+                <div class="hero-cta">
+                    <a href="#quote" class="btn btn-primary">Submit Commercial Specs / RFP</a>
+                    <a href="#quote" class="btn btn-outline">Get Residential Quote</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Bar -->
+    <section class="trust-bar">
+        <div class="container">
+            <div class="trust-grid">
+                <div class="trust-item">
+                    <h4>Diamond Mechanical Prep</h4>
+                    <p>ICRI Concrete Surface Profile (CSP) standard grinding</p>
+                </div>
+                <div class="trust-item">
+                    <h4>USDA & FDA Compliant</h4>
+                    <p>Thermal shock & anti-microbial urethane cement</p>
+                </div>
+                <div class="trust-item">
+                    <h4>Dustless Prep Systems</h4>
+                    <p>HEPA-filtered industrial concrete preparation</p>
+                </div>
+                <div class="trust-item">
+                    <h4>Licensed & Insured</h4>
+                    <p>Full commercial liability coverage</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dual Path Section -->
+    <section class="section-padding" id="services">
+        <div class="container">
+            <div class="section-title">
+                <h2>Specialized Coating Solutions</h2>
+                <p>Tailored flooring systems engineered for heavy traffic, chemical resistance, and long-term durability.</p>
+            </div>
+
+            <div class="dual-grid">
+                <!-- Commercial Card -->
+                <div class="card" id="commercial">
+                    <div>
+                        <span class="card-tag">B2B & Industrial</span>
+                        <h3>Commercial Flooring</h3>
+                        <p>High-build resinous coatings for general contractors, architects, and facility managers requiring rigorous performance standards.</p>
+                        <ul class="card-list">
+                            <li>Urethane Cement Slurry (Kitchens & Food Processing)</li>
+                            <li>High-Traffic Warehouse & Logistics Bays</li>
+                            <li>Moisture Vapor Mitigation Barriers</li>
+                            <li>Non-Slip Safety Coatings & Line Striping</li>
+                            <li>Auto Dealership Showrooms & Service Bays</li>
+                        </ul>
+                    </div>
+                    <a href="#quote" class="btn btn-primary">Request Commercial RFP / Bid</a>
+                </div>
+
+                <!-- Residential Card -->
+                <div class="card" id="residential">
+                    <div>
+                        <span class="card-tag">Residential Craftsman</span>
+                        <h3>Residential Surfaces</h3>
+                        <p>Transform garage floors, basements, and outdoor patios into seamless, stain-resistant, easy-to-clean living spaces.</p>
+                        <ul class="card-list">
+                            <li>1-Day Polyaspartic Garage Floor Systems</li>
+                            <li>Decorative Vinyl Flake & Quartz Finishes</li>
+                            <li>Custom Metallic Epoxy Basement Floors</li>
+                            <li>UV-Stable Patio & Pool Deck Coatings</li>
+                            <li>100% Hot-Tire Pick-Up Resistance</li>
+                        </ul>
+                    </div>
+                    <a href="#quote" class="btn btn-amber">Get Residential Quote</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Guarantee Spotlight -->
+    <section class="container" id="guarantee">
+        <div class="guarantee-section">
+            <div class="guarantee-badge">
+                <p class="brand-font">THE OFFICIAL</p>
+                <h3>SMILEY SMOOTH GUARANTEE</h3>
+            </div>
+            <div class="guarantee-content">
+                <h2>Zero Peeling. Perfect Prep. Total Peace of Mind.</h2>
+                <p>Every slab we coat undergoes rigorous mechanical diamond grinding to guarantee a chemical and mechanical bond that never fails. Founded by Joseph Smiley, Specialty Concrete Surfaces delivers craftsman accountability on every job site—commercial or residential.</p>
+                <a href="#quote" class="btn btn-amber">Experience the Smiley Standard</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quote / Bid Form Section -->
+    <section class="section-padding" id="quote">
+        <div class="container">
+            <div class="section-title">
+                <h2>Request a Bid or Quote</h2>
+                <p>Tell us about your project. Commercial general contractors can submit specs directly.</p>
+            </div>
+
+            <div class="quote-form-container">
+                <form action="#" method="POST">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="full-name">Full Name *</label>
+                            <input type="text" id="full-name" name="name" required placeholder="Joseph Smiley">
+                        </div>
+                        <div class="form-group">
+                            <label for="company">Company / Organization (Optional)</label>
+                            <input type="text" id="company" name="company" placeholder="General Contracting Co.">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address *</label>
+                            <input type="email" id="email" name="email" required placeholder="john@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number *</label>
+                            <input type="tel" id="phone" name="phone" required placeholder="(859) 555-0199">
+                        </div>
+                        <div class="form-group">
+                            <label for="project-type">Project Type *</label>
+                            <select id="project-type" name="project_type" required>
+                                <option value="">Select Project Type</option>
+                                <option value="commercial-kitchen">Commercial Kitchen / Food & Bev</option>
+                                <option value="warehouse">Industrial Warehouse / Manufacturing</option>
+                                <option value="retail">Retail / Showroom / Commercial Space</option>
+                                <option value="garage">Residential Garage Floor</option>
+                                <option value="basement">Residential Basement</option>
+                                <option value="patio">Outdoor Patio / Pool Deck</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="sqft">Estimated Square Footage</label>
+                            <input type="text" id="sqft" name="sqft" placeholder="e.g., 2,500 sq. ft.">
+                        </div>
+                        <div class="form-group full">
+                            <label for="notes">Project Details / Spec Requirements</label>
+                            <textarea id="notes" name="notes" rows="4" placeholder="Describe concrete condition, timeline, moisture concerns, or technical specifications..."></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.1rem; padding: 14px;">Submit Quote Request / Bid Specifications</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <h3>SPECIALTY CONCRETE SURFACES</h3>
+                    <p>High-performance resinous flooring systems for commercial, industrial, and high-end residential applications across Kentucky.</p>
+                </div>
+                <div class="footer-column">
+                    <h4>Commercial</h4>
+                    <ul>
+                        <li><a href="#">Urethane Cement</a></li>
+                        <li><a href="#">Epoxy Mortar Systems</a></li>
+                        <li><a href="#">Moisture Barriers</a></li>
+                        <li><a href="#">GC Submittals</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Residential</h4>
+                    <ul>
+                        <li><a href="#">Garage Floors</a></li>
+                        <li><a href="#">Flake Coatings</a></li>
+                        <li><a href="#">Metallic Epoxy</a></li>
+                        <li><a href="#">Patio Finishes</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#guarantee">The Guarantee</a></li>
+                        <li><a href="#">Service Area</a></li>
+                        <li><a href="#quote">Contact Us</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2026 Specialty Concrete Surfaces, LLC. All Rights Reserved. Backed by the Smiley Smooth Guarantee.
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

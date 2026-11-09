@@ -1,0 +1,9 @@
+Commercial Projects:
+1. Commercial Project 1, Client Name, "Client Review"
+2. Commercial Project 2, Client Name, "Client Review"
+3. Commercial Project 3, Client Name, "Client Review"
+
+Residential Projects:
+1. Residential Project 1, Client Name, "Client Review"
+2. Residential Project 2, Client Name, "Client Review"
+3. Residential Project 3, Client Name, "Client Review"

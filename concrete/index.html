@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Diamond Concrete Floorings | Backed by the Smiley Smooth Guarantee</title>
-    <meta name="description" content="Commercial & Residential resinous flooring across Kentucky. Heavy-duty dustless diamond grinding and high-performance coatings.">
+    <meta name="description" content="Commercial & Residential resinous flooring across Kentucky. Heavy-duty dustless diamond grinding and high-performance epoxy/polyaspartic coatings.">
 
     <!-- Google Fonts: Barlow Semi Condensed, Public Sans, Space Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,6 +17,7 @@
             --accent-blue: #2563eb;
             --text-white: #ffffff;
             --text-muted: #94a3b8;
+            --text-subtle: #cbd5e1;
             --border-dark: rgba(255, 255, 255, 0.12);
             --transition-speed: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
@@ -540,18 +541,18 @@
 
         .modal-title {
             font-family: 'Barlow Semi Condensed', sans-serif;
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 2px;
             color: var(--text-white);
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .cell-2x2-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            grid-template-rows: 220px 220px;
+            grid-template-rows: 230px 230px;
             gap: 16px;
             width: 100%;
         }
@@ -562,6 +563,7 @@
             overflow: hidden;
             border-radius: 4px;
             border: 1px solid rgba(255, 255, 255, 0.15);
+            position: relative;
         }
 
         .cell-photo img {
@@ -654,19 +656,19 @@
             <button class="btn-quote" onclick="activateTab('contact')">GET A QUOTE</button>
         </div>
 
-        <!-- 3 Borderless Images Spanning Lower 50% Height -->
+        <!-- 3 Borderless Images Spanning Lower 50% Height (COM1A, COM2A, COM3A) -->
         <div class="bottom-photos-row">
             <div class="photo-wrapper" onclick="openShowcaseModal('comm-1')">
                 <img src="photos/COM1A.jpeg" onerror="this.src='floor1.jpeg'" alt="Commercial Project 1">
-                <div class="photo-quote-overlay">"Prepped and coated our warehouse floor in 3 days. Adhesion is flawless." — Marcus V.</div>
+                <div class="photo-quote-overlay">"Prepped and coated our warehouse floor in 3 days. Adhesion is flawless."</div>
             </div>
             <div class="photo-wrapper" onclick="openShowcaseModal('comm-2')">
                 <img src="photos/COM2A.jpeg" onerror="this.src='floor1.jpeg'" alt="Commercial Project 2">
-                <div class="photo-quote-overlay">"Passed USDA inspection on the first try. Handles daily steam washing." — Chef David M.</div>
+                <div class="photo-quote-overlay">"Passed USDA inspection on the first try. Handles daily steam washing."</div>
             </div>
             <div class="photo-wrapper" onclick="openShowcaseModal('comm-3')">
                 <img src="photos/COM3A.jpeg" onerror="this.src='floor1.jpeg'" alt="Commercial Project 3">
-                <div class="photo-quote-overlay">"Stain resistant and sleek. Our clients constantly compliment the finish." — Sarah J.</div>
+                <div class="photo-quote-overlay">"Stain resistant and sleek. Our clients constantly compliment the finish."</div>
             </div>
         </div>
     </div>
@@ -683,19 +685,19 @@
             <button class="btn-quote" onclick="activateTab('contact')">GET A QUOTE</button>
         </div>
 
-        <!-- 3 Borderless Images Spanning Lower 50% Height -->
+        <!-- 3 Borderless Images Spanning Lower 50% Height (RES1A, RES2A, RES3A) -->
         <div class="bottom-photos-row">
             <div class="photo-wrapper" onclick="openShowcaseModal('res-1')">
                 <img src="photos/RES1A.jpeg" onerror="this.src='floor1.jpeg'" alt="Residential Project 1">
-                <div class="photo-quote-overlay">"Our garage floor looks cleaner than our kitchen! The Smiley Guarantee delivered." — Tom & Linda R.</div>
+                <div class="photo-quote-overlay">"Our garage floor looks cleaner than our kitchen! The Smiley Guarantee delivered."</div>
             </div>
             <div class="photo-wrapper" onclick="openShowcaseModal('res-2')">
                 <img src="photos/RES2A.jpeg" onerror="this.src='floor1.jpeg'" alt="Residential Project 2">
-                <div class="photo-quote-overlay">"Turned concrete into a luxury living space. Seamless and waterproof." — Brian K.</div>
+                <div class="photo-quote-overlay">"Turned concrete into a luxury living space. Seamless and waterproof."</div>
             </div>
             <div class="photo-wrapper" onclick="openShowcaseModal('res-3')">
                 <img src="photos/RES3A.jpeg" onerror="this.src='floor1.jpeg'" alt="Residential Project 3">
-                <div class="photo-quote-overlay">"Stays comfortable under foot and slip-resistant around the pool." — Ashley M.</div>
+                <div class="photo-quote-overlay">"Stays comfortable under foot and slip-resistant around the pool."</div>
             </div>
         </div>
     </div>
@@ -721,7 +723,7 @@
 
                 <div class="form-field" id="contactInfoGroup">
                     <label for="cInfo" id="contactInfoLabel">Email</label>
-                    <input type="text" id="cInfo" required placeholder="name@example.com">
+                    <input type="email" id="cInfo" required placeholder="name@example.com">
                 </div>
 
                 <div class="form-field">
@@ -741,22 +743,23 @@
         <button class="tab-btn" id="btn-contact" onmouseover="handleNavHover('contact')" onclick="lockNav('contact')">CONTACT US</button>
     </nav>
 
-    <!-- 6. 4-CELL SHOWCASE LIGHTBOX MODAL -->
+    <!-- 6. 4-CELL SHOWCASE LIGHTBOX MODAL (Directly referencing /concrete/projects.txt) -->
     <div class="lightbox-modal" id="showcaseModal">
         <button class="btn-close-modal" onclick="closeShowcaseModal()">&times;</button>
         <div class="modal-box">
+            <!-- Project Title above the 4-cell gallery -->
             <h3 class="modal-title" id="modalProjectTitle">Project Showcase</h3>
             <div class="cell-2x2-grid">
-                <!-- Cell 1 -->
-                <div class="cell-photo"><img id="imgCell1" src="floor1.jpeg" alt="Cell 1"></div>
-                <!-- Cell 2 -->
-                <div class="cell-photo"><img id="imgCell2" src="floor1.jpeg" alt="Cell 2"></div>
-                <!-- Cell 3 -->
-                <div class="cell-photo"><img id="imgCell3" src="floor1.jpeg" alt="Cell 3"></div>
-                <!-- Cell 4: Customer Review Card -->
+                <!-- Cell 1 (Top Left): Cover Photo A (COM1A / RES1A) -->
+                <div class="cell-photo"><img id="imgCell1" src="floor1.jpeg" alt="Project Photo A"></div>
+                <!-- Cell 2 (Top Right): Photo B (COM1B / RES1B) -->
+                <div class="cell-photo"><img id="imgCell2" src="floor1.jpeg" alt="Project Photo B"></div>
+                <!-- Cell 3 (Bottom Left): Photo C (COM1C / RES1C) -->
+                <div class="cell-photo"><img id="imgCell3" src="floor1.jpeg" alt="Project Photo C"></div>
+                <!-- Cell 4 (Bottom Right): Customer Review Card -->
                 <div class="cell-review">
                     <div class="review-stars-blue">★★★★★</div>
-                    <p class="review-body" id="modalReviewQuote">"Full review quote goes here..."</p>
+                    <p class="review-body" id="modalReviewQuote">"Client Review"</p>
                     <div class="review-client" id="modalReviewClient">Client Name</div>
                 </div>
             </div>
@@ -770,54 +773,60 @@
         let isLocked = false;
         let currentTab = null;
 
+        /*
+         * Gallery Database mapping directly to /concrete/projects.txt & /concrete/photos/ folder:
+         * Commercial Projects 1-3 -> COM1A/B/C, COM2A/B/C, COM3A/B/C
+         * Residential Projects 1-3 -> RES1A/B/C, RES2A/B/C, RES3A/B/C
+         * Format in /concrete/projects.txt: Project Title, Client Name, "Client Review"
+         */
         const galleryDatabase = {
             'comm-1': {
                 title: "25,000 Sq. Ft. Commercial Logistics Hub",
+                client: "Marcus V.",
+                quote: "DCF prepped and coated our warehouse floor in 3 days flat. Adhesion is flawless.",
                 imgA: "photos/COM1A.jpeg",
                 imgB: "photos/COM1B.jpeg",
-                imgC: "photos/COM1C.jpeg",
-                quote: "DCF prepped and coated our high-traffic warehouse floor in 3 days flat. Adhesion is flawless.",
-                client: "Marcus V. — Logistics Director"
+                imgC: "photos/COM1C.jpeg"
             },
             'comm-2': {
                 title: "Food Processing Kitchen Coating",
+                client: "Chef David M.",
+                quote: "Passed USDA inspection on the first try. Handles daily steam washing with zero issues.",
                 imgA: "photos/COM2A.jpeg",
                 imgB: "photos/COM2B.jpeg",
-                imgC: "photos/COM2C.jpeg",
-                quote: "Passed USDA inspection on the first try. Handles daily hot steam washing with zero lifting.",
-                client: "Chef David M. — Executive Chef"
+                imgC: "photos/COM2C.jpeg"
             },
             'comm-3': {
                 title: "Auto Showroom & Service Bays",
+                client: "Sarah J.",
+                quote: "Stain resistant and sleek. Our clients constantly compliment the high-gloss finish.",
                 imgA: "photos/COM3A.jpeg",
                 imgB: "photos/COM3B.jpeg",
-                imgC: "photos/COM3C.jpeg",
-                quote: "Stain resistant and sleek. Our clients constantly compliment the high-gloss finish.",
-                client: "Sarah J. — General Manager"
+                imgC: "photos/COM3C.jpeg"
             },
             'res-1': {
                 title: "Custom 3-Car Garage Flake Floor",
+                client: "Tom & Linda R.",
+                quote: "Our garage floor looks cleaner than our kitchen! The Smiley Guarantee delivered.",
                 imgA: "photos/RES1A.jpeg",
                 imgB: "photos/RES1B.jpeg",
-                imgC: "photos/RES1C.jpeg",
-                quote: "Our garage floor looks cleaner than our kitchen! The Smiley Guarantee delivered.",
-                client: "Tom & Linda R. — Homeowners"
+                imgC: "photos/RES1C.jpeg"
             },
             'res-2': {
-                title: "Metallic Epoxy Basement Floor",
+                title: "Metallic Epoxy Basement Living Space",
+                client: "Brian K.",
+                quote: "Turned concrete into a luxury living space. Seamless, waterproof, and gorgeous.",
                 imgA: "photos/RES2A.jpeg",
                 imgB: "photos/RES2B.jpeg",
-                imgC: "photos/RES2C.jpeg",
-                quote: "Turned concrete into a luxury living space. Seamless, waterproof, and gorgeous.",
-                client: "Brian K. — Homeowner"
+                imgC: "photos/RES2C.jpeg"
             },
             'res-3': {
-                title: "Outdoor Pool Deck & Patio",
+                title: "Outdoor Pool Deck & Patio Surface",
+                client: "Ashley M.",
+                quote: "Stays comfortable under foot in summer heat and completely slip-resistant.",
                 imgA: "photos/RES3A.jpeg",
                 imgB: "photos/RES3B.jpeg",
-                imgC: "photos/RES3C.jpeg",
-                quote: "Stays comfortable under foot in summer heat and completely slip-resistant.",
-                client: "Ashley M. — Homeowner"
+                imgC: "photos/RES3C.jpeg"
             }
         };
 
@@ -854,7 +863,7 @@
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         }
 
-        // Contact Us Form Dynamic Input Switch
+        // Contact Us Form Dynamic Field Switch
         function updateContactField() {
             const pref = document.getElementById('cPref').value;
             const label = document.getElementById('contactInfoLabel');
@@ -877,19 +886,21 @@
             resetToHero();
         }
 
-        // Toggle popover for touch screens
+        // Popover toggle for touch screens
         function toggleGuaranteePopover(e) {
             e.stopPropagation();
             document.getElementById('guaranteeContainer').classList.toggle('active-popover');
         }
 
-        // 4-Cell Showcase Lightbox
+        // 4-Cell Showcase Lightbox Modal
         function openShowcaseModal(key) {
             const item = galleryDatabase[key];
             if (!item) return;
 
+            // Set Project Title ABOVE 4-Cell Gallery
             document.getElementById('modalProjectTitle').textContent = item.title;
             
+            // Set Cells 1, 2, 3 Photos (Top-Left: Photo A, Top-Right: Photo B, Bottom-Left: Photo C)
             const img1 = document.getElementById('imgCell1');
             const img2 = document.getElementById('imgCell2');
             const img3 = document.getElementById('imgCell3');
@@ -898,8 +909,9 @@
             img2.src = item.imgB; img2.onerror = () => { img2.src = 'floor1.jpeg'; };
             img3.src = item.imgC; img3.onerror = () => { img3.src = 'floor1.jpeg'; };
 
+            // Cell 4 (Bottom-Right): Customer Review Card (Review text + Client Name)
             document.getElementById('modalReviewQuote').textContent = `"${item.quote}"`;
-            document.getElementById('modalReviewAuthor') ? document.getElementById('modalReviewAuthor').textContent = item.client : document.getElementById('modalReviewClient').textContent = item.client;
+            document.getElementById('modalReviewClient').textContent = item.client;
 
             document.getElementById('showcaseModal').classList.add('is-open');
             topHeader.classList.add('modal-open');

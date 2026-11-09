@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Diamond Concrete Flooring | Backed by the Smiley Smooth Guarantee</title>
+    <meta name="description" content="Commercial & Residential resinous flooring across Kentucky. Heavy-duty dustless diamond grinding and high-performance epoxy/polyaspartic coatings.">
+
+    <!-- Google Fonts: Barlow Semi Condensed, Public Sans, Space Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:ital,wght@0,600;0,700;0,800;1,700&family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #0a0f1d;
+            --accent-blue: #2563eb;
+            --text-light: #ffffff;
+            --text-muted: #94a3b8;
+            --text-subtle: #cbd5e1;
+            --transition-smooth: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            height: 100vh;
+            width: 100vw;
+            font-family: 'Public Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            overflow: hidden;
+            position: fixed;
+        }
+
+        /* --- BACKGROUND FULLSCREEN IMAGE --- */
+        .bg-viewport {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(rgba(10, 15, 29, 0.4), rgba(10, 15, 29, 0.6)), 
+                        url('floor1.jpeg') center/cover no-repeat;
+            z-index: 1;
+            transition: filter 0.5s ease, transform 0.5s ease;
+        }
+
+        /* Frosted state - floor1.jpeg stays clearly visible through frost */
+        body.tab-active .bg-viewport {
+            filter: blur(14px) brightness(0.65);
+            transform: scale(1.03);
+        }
+
+        /* --- TOP HEADER NAVIGATION --- */
+        .top-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: clamp(55px, 8vh, 70px);
+            padding: 0 clamp(16px, 4vw, 40px);
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(10, 15, 29, 0.85), transparent);
+            transition: opacity 0.3s ease;
+        }
+
+        .top-header.modal-open {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Top Left: Guarantee Link */
+        .guarantee-container {
+            position: relative;
+            justify-self: start;
+        }
+
+        .guarantee-link {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-family: 'Space Mono', monospace;
+            font-size: clamp(0.7rem, 1.2vw, 0.85rem);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            padding: 6px 0;
+            transition: color 0.2s ease;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .guarantee-link:hover {
+            color: var(--accent-blue);
+        }
+
+        /* Guarantee Tooltip Bubble */
+        .guarantee-bubble {
+            visibility: hidden;
+            opacity: 0;
+            width: min(320px, 85vw);
+            background: rgba(10, 15, 29, 0.95);
+            color: #f1f5f9;
+            border: 1px solid rgba(37, 99, 235, 0.4);
+            border-radius: 6px;
+            padding: 14px 16px;
+            position: absolute;
+            top: 130%;
+            left: 0;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            backdrop-filter: blur(12px);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+            transform: translateY(-8px);
+            pointer-events: none;
+            z-index: 120;
+        }
+
+        .guarantee-bubble strong {
+            color: var(--accent-blue);
+            display: block;
+            margin-bottom: 4px;
+            font-family: 'Barlow Semi Condensed', sans-serif;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .guarantee-container:hover .guarantee-bubble,
+        .guarantee-container.active .guarantee-bubble {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Top Center Brand Link (Returns to main hero on hover/click) */
+        .top-center-brand {
+            font-family: 'Barlow Semi Condensed', sans-serif;
+            font-size: clamp(1rem, 2vw, 1.4rem);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-light);
+            white-space: nowrap;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: var(--transition-smooth);
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .top-center-brand:hover {
+            color: var(--accent-blue);
+        }
+
+        body.tab-active .top-center-brand {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Top Right: Client Portal Link */
+        .portal-link {
+            justify-self: end;
+            color: var(--text-light);
+            font-family: 'Space Mono', monospace;
+            text-decoration: none;
+            font-size: clamp(0.7rem, 1.2vw, 0.85rem);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: color 0.2s ease;
+            padding: 6px 0;
+            white-space: nowrap;
+        }
+
+        .portal-link:hover {
+            color: var(--accent-blue);
+        }
+
+        /* --- HERO CENTER CONTENT (DEFAULT STATE) --- */
+        .hero-center {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+            width: 90%;
+            max-width: 1100px;
+            transition: var(--transition-smooth);
+        }
+
+        body.tab-active .hero-center {
+            opacity: 0;
+            transform: translate(-50%, -55%);
+            pointer-events: none;
+        }
+
+        .hero-main-title {
+            font-family: 'Barlow Semi Condensed', sans-serif;
+            font-size: clamp(2rem, 5.8vw, 5.5rem);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-light);
+            white-space: nowrap;
+            line-height: 1;
+            text-shadow: 0 4px 30px rgba(0,0,0,0.8);
+        }
+
+        .hero-sub-tagline {
+            font-family: 'Public Sans', sans-serif;
+            font-weight: 400;
+            font-size: clamp(0.95rem, 2vw, 1.6rem);
+            color: var(--text-subtle);
+            margin-top: 14px;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 15px rgba(0,0,0,0.8);
+        }
+
+        /* --- SUBMENU OVERLAYS --- */
+        .content-overlay {
+            position: fixed;
+            top: clamp(55px, 8vh, 70px);
+            bottom: clamp(60px, 9vh, 75px);
+            left: 0;
+            width: 100%;
+            z-index: 30;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5vh clamp(16px, 4vw, 40px);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(15px);
+            transition: var(--transition-smooth);
+        }
+
+        .content-overlay.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .overlay-inner {
+            max-width: 1150px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* Center Content Group (Title + Bullets + Quote Button) */
+        .overlay-center-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 850px;
+            margin-top: 0.5vh;
+            gap: 1.5vh;
+        }
+
+        .submenu-title {
+            font-family: 'Barlow Semi Condensed', sans-serif;
+            font-size: clamp(1.6rem, 3.5vw, 3.2rem);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-light);
+            line-height: 1.1;
+        }
+
+        /* Simple Centered Bullets (One per line) */
+        .simple-bullets {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1vh;
+            width: 100%;
+        }
+
+        .simple-bullets li {
+            font-size: clamp(0.85rem, 1.3vw, 1.15rem);
+            font-weight: 400;
+            color: var(--text-subtle);
+            line-height: 1.3;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .simple-bullets li::before {
+            content: "•";
+            color: var(--accent-blue);
+            font-size: 1.2rem;
+        }
+
+        /* Sleek Modern Quote Button */
+        .btn-quote-sleek {
+            display: inline-block;
+            background: transparent;
+            color: var(--text-light);
+            font-family: 'Barlow Semi Condensed', sans-serif;
+            font-size: clamp(0.9rem, 1.3vw, 1.1rem);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: clamp(8px, 1.2vh, 12px) clamp(24px, 3vw, 36px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: var(--transition-smooth);
+            margin-top: 0.5vh;
+        }
+
+        .btn-quote-sleek:hover {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* --- SPREAD PHOTO ROW AT BOTTOM (NO TILES / NO CARDS) --- */
+        .photos-bottom-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(10px, 2vw, 20px);
+            width: 100%;
+            max-width: 1150px;
+            margin-bottom: 0.5vh;
+        }
+
+        .photo-item {
+            position: relative;
+            height: clamp(100px, 18vh, 180px);
+            width: 100%;
+            overflow: hidden;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .photo-item:hover {
+            transform: translateY(-6px);
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .photo-item:hover img {
+            transform: scale(1.06);
+        }
+
+        /* Quote Overlaid Directly on Image */
+        .photo-overlay-quote {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 18px 12px 10px 12px;
+            background: linear-gradient(to top, rgba(10, 15, 29, 0.95) 0%, rgba(10, 15, 29, 0.4) 65%, transparent 100%);
+            color: var(--text-light);
+            font-style: italic;
+            font-size: clamp(0.725rem, 1vw, 0.9rem);
+            line-height: 1.3;
+            text-align: left;
+            transition: color 0.2s ease;
+        }
+
+        .photo-item:hover .photo-overlay-quote {
+            color: #ffffff;
+        }
+
+        /* --- STREAMLINED GENERAL CONTACT SUBMENU --- */
+        .contact-wrapper {
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5vh;
+        }
+
+        .contact-sub-text {
+            color: var(--text-muted);
+            font-size: clamp(0.85rem, 1.1vw, 0.95rem);
+            margin-bottom: 0.5vh;
+        }
+
+        .contact-form-clean {
+            display: flex;
+            flex-direction: column;
+            gap: 1.4vh;
+            width: 100%;
+            text-align: left;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .field-clean {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .field-clean label {
+            font-family: 'Space Mono', monospace;
+            font-size: clamp(0.68rem, 0.9vw, 0.75rem);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+        }
+
+        .field-clean input, .field-clean select, .field-clean textarea {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 12px;
+            border-radius: 4px;
+            color: var(--text-light);
+            font-family: 'Public Sans', sans-serif;
+            font-size: clamp(0.8rem, 1vw, 0.9rem);
+            transition: border-color 0.2s ease;
+        }
+
+        .field-clean input:focus, .field-clean select:focus, .field-clean textarea:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* --- BOTTOM NAVBAR (3 EQUAL SPREAD COLUMNS) --- */
+        .bottom-navbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: clamp(60px, 9vh, 75px);
+            z-index: 100;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            align-items: center;
+            background: rgba(10, 15, 29, 0.9);
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(12px);
+        }
+
+        .nav-tab-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-family: 'Barlow Semi Condensed', sans-serif;
+            font-size: clamp(1rem, 2vw, 1.6rem);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            height: 100%;
+            width: 100%;
+            position: relative;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-tab-btn:hover, .nav-tab-btn.active {
+            color: var(--text-light);
+        }
+
+        .nav-tab-btn::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%) scaleX(0);
+            width: 35%;
+            height: 3px;
+            background-color: var(--accent-blue);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-tab-btn:hover::after, .nav-tab-btn.active::after {
+            transform: translateX(-50%) scaleX(1);
+        }
+
+        /* --- 2X2 PROJECT GRID MODAL --- */
+        .modal-grid-lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(6, 10, 20, 0.95);
+            backdrop-filter: blur(24px);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: clamp(20px, 4vw, 40px);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s;
+            overflow-y: auto;
+        }
+
+        .modal-grid-lightbox.is-open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-close-x {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 2.2rem;
+            cursor: pointer;
+            transition: color 0.2s ease, transform 0.2s ease;
+            z-index: 1010;
+            line-height: 1;
+        }
+
+        .modal-close-x:hover {
+            color: var(--accent-blue);
+            transform: scale(1.1);
+        }
+
+        .grid-modal-container {
+            max-width: 1050px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .grid-modal-header {
+            font-family: 'Barlow Semi Condensed', sans-serif;
+            font-size: clamp(1.4rem, 2.5vw, 2rem);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .lightbox-2x2-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .grid-photo-card {
+            position: relative;
+            height: clamp(140px, 22vh, 210px);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .grid-photo-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .grid-photo-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(10, 15, 29, 0.88);
+            font-size: clamp(0.75rem, 1vw, 0.85rem);
+            font-weight: 600;
+            text-align: left;
+            color: var(--text-light);
+        }
+
+        .grid-review-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(37, 99, 235, 0.4);
+            border-radius: 4px;
+            padding: clamp(16px, 2.5vw, 24px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            text-align: left;
+        }
+
+        .stars-row {
+            color: var(--accent-blue);
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .review-text {
+            font-style: italic;
+            font-size: clamp(0.85rem, 1.1vw, 0.95rem);
+            line-height: 1.45;
+            color: var(--text-light);
+            margin-bottom: 10px;
+        }
+
+        .review-author {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        /* --- MOBILE MEDIA QUERIES --- */
+        @media (max-width: 768px) {
+            .hero-main-title {
+                white-space: normal;
+                font-size: clamp(1.6rem, 7.5vw, 2.5rem);
+                line-height: 1.15;
+            }
+
+            .top-header {
+                grid-template-columns: auto 1fr auto;
+                padding: 0 12px;
+                gap: 6px;
+            }
+
+            .guarantee-link, .portal-link {
+                font-size: 0.65rem;
+            }
+
+            .top-center-brand {
+                font-size: 0.85rem;
+                letter-spacing: 1px;
+            }
+
+            .photos-bottom-row {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+
+            .photo-item {
+                height: clamp(80px, 14vh, 120px);
+            }
+
+            .photo-overlay-quote {
+                font-size: 0.65rem;
+                padding: 10px 6px 6px 6px;
+                line-height: 1.2;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .lightbox-2x2-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .grid-photo-card {
+                height: 160px;
+            }
+        }
+    </style>
+</head>
+<body id="mainBody">
+
+    <!-- FULLSCREEN HERO BACKGROUND VIEWPORT -->
+    <div class="bg-viewport"></div>
+
+    <!-- TOP HEADER -->
+    <header class="top-header" id="topHeader">
+        <!-- Top Left: Guarantee Link & Hover Tooltip Bubble -->
+        <div class="guarantee-container" id="guaranteeContainer">
+            <button class="guarantee-link" onclick="toggleGuarantee(event)">Smiley Smooth Guarantee</button>
+            <div class="guarantee-bubble">
+                <strong>Smiley Smooth Guarantee</strong>
+                Heavy-duty dustless diamond mechanical grinding (ICRI CSP Standards) delivers superior mechanical adhesion. Guaranteed 100% peeling protection, zero hot-tire pick-up, and total peace of mind on every commercial and residential slab.
+            </div>
+        </div>
+
+        <!-- Top Center: Brand Title (Hover/click resets to unblurred hero screen) -->
+        <div class="top-center-brand" onclick="resetDefaultView()" onmouseover="resetDefaultView()">Diamond Concrete Flooring</div>
+
+        <!-- Top Right: Client Pay Portal Link -->
+        <a href="#pay" class="portal-link" onclick="alert('Redirecting to secure Client Pay Portal...')">Client Pay Portal</a>
+    </header>
+
+    <!-- DEFAULT HERO CENTER CONTENT -->
+    <div class="hero-center">
+        <h1 class="hero-main-title">DIAMOND CONCRETE FLOORING</h1>
+        <p class="hero-sub-tagline">Backed by the Smiley Smooth Guarantee</p>
+    </div>
+
+    <!-- SUBMENU OVERLAY: COMMERCIAL FLOORING -->
+    <div class="content-overlay" id="overlay-commercial">
+        <div class="overlay-inner">
+            <div class="overlay-center-group">
+                <h2 class="submenu-title">COMMERCIAL FLOORING</h2>
+                <ul class="simple-bullets">
+                    <li>Dustless ICRI CSP-3 Diamond Mechanical Surface Prep</li>
+                    <li>USDA and FDA Compliant Urethane Cement Slurries</li>
+                    <li>Moisture Vapor Barriers & Industrial Chemical Armor</li>
+                    <li>High-Traffic Non-Slip Aggregate Safety Striping</li>
+                </ul>
+                <button class="btn-quote-sleek" onclick="switchTab('contact')">GET A FREE QUOTE!</button>
+            </div>
+
+            <!-- 3 Spread Photos at Bottom (Quotes directly on images) -->
+            <div class="photos-bottom-row">
+                <div class="photo-item" onclick="openGridModal('comm-1')">
+                    <img src="floor1.jpeg" alt="Logistics Warehouse Project">
+                    <div class="photo-overlay-quote">"Prepped and coated our warehouse floor in 3 days. Adhesion is flawless." Marcus V.</div>
+                </div>
+
+                <div class="photo-item" onclick="openGridModal('comm-2')">
+                    <img src="floor1.jpeg" alt="Commercial Kitchen Project">
+                    <div class="photo-overlay-quote">"Passed USDA inspection on the first try. Handles daily steam washing." Chef David M.</div>
+                </div>
+
+                <div class="photo-item" onclick="openGridModal('comm-3')">
+                    <img src="floor1.jpeg" alt="Auto Showroom Project">
+                    <div class="photo-overlay-quote">"Stain resistant and sleek. Our clients constantly compliment the finish." Sarah J.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUBMENU OVERLAY: RESIDENTIAL FLOORING -->
+    <div class="content-overlay" id="overlay-residential">
+        <div class="overlay-inner">
+            <div class="overlay-center-group">
+                <h2 class="submenu-title">RESIDENTIAL FLOORING</h2>
+                <ul class="simple-bullets">
+                    <li>1-Day Polyaspartic Rapid Cure Garage Floor Systems</li>
+                    <li>100% Hot-Tire Pick-Up Proof Industrial Strength Armor</li>
+                    <li>Custom Decorative Vinyl Flake & Seamless Metallic Finishes</li>
+                    <li>UV-Stable Non-Yellowing Outdoor Patios & Pool Decks</li>
+                </ul>
+                <button class="btn-quote-sleek" onclick="switchTab('contact')">GET A FREE QUOTE!</button>
+            </div>
+
+            <!-- 3 Spread Photos at Bottom (Quotes directly on images) -->
+            <div class="photos-bottom-row">
+                <div class="photo-item" onclick="openGridModal('res-1')">
+                    <img src="floor1.jpeg" alt="Custom Garage Floor">
+                    <div class="photo-overlay-quote">"Our garage floor looks cleaner than our kitchen! The Smiley Guarantee delivered." Tom & Linda R.</div>
+                </div>
+
+                <div class="photo-item" onclick="openGridModal('res-2')">
+                    <img src="floor1.jpeg" alt="Metallic Basement Floor">
+                    <div class="photo-overlay-quote">"Turned a concrete floor into a luxury room. Seamless, waterproof, and gorgeous." Brian K.</div>
+                </div>
+
+                <div class="photo-item" onclick="openGridModal('res-3')">
+                    <img src="floor1.jpeg" alt="Outdoor Patio Coating">
+                    <div class="photo-overlay-quote">"Stays comfortable under foot and slip-resistant around the pool." Ashley M.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUBMENU OVERLAY: CONTACT US -->
+    <div class="content-overlay" id="overlay-contact">
+        <div class="overlay-inner">
+            <div class="overlay-center-group" style="max-width: 650px;">
+                <h2 class="submenu-title">CONTACT US</h2>
+                <p class="contact-sub-text">Have a quick question? Drop your details below and Joseph's team will reach out promptly.</p>
+                
+                <form class="contact-form-clean" onsubmit="event.preventDefault(); alert('Thank you! Your message has been sent to Diamond Concrete Flooring.'); resetDefaultView();">
+                    <div class="field-clean">
+                        <label for="c-name">Your Name *</label>
+                        <input type="text" id="c-name" required placeholder="Joseph Smiley">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="field-clean">
+                            <label for="c-pref">Preferred Contact</label>
+                            <select id="c-pref">
+                                <option value="email">Prefer Email Response</option>
+                                <option value="phone">Prefer Phone Call</option>
+                            </select>
+                        </div>
+                        <div class="field-clean">
+                            <label for="c-info">Email Address or Phone Number *</label>
+                            <input type="text" id="c-info" required placeholder="name@example.com or (859) 555-0199">
+                        </div>
+                    </div>
+
+                    <div class="field-clean">
+                        <label for="c-msg">Quick Question or Project Details *</label>
+                        <textarea id="c-msg" rows="3" required placeholder="Tell us about your project..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-quote-sleek" style="width: 100%; border-radius: 4px; margin-top: 1vh;">SEND MESSAGE</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAVBAR (3 EQUAL SPREAD COLUMNS) -->
+    <nav class="bottom-navbar">
+        <button class="nav-tab-btn" id="tab-commercial" onmouseover="handleTabHover('commercial')" onclick="lockTab('commercial')">COMMERCIAL</button>
+        <button class="nav-tab-btn" id="tab-residential" onmouseover="handleTabHover('residential')" onclick="lockTab('residential')">RESIDENTIAL</button>
+        <button class="nav-tab-btn" id="tab-contact" onmouseover="handleTabHover('contact')" onclick="lockTab('contact')">CONTACT US</button>
+    </nav>
+
+    <!-- 2X2 PROJECT GRID MODAL -->
+    <div class="modal-grid-lightbox" id="gridModal">
+        <button class="modal-close-x" onclick="closeGridModal()">&times;</button>
+        <div class="grid-modal-container">
+            <h3 class="grid-modal-header" id="modalProjectTitle">Project Showcase</h3>
+            <div class="lightbox-2x2-grid">
+                <div class="grid-photo-card">
+                    <img src="floor1.jpeg" alt="Surface Prep Stage">
+                    <div class="grid-photo-caption">1. Dustless ICRI Diamond Surface Prep</div>
+                </div>
+                <div class="grid-photo-card">
+                    <img src="floor1.jpeg" alt="Base Layer Coat">
+                    <div class="grid-photo-caption">2. High-Solid Base Armor Coating</div>
+                </div>
+                <div class="grid-photo-card">
+                    <img src="floor1.jpeg" alt="Finished High Gloss Floor">
+                    <div class="grid-photo-caption">3. High-Gloss Protective Topcoat</div>
+                </div>
+                <div class="grid-review-card">
+                    <div class="stars-row">★★★★★</div>
+                    <p class="review-text" id="modalReviewQuote">"Client review testimonial text..."</p>
+                    <div class="review-author" id="modalReviewAuthor">Client Name</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT CONTROLLER -->
+    <script>
+        const body = document.getElementById('mainBody');
+        const topHeader = document.getElementById('topHeader');
+        let isTabLocked = false;
+        let activeTab = null;
+
+        const projectModalData = {
+            'comm-1': {
+                title: "25,000 Sq. Ft. Commercial Logistics Hub",
+                quote: "DCF prepped and coated our warehouse floor in 3 days flat. Adhesion is flawless.",
+                author: "Marcus V., Operations Manager"
+            },
+            'comm-2': {
+                title: "Food Processing Commercial Kitchen",
+                quote: "Passed USDA inspection on the first try. Handles daily steam washing with zero issues.",
+                author: "Chef David M., Executive Chef"
+            },
+            'comm-3': {
+                title: "Auto Showroom & Service Bays",
+                quote: "Stain resistant and sleek. Our clients constantly compliment the high-gloss finish.",
+                author: "Sarah J., General Manager"
+            },
+            'res-1': {
+                title: "Custom 3-Car Garage Flake Floor",
+                quote: "Our garage floor looks cleaner than our kitchen! The Smiley Guarantee delivered.",
+                author: "Tom & Linda R., Homeowners"
+            },
+            'res-2': {
+                title: "Metallic Epoxy Basement Living Space",
+                quote: "Turned a concrete floor into a luxury room. Seamless, waterproof, and gorgeous.",
+                author: "Brian K., Homeowner"
+            },
+            'res-3': {
+                title: "Outdoor Pool Deck & Patio",
+                quote: "Stays comfortable under foot and slip-resistant around the pool.",
+                author: "Ashley M., Homeowner"
+            }
+        };
+
+        function handleTabHover(tabName) {
+            if (!isTabLocked) {
+                switchTab(tabName);
+            }
+        }
+
+        function lockTab(tabName) {
+            isTabLocked = true;
+            switchTab(tabName);
+        }
+
+        function switchTab(tabName) {
+            activeTab = tabName;
+            body.classList.add('tab-active');
+
+            document.querySelectorAll('.content-overlay').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
+
+            const overlay = document.getElementById(`overlay-${tabName}`);
+            const navBtn = document.getElementById(`tab-${tabName}`);
+
+            if (overlay) overlay.classList.add('active');
+            if (navBtn) navBtn.classList.add('active');
+        }
+
+        function resetDefaultView() {
+            isTabLocked = false;
+            activeTab = null;
+            body.classList.remove('tab-active');
+            document.querySelectorAll('.content-overlay').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
+        }
+
+        function toggleGuarantee(e) {
+            e.stopPropagation();
+            const container = document.getElementById('guaranteeContainer');
+            container.classList.toggle('active');
+        }
+
+        document.addEventListener('click', (e) => {
+            const container = document.getElementById('guaranteeContainer');
+            if (container && !container.contains(e.target)) {
+                container.classList.remove('active');
+            }
+        });
+
+        function openGridModal(key) {
+            const data = projectModalData[key];
+            if (!data) return;
+
+            document.getElementById('modalProjectTitle').textContent = data.title;
+            document.getElementById('modalReviewQuote').textContent = `"${data.quote}"`;
+            document.getElementById('modalReviewAuthor').textContent = data.author;
+
+            document.getElementById('gridModal').classList.add('is-open');
+            topHeader.classList.add('modal-open');
+        }
+
+        function closeGridModal() {
+            document.getElementById('gridModal').classList.remove('is-open');
+            topHeader.classList.remove('modal-open');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeGridModal();
+                resetDefaultView();
+            }
+        });
+    </script>
+</body>
+</html>

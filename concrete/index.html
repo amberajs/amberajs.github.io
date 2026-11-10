@@ -1,1024 +1,525 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diamond Concrete Flooring | Backed by the Smiley Smooth Guarantee</title>
-    <meta name="description" content="Commercial & Residential resinous flooring across Kentucky. Heavy-duty dustless diamond grinding and high-performance epoxy/polyaspartic coatings.">
-
-    <!-- Google Fonts: Outfit (Extra Bold Headers) & Plus Jakarta Sans (Body) & Space Mono -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-
-    <style>
-        :root {
-            --bg-dark: #0a0f1d;
-            --accent-blue: #2563eb;
-            --text-light: #ffffff;
-            --text-muted: #94a3b8;
-            --text-subtle: #cbd5e1;
-            --transition-smooth: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body, html {
-            height: 100vh;
-            width: 100vw;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-light);
-            overflow: hidden;
-        }
-
-        /* --- BACKGROUND FULLSCREEN IMAGE --- */
-        .bg-viewport {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: linear-gradient(rgba(10, 15, 29, 0.45), rgba(10, 15, 29, 0.65)), 
-                        url('floor1.jpeg') center/cover no-repeat;
-            z-index: 1;
-            transition: filter 0.5s ease, transform 0.5s ease;
-        }
-
-        /* Frosted state when tab is active */
-        body.tab-active .bg-viewport {
-            filter: blur(14px) brightness(0.65);
-            transform: scale(1.03);
-        }
-
-        /* --- TOP HEADER NAVIGATION --- */
-        .top-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 65px;
-            padding: 0 5vw;
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            align-items: center;
-            z-index: 100;
-            background: linear-gradient(to bottom, rgba(10, 15, 29, 0.85), transparent);
-            transition: opacity 0.3s ease;
-        }
-
-        .top-header.modal-open {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        /* Top Left: Guarantee Link */
-        .guarantee-container {
-            position: relative;
-            justify-self: start;
-        }
-
-        .guarantee-link {
-            background: none;
-            border: none;
-            color: var(--text-light);
-            font-family: 'Space Mono', monospace;
-            font-size: 0.825rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            cursor: pointer;
-            padding: 6px 0;
-            transition: color 0.2s ease;
-            text-decoration: none;
-        }
-
-        .guarantee-link:hover {
-            color: var(--accent-blue);
-        }
-
-        /* Guarantee Tooltip Bubble */
-        .guarantee-bubble {
-            visibility: hidden;
-            opacity: 0;
-            width: 320px;
-            background: rgba(10, 15, 29, 0.95);
-            color: #f1f5f9;
-            border: 1px solid rgba(37, 99, 235, 0.4);
-            border-radius: 6px;
-            padding: 14px 16px;
-            position: absolute;
-            top: 130%;
-            left: 0;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
-            backdrop-filter: blur(12px);
-            font-size: 0.85rem;
-            line-height: 1.5;
-            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
-            transform: translateY(-8px);
-            pointer-events: none;
-            z-index: 120;
-        }
-
-        .guarantee-bubble strong {
-            color: var(--accent-blue);
-            display: block;
-            margin-bottom: 4px;
-            font-family: 'Outfit', sans-serif;
-            font-weight: 800;
-            font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .guarantee-container:hover .guarantee-bubble,
-        .guarantee-container.active .guarantee-bubble {
-            visibility: visible;
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Top Center Brand Link (Returns to main hero on hover/click) */
-        .top-center-brand {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.35rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--text-light);
-            white-space: nowrap;
-            opacity: 0;
-            transform: translateY(-10px);
-            transition: var(--transition-smooth);
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .top-center-brand:hover {
-            color: var(--accent-blue);
-        }
-
-        body.tab-active .top-center-brand {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Top Right: Client Portal Link */
-        .portal-link {
-            justify-self: end;
-            color: var(--text-light);
-            font-family: 'Space Mono', monospace;
-            text-decoration: none;
-            font-size: 0.825rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: color 0.2s ease;
-            padding: 6px 0;
-        }
-
-        .portal-link:hover {
-            color: var(--accent-blue);
-        }
-
-        /* --- HERO CENTER CONTENT (LEFT ALIGNED) --- */
-        .hero-center {
-            position: fixed;
-            top: 50%;
-            left: 8vw;
-            transform: translateY(-50%);
-            text-align: left;
-            z-index: 10;
-            width: 84vw;
-            max-width: 1000px;
-            transition: var(--transition-smooth);
-        }
-
-        body.tab-active .hero-center {
-            opacity: 0;
-            transform: translateY(-55%);
-            pointer-events: none;
-        }
-
-        .hero-main-title {
-            font-family: 'Outfit', sans-serif;
-            font-size: clamp(2.8rem, 6.5vw, 5.2rem);
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--text-light);
-            line-height: 1.05;
-            text-shadow: 0 4px 30px rgba(0,0,0,0.8);
-        }
-
-        .hero-sub-tagline {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-weight: 500;
-            font-size: clamp(1.1rem, 2.2vw, 1.6rem);
-            color: var(--text-subtle);
-            margin-top: 14px;
-            letter-spacing: 0.5px;
-            text-shadow: 0 2px 15px rgba(0,0,0,0.8);
-        }
-
-        /* --- SUBMENU OVERLAYS (6-CELL GRID FORMAT) --- */
-        .content-overlay {
-            position: fixed;
-            top: 65px;
-            bottom: 75px;
-            left: 0;
-            width: 100%;
-            z-index: 30;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 2vh 4vw;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(15px);
-            transition: var(--transition-smooth);
-            pointer-events: none;
-        }
-
-        .content-overlay.active {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
-
-        .overlay-inner {
-            width: 100%;
-            max-width: 1200px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* 6-CELL GRID SYSTEM (1 2 3 / 4 5 6) */
-        .grid-6-cells {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(2, 1fr);
-            gap: 20px;
-            width: 100%;
-            height: 100%;
-            max-height: 68vh;
-            align-items: center;
-        }
-
-        .grid-cell {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            height: 100%;
-            width: 100%;
-            position: relative;
-        }
-
-        /* Title Cell Styling */
-        .title-cell-heading {
-            font-family: 'Outfit', sans-serif;
-            font-size: clamp(2.2rem, 4vw, 3.4rem);
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--text-light);
-            line-height: 1.08;
-        }
-
-        .align-center { text-align: center; align-items: center; }
-        .align-left { text-align: left; align-items: flex-start; }
-        .align-right { text-align: right; align-items: flex-end; }
-
-        /* Bullets Cell Styling */
-        .bullets-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            width: 100%;
-        }
-
-        .bullets-list li {
-            font-size: clamp(0.9rem, 1.2vw, 1.05rem);
-            font-weight: 400;
-            color: var(--text-subtle);
-            line-height: 1.35;
-        }
-
-        .align-right .bullets-list li::after {
-            content: " •";
-            color: var(--accent-blue);
-            font-weight: bold;
-        }
-
-        .align-left .bullets-list li::before {
-            content: "• ";
-            color: var(--accent-blue);
-            font-weight: bold;
-        }
-
-        /* Quote Link Button Cell Styling */
-        .quote-link-btn {
-            display: inline-block;
-            background: transparent;
-            color: var(--text-light);
-            font-family: 'Outfit', sans-serif;
-            font-size: clamp(1rem, 1.4vw, 1.25rem);
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            padding: 14px 28px;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 50px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: var(--transition-smooth);
-            width: fit-content;
-        }
-
-        .quote-link-btn:hover {
-            background: var(--accent-blue);
-            border-color: var(--accent-blue);
-            box-shadow: 0 0 20px rgba(37, 99, 235, 0.5);
-            transform: translateY(-2px);
-        }
-
-        /* Photo Cell Item */
-        .photo-cell-item {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            min-height: 140px;
-            overflow: hidden;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-            background: #000;
-        }
-
-        .photo-cell-item:hover {
-            transform: translateY(-4px);
-        }
-
-        .photo-cell-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-        }
-
-        .photo-cell-item:hover img {
-            transform: scale(1.06);
-        }
-
-        /* Quote Overlay on Photo */
-        .photo-overlay-quote {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            padding: 16px 14px 10px 14px;
-            background: linear-gradient(to top, rgba(10, 15, 29, 0.95) 0%, rgba(10, 15, 29, 0.4) 60%, transparent 100%);
-            color: var(--text-light);
-            font-style: italic;
-            font-size: clamp(0.78rem, 1vw, 0.88rem);
-            line-height: 1.3;
-            text-align: left;
-        }
-
-        /* --- STREAMLINED CONTACT SUBMENU --- */
-        .contact-wrapper {
-            width: 100%;
-            max-width: 600px;
-            margin: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 2vh;
-            text-align: center;
-        }
-
-        .contact-sub-text {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            margin-bottom: 1vh;
-        }
-
-        .contact-form-clean {
-            display: flex;
-            flex-direction: column;
-            gap: 1.8vh;
-            width: 100%;
-            text-align: left;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-
-        .field-clean {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .field-clean label {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-muted);
-        }
-
-        .field-clean input, .field-clean select, .field-clean textarea {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 10px 14px;
-            border-radius: 4px;
-            color: var(--text-light);
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 0.9rem;
-            transition: border-color 0.2s ease;
-        }
-
-        .field-clean input:focus, .field-clean select:focus, .field-clean textarea:focus {
-            outline: none;
-            border-color: var(--accent-blue);
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        /* --- BOTTOM NAVBAR (3 EQUAL SPREAD COLUMNS) --- */
-        .bottom-navbar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 75px;
-            z-index: 100;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            align-items: center;
-            background: rgba(10, 15, 29, 0.88);
-            border-top: 1px solid rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(12px);
-        }
-
-        .nav-tab-btn {
-            background: none;
-            border: none;
-            color: rgba(255, 255, 255, 0.6);
-            font-family: 'Outfit', sans-serif;
-            font-size: clamp(1.2rem, 2.2vw, 1.6rem);
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            cursor: pointer;
-            height: 100%;
-            width: 100%;
-            position: relative;
-            transition: var(--transition-smooth);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .nav-tab-btn:hover, .nav-tab-btn.active {
-            color: var(--text-light);
-        }
-
-        .nav-tab-btn::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%) scaleX(0);
-            width: 35%;
-            height: 3px;
-            background-color: var(--accent-blue);
-            transition: transform 0.3s ease;
-        }
-
-        .nav-tab-btn:hover::after, .nav-tab-btn.active::after {
-            transform: translateX(-50%) scaleX(1);
-        }
-
-        /* --- 4-CELL (2X2 GRID) SHOWCASE LIGHTBOX MODAL --- */
-        .modal-grid-lightbox {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(5, 7, 12, 0.95);
-            backdrop-filter: blur(24px);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 30px;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s;
-        }
-
-        .modal-grid-lightbox.is-open {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-close-x {
-            position: absolute;
-            top: 25px;
-            right: 35px;
-            background: none;
-            border: none;
-            color: var(--text-light);
-            font-size: 2.4rem;
-            cursor: pointer;
-            transition: color 0.2s ease, transform 0.2s ease;
-            z-index: 1010;
-            line-height: 1;
-        }
-
-        .modal-close-x:hover {
-            color: var(--accent-blue);
-            transform: scale(1.1);
-        }
-
-        .grid-modal-container {
-            max-width: 1050px;
-            width: 100%;
-            text-align: center;
-        }
-
-        .grid-modal-header {
-            font-family: 'Outfit', sans-serif;
-            font-size: clamp(1.6rem, 2.8vw, 2.4rem);
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--text-light);
-            margin-bottom: 20px;
-        }
-
-        .lightbox-2x2-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            width: 100%;
-        }
-
-        .grid-photo-card {
-            position: relative;
-            height: clamp(160px, 26vh, 220px);
-            border-radius: 4px;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            background: #000;
-        }
-
-        .grid-photo-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .grid-review-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(37, 99, 235, 0.4);
-            border-radius: 4px;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: flex-start;
-            text-align: left;
-            height: clamp(160px, 26vh, 220px);
-        }
-
-        .stars-row {
-            color: var(--accent-blue);
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-        }
-
-        .review-text {
-            font-style: italic;
-            font-size: clamp(0.875rem, 1.2vw, 1rem);
-            line-height: 1.45;
-            color: var(--text-light);
-            margin-bottom: 12px;
-        }
-
-        .review-author {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-        }
-
-        @media (max-width: 850px) {
-            .hero-main-title { font-size: 2.2rem; }
-            .hero-center { left: 5vw; width: 90vw; }
-            .top-header { padding: 0 20px; }
-            .grid-6-cells { grid-template-columns: 1fr; grid-template-rows: auto; overflow-y: auto; max-height: 75vh; }
-            .lightbox-2x2-grid { grid-template-columns: 1fr; }
-            .form-row { grid-template-columns: 1fr; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diamond Concrete Flooring</title>
+  
+  <!-- Google Fonts: Ramabhadra for Headings, Bitter for Body -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,300..700;1,300..700&family=Ramabhadra&display=swap" rel="stylesheet">
+
+  <style>
+    /* Reset & Base Styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow-x: hidden;
+    }
+
+    /* Background image set at bottom layer of the stack */
+    body {
+      font-family: 'Bitter', serif;
+      background: #111111 url('hero.jpeg') no-repeat center center/cover;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* High-contrast text glow effect for white text over varying light/dark photo areas */
+    .glow-text {
+      color: #ffffff;
+      text-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.95),
+        0 0 12px rgba(0, 0, 0, 0.85),
+        0 0 24px rgba(0, 0, 0, 0.65);
+    }
+
+    /* ----------------------------------------------------
+       TOP NAVIGATION BAR
+       - Semi-transparent dark bar stacked on top of hero.jpeg
+       ---------------------------------------------------- */
+    header {
+      width: 100%;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      padding: 0 5%;
+      flex-shrink: 0;
+      background: rgba(15, 18, 22, 0.80); /* Semi-transparent dark grey bar */
+      backdrop-filter: blur(4px); /* Smooth subtle background blur */
+      z-index: 10;
+    }
+
+    .nav-left {
+      width: 33.333%;
+      text-align: left;
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: #ffffff;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .nav-center {
+      width: 33.333%;
+      text-align: center;
+    }
+
+    .nav-center a {
+      font-family: 'Bitter', serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+      text-decoration: underline;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+    }
+
+    .nav-right {
+      width: 33.333%;
+      text-align: right;
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: #ffffff;
+    }
+
+    .nav-right a {
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+    /* Tooltip / Pop-up box for Smiley Smooth Guarantee */
+    .guarantee-tooltip {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 10px;
+      width: 300px;
+      background: rgba(255, 255, 255, 0.95);
+      color: #000000;
+      padding: 15px;
+      border-radius: 4px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      font-family: 'Bitter', serif;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      z-index: 100;
+    }
+
+    .nav-left:hover .guarantee-tooltip,
+    .nav-left:focus .guarantee-tooltip,
+    .guarantee-tooltip.active {
+      display: block;
+    }
+
+    /* ----------------------------------------------------
+       MAIN CONTENT CONTAINER
+       ---------------------------------------------------- */
+    main {
+      flex: 1;
+      display: flex;
+      width: 100%;
+      height: calc(100vh - 80px);
+      padding-bottom: 3vh;
+      z-index: 5;
+    }
+
+    /* ----------------------------------------------------
+       LEFT SECTION
+       ---------------------------------------------------- */
+    .hero-left {
+      width: 60%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding-left: 4vw;
+      padding-right: 2vw;
+    }
+
+    .headline-box {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: left;
+    }
+
+    .headline-box h1 {
+      font-family: 'Ramabhadra', sans-serif;
+      text-transform: uppercase;
+      font-size: clamp(3.5rem, 7.8vw, 8.8rem);
+      line-height: 0.98;
+      letter-spacing: 0px;
+      margin: 0;
+      white-space: nowrap;
+    }
+
+    .headline-box h1 span {
+      display: block;
+    }
+
+    /* ----------------------------------------------------
+       RIGHT SECTION
+       ---------------------------------------------------- */
+    .hero-right {
+      width: 40%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-left: 2vw;
+      padding-right: 5vw;
+    }
+
+    .body-box {
+      width: 100%;
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 28px;
+      text-align: center;
+      font-family: 'Bitter', serif;
+      font-size: clamp(0.95rem, 1.2vw, 1.2rem);
+      line-height: 1.45;
+      letter-spacing: normal;
+      font-weight: 600;
+    }
+
+    .body-block {
+      width: 100%;
+    }
+
+    .body-box p {
+      margin: 0;
+    }
+
+    .italic-text {
+      font-style: italic;
+    }
+
+    .underline-text {
+      text-decoration: underline;
+      color: #ffffff;
+    }
+
+    /* ----------------------------------------------------
+       MODAL STYLES (GET A FREE QUOTE)
+       ---------------------------------------------------- */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: rgba(255, 255, 255, 0.98);
+      color: #000000;
+      padding: 30px;
+      border-radius: 6px;
+      width: 90%;
+      max-width: 500px;
+      position: relative;
+      font-family: 'Bitter', serif;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .quote-form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .checkbox-group label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.95rem;
+    }
+
+    .quote-form label.field-label {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      text-align: left;
+    }
+
+    .quote-form input[type="text"],
+    .quote-form input[type="tel"],
+    .quote-form input[type="email"],
+    .quote-form textarea,
+    .quote-form input[type="file"] {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: 'Bitter', serif;
+      font-size: 0.95rem;
+    }
+
+    .quote-form textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .quote-form button {
+      padding: 10px;
+      background: #14181e;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      font-family: 'Bitter', serif;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .submission-message {
+      display: none;
+      font-size: 1rem;
+      line-height: 1.5;
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    /* ----------------------------------------------------
+       RESPONSIVE / MOBILE STYLES
+       ---------------------------------------------------- */
+    @media (max-width: 850px) {
+      body {
+        min-height: 100vh;
+        overflow-y: auto;
+      }
+
+      header {
+        flex-direction: column;
+        height: auto;
+        padding: 16px 15px;
+        gap: 10px;
+      }
+
+      .nav-left, .nav-center, .nav-right {
+        width: 100%;
+        text-align: center;
+      }
+
+      .guarantee-tooltip {
+        position: relative;
+        width: 100%;
+        margin-top: 5px;
+      }
+
+      main {
+        flex-direction: column;
+        height: auto;
+        padding: 20px 0;
+      }
+
+      .hero-left, .hero-right {
+        width: 100%;
+        height: auto;
+        padding: 25px 20px;
+      }
+
+      .headline-box {
+        text-align: center;
+      }
+
+      .headline-box h1 {
+        font-size: clamp(2.2rem, 8.5vw, 4.2rem);
+        white-space: normal;
+      }
+
+      .body-box {
+        width: 100%;
+        gap: 22px;
+      }
+    }
+  </style>
 </head>
-<body id="mainBody">
+<body>
 
-    <!-- FULLSCREEN HERO BACKGROUND VIEWPORT -->
-    <div class="bg-viewport"></div>
+  <!-- Top Navigation Header with Semi-Transparent Dark Bar -->
+  <header>
+    <div class="nav-left" id="guaranteeBtn" tabindex="0">
+      Smiley Smooth Guarantee
+      <div class="guarantee-tooltip" id="guaranteeTooltip">
+        We guarantee a smooth finish every time. If you are not completely satisfied, we will make it right (or your money back)!
+      </div>
+    </div>
+    <div class="nav-center">
+      <a href="#" id="quoteLink">GET A FREE QUOTE!</a>
+    </div>
+    <div class="nav-right">
+      <a href="pay.html" target="_blank">Client Pay Portal</a>
+    </div>
+  </header>
 
-    <!-- TOP HEADER -->
-    <header class="top-header" id="topHeader">
-        <!-- Top Left: Guarantee Link -->
-        <div class="guarantee-container" id="guaranteeWrap">
-            <button class="guarantee-link" id="guaranteeBtn" onclick="toggleGuarantee(event)">Smiley Smooth Guarantee</button>
-            <div class="guarantee-bubble" id="guaranteeBubble">
-                <strong>Smiley Smooth Guarantee</strong>
-                Heavy-duty dustless diamond mechanical grinding (ICRI CSP Standards) delivers superior mechanical adhesion. Guaranteed 100% peeling protection, zero hot-tire pick-up, and total peace of mind on every commercial and residential slab.
-            </div>
+  <!-- Main Hero Area -->
+  <main>
+    
+    <!-- Left Column -->
+    <section class="hero-left">
+      <div class="headline-box">
+        <h1 class="glow-text">
+          <span>DIAMOND</span>
+          <span>CONCRETE</span>
+          <span>FLOORING</span>
+        </h1>
+      </div>
+    </section>
+
+    <!-- Right Column -->
+    <section class="hero-right">
+      <div class="body-box glow-text">
+        
+        <!-- Block 1 -->
+        <div class="body-block">
+          <p>Central Kentucky’s most trusted provider for</p>
+          <p>concrete preparation &amp; resinous coating.</p>
         </div>
 
-        <!-- Top Center: Brand Title (Hovering or clicking resets view to main unblurred hero screen) -->
-        <div class="top-center-brand" id="brandResetBtn" onclick="resetDefaultView()" onmouseover="resetDefaultView()">Diamond Concrete Flooring</div>
-
-        <!-- Top Right: Client Portal Link -->
-        <a href="#pay" class="portal-link" onclick="alert('Redirecting to secure Client Pay Portal...')">Client Pay Portal</a>
-    </header>
-
-    <!-- DEFAULT HERO CENTER CONTENT (LEFT ALIGNED) -->
-    <div class="hero-center">
-        <h1 class="hero-main-title">DIAMOND CONCRETE FLOORING</h1>
-        <p class="hero-sub-tagline">Backed by the Smiley Smooth Guarantee</p>
-    </div>
-
-    <!-- SUBMENU OVERLAY: COMMERCIAL FLOORING (6-CELL GRID FORMAT: 1 2 3 / 4 5 6) -->
-    <div class="content-overlay" id="overlay-commercial">
-        <div class="overlay-inner">
-            <div class="grid-6-cells">
-                <!-- Cell 1: Project COM1A -->
-                <div class="grid-cell">
-                    <div class="photo-cell-item" onclick="openGridModal('comm-1')">
-                        <img src="photos/COM1A.jpeg" alt="Commercial Project 1" onerror="this.onerror=null; this.src='floor1.jpeg';">
-                        <div class="photo-overlay-quote" id="cover-quote-comm-1">"Loading quote from projects.txt..."</div>
-                    </div>
-                </div>
-
-                <!-- Cell 2: Commercial Flooring Title (2 lines, align center) -->
-                <div class="grid-cell align-center">
-                    <h2 class="title-cell-heading" style="text-align: center;">COMMERCIAL<br>FLOORING</h2>
-                </div>
-
-                <!-- Cell 3: Project COM2A -->
-                <div class="grid-cell">
-                    <div class="photo-cell-item" onclick="openGridModal('comm-2')">
-                        <img src="photos/COM2A.jpeg" alt="Commercial Project 2" onerror="this.onerror=null; this.src='floor1.jpeg';">
-                        <div class="photo-overlay-quote" id="cover-quote-comm-2">"Loading quote from projects.txt..."</div>
-                    </div>
-                </div>
-
-                <!-- Cell 4: 3 bullet points on 3 lines, align all right -->
-                <div class="grid-cell align-right">
-                    <ul class="bullets-list">
-                        <li>Dustless ICRI CSP-3 Diamond Mechanical Surface Prep</li>
-                        <li>USDA and FDA Compliant Urethane Cement Slurries</li>
-                        <li>Moisture Vapor Barriers & Industrial Chemical Armor</li>
-                    </ul>
-                </div>
-
-                <!-- Cell 5: Project COM3A -->
-                <div class="grid-cell">
-                    <div class="photo-cell-item" onclick="openGridModal('comm-3')">
-                        <img src="photos/COM3A.jpeg" alt="Commercial Project 3" onerror="this.onerror=null; this.src='floor1.jpeg';">
-                        <div class="photo-overlay-quote" id="cover-quote-comm-3">"Loading quote from projects.txt..."</div>
-                    </div>
-                </div>
-
-                <!-- Cell 6: Simple link to Get a free commercial quote (align left) -->
-                <div class="grid-cell align-left">
-                    <button class="quote-link-btn" onclick="switchTab('contact')">Get a free commercial quote</button>
-                </div>
-            </div>
+        <!-- Block 2 -->
+        <div class="body-block">
+          <p>High-performance COMMERCIAL installations</p>
+          <p>to same-day RESIDENTIAL solutions...</p>
         </div>
-    </div>
 
-    <!-- SUBMENU OVERLAY: RESIDENTIAL FLOORING (6-CELL GRID FORMAT: 1 2 3 / 4 5 6) -->
-    <div class="content-overlay" id="overlay-residential">
-        <div class="overlay-inner">
-            <div class="grid-6-cells">
-                <!-- Cell 1: Residential Flooring Title (2 lines, align right) -->
-                <div class="grid-cell align-right">
-                    <h2 class="title-cell-heading" style="text-align: right;">RESIDENTIAL<br>FLOORING</h2>
-                </div>
-
-                <!-- Cell 2: Project RES1A -->
-                <div class="grid-cell">
-                    <div class="photo-cell-item" onclick="openGridModal('res-1')">
-                        <img src="photos/RES1A.jpeg" alt="Residential Project 1" onerror="this.onerror=null; this.src='floor1.jpeg';">
-                        <div class="photo-overlay-quote" id="cover-quote-res-1">"Loading quote from projects.txt..."</div>
-                    </div>
-                </div>
-
-                <!-- Cell 3: 3 bullet points on 3 lines, align all left -->
-                <div class="grid-cell align-left">
-                    <ul class="bullets-list">
-                        <li>1-Day Polyaspartic Rapid Cure Garage Floor Systems</li>
-                        <li>100% Hot-Tire Pick-Up Proof Industrial Strength Armor</li>
-                        <li>Custom Decorative Vinyl Flake & Seamless Metallic Finishes</li>
-                    </ul>
-                </div>
-
-                <!-- Cell 4: Project RES2A -->
-                <div class="grid-cell">
-                    <div class="photo-cell-item" onclick="openGridModal('res-2')">
-                        <img src="photos/RES2A.jpeg" alt="Residential Project 2" onerror="this.onerror=null; this.src='floor1.jpeg';">
-                        <div class="photo-overlay-quote" id="cover-quote-res-2">"Loading quote from projects.txt..."</div>
-                    </div>
-                </div>
-
-                <!-- Cell 5: Simple link to Get a free residential quote (align center) -->
-                <div class="grid-cell align-center">
-                    <button class="quote-link-btn" onclick="switchTab('contact')">Get a free residential quote</button>
-                </div>
-
-                <!-- Cell 6: Project RES3A -->
-                <div class="grid-cell">
-                    <div class="photo-cell-item" onclick="openGridModal('res-3')">
-                        <img src="photos/RES3A.jpeg" alt="Residential Project 3" onerror="this.onerror=null; this.src='floor1.jpeg';">
-                        <div class="photo-overlay-quote" id="cover-quote-res-3">"Loading quote from projects.txt..."</div>
-                    </div>
-                </div>
-            </div>
+        <!-- Block 3 -->
+        <div class="body-block">
+          <p>Our results speak for themselves:</p>
+          <p class="italic-text"><a href="DCF_Portfolio.pdf" class="underline-text" target="_blank">View our portfolio</a></p>
         </div>
-    </div>
+      </div>
+    </section>
 
-    <!-- SUBMENU OVERLAY: CONTACT US -->
-    <div class="content-overlay" id="overlay-contact">
-        <div class="overlay-inner">
-            <div class="contact-wrapper">
-                <h2 class="title-cell-heading" style="text-align: center; margin-bottom: 12px;">CONTACT US</h2>
-                <p class="contact-sub-text">Have a question? Send us a quick message below.</p>
-                
-                <form class="contact-form-clean" onsubmit="handleContactSubmit(event)">
-                    <div class="field-clean">
-                        <label for="c-name">Your Name *</label>
-                        <input type="text" id="c-name" required placeholder="Enter your full name">
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="field-clean">
-                            <label for="c-pref">Preferred Contact</label>
-                            <select id="c-pref" onchange="toggleContactInput()">
-                                <option value="email">Email</option>
-                                <option value="phone">Phone</option>
-                            </select>
-                        </div>
-                        <div class="field-clean">
-                            <label for="c-info" id="c-info-label">Email Address *</label>
-                            <input type="text" id="c-info" required placeholder="name@example.com">
-                        </div>
-                    </div>
+  </main>
 
-                    <div class="field-clean">
-                        <label for="c-msg">Quick Question or Message *</label>
-                        <textarea id="c-msg" rows="3" required placeholder="Type your message here..."></textarea>
-                    </div>
-
-                    <button type="submit" class="quote-link-btn" style="width: 100%; border-radius: 4px; margin-top: 1vh; text-align: center;">SUBMIT</button>
-                </form>
-            </div>
+  <!-- Quote Form Modal -->
+  <div class="modal-overlay" id="quoteModal">
+    <div class="modal-content">
+      <span class="close-modal" id="closeModal">&times;</span>
+      
+      <form class="quote-form" id="quoteForm">
+        <div class="checkbox-group">
+          <label><input type="checkbox" name="inquiry" value="residential"> Residential</label>
+          <label><input type="checkbox" name="inquiry" value="commercial"> Commercial</label>
+          <label><input type="checkbox" name="inquiry" value="other"> Other inquiry</label>
         </div>
+
+        <label class="field-label">
+          Name:
+          <input type="text" name="name" required>
+        </label>
+
+        <label class="field-label">
+          Phone Number:
+          <input type="tel" name="phone" required>
+        </label>
+
+        <label class="field-label">
+          Email:
+          <input type="email" name="email" required>
+        </label>
+
+        <label class="field-label">
+          Message:
+          <textarea name="message" required></textarea>
+        </label>
+
+        <label class="field-label">
+          Optional attach photos or file:
+          <input type="file" name="attachment">
+        </label>
+
+        <button type="submit">Submit</button>
+      </form>
+
+      <div class="submission-message" id="submissionMessage">
+        We have received your submission. Someone from our team will reach out in the next 1-2 business days!
+      </div>
     </div>
+  </div>
 
-    <!-- BOTTOM NAVBAR (3 EQUAL SPREAD COLUMNS) -->
-    <nav class="bottom-navbar">
-        <button class="nav-tab-btn" id="tab-commercial" onmouseover="handleTabHover('commercial')" onclick="lockTab('commercial')">COMMERCIAL</button>
-        <button class="nav-tab-btn" id="tab-residential" onmouseover="handleTabHover('residential')" onclick="lockTab('residential')">RESIDENTIAL</button>
-        <button class="nav-tab-btn" id="tab-contact" onmouseover="handleTabHover('contact')" onclick="lockTab('contact')">CONTACT US</button>
-    </nav>
+  <script>
+    // Guarantee Tooltip Toggle for Mobile Click
+    const guaranteeBtn = document.getElementById('guaranteeBtn');
+    const guaranteeTooltip = document.getElementById('guaranteeTooltip');
 
-    <!-- 4-CELL (2X2 GRID) SHOWCASE LIGHTBOX MODAL -->
-    <div class="modal-grid-lightbox" id="gridModal">
-        <button class="modal-close-x" onclick="closeGridModal()">&times;</button>
-        <div class="grid-modal-container">
-            <h3 class="grid-modal-header" id="modalProjectTitle">Project Showcase</h3>
-            <div class="lightbox-2x2-grid">
-                <!-- Cell 1: Top Left Photo A -->
-                <div class="grid-photo-card">
-                    <img id="modalImgA" src="floor1.jpeg" alt="Photo A" onerror="this.onerror=null; this.src='floor1.jpeg';">
-                </div>
+    guaranteeBtn.addEventListener('click', (e) => {
+      guaranteeTooltip.classList.toggle('active');
+    });
 
-                <!-- Cell 2: Top Right Photo B -->
-                <div class="grid-photo-card">
-                    <img id="modalImgB" src="floor1.jpeg" alt="Photo B" onerror="this.onerror=null; this.src='floor1.jpeg';">
-                </div>
+    // Modal Form Logic
+    const quoteLink = document.getElementById('quoteLink');
+    const quoteModal = document.getElementById('quoteModal');
+    const closeModal = document.getElementById('closeModal');
+    const quoteForm = document.getElementById('quoteForm');
+    const submissionMessage = document.getElementById('submissionMessage');
 
-                <!-- Cell 3: Bottom Left Photo C -->
-                <div class="grid-photo-card">
-                    <img id="modalImgC" src="floor1.jpeg" alt="Photo C" onerror="this.onerror=null; this.src='floor1.jpeg';">
-                </div>
+    quoteLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      quoteModal.classList.add('active');
+    });
 
-                <!-- Cell 4: Bottom Right Customer Review Card -->
-                <div class="grid-review-card">
-                    <div class="stars-row">★★★★★</div>
-                    <p class="review-text" id="modalReviewQuote">"Loading review..."</p>
-                    <div class="review-author" id="modalReviewAuthor">Client Name</div>
-                </div>
-            </div>
-        </div>
-    </div>
+    closeModal.addEventListener('click', () => {
+      quoteModal.classList.remove('active');
+    });
 
-    <!-- JAVASCRIPT CONTROLLER -->
-    <script>
-        const body = document.getElementById('mainBody');
-        const topHeader = document.getElementById('topHeader');
-        let isTabLocked = false;
-        let activeTab = null;
+    window.addEventListener('click', (e) => {
+      if (e.target === quoteModal) {
+        quoteModal.classList.remove('active');
+      }
+    });
 
-        // Dynamic database populated directly from projects.txt
-        let galleryDatabase = {
-            'comm-1': { title: "Commercial Project 1", client: "Client 1", quote: "Loading...", imgA: "photos/COM1A.jpeg", imgB: "photos/COM1B.jpeg", imgC: "photos/COM1C.jpeg" },
-            'comm-2': { title: "Commercial Project 2", client: "Client 2", quote: "Loading...", imgA: "photos/COM2A.jpeg", imgB: "photos/COM2B.jpeg", imgC: "photos/COM2C.jpeg" },
-            'comm-3': { title: "Commercial Project 3", client: "Client 3", quote: "Loading...", imgA: "photos/COM3A.jpeg", imgB: "photos/COM3B.jpeg", imgC: "photos/COM3C.jpeg" },
-            'res-1': { title: "Residential Project 1", client: "Client 1", quote: "Loading...", imgA: "photos/RES1A.jpeg", imgB: "photos/RES1B.jpeg", imgC: "photos/RES1C.jpeg" },
-            'res-2': { title: "Residential Project 2", client: "Client 2", quote: "Loading...", imgA: "photos/RES2A.jpeg", imgB: "photos/RES2B.jpeg", imgC: "photos/RES2C.jpeg" },
-            'res-3': { title: "Residential Project 3", client: "Client 3", quote: "Loading...", imgA: "photos/RES3A.jpeg", imgB: "photos/RES3B.jpeg", imgC: "photos/RES3C.jpeg" }
-        };
+    quoteForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      quoteForm.style.display = 'none';
+      submissionMessage.style.display = 'block';
+    });
+  </script>
 
-        // Parse projects.txt strictly:
-        // Format: Number. Project Title, Client Name, "Client Review"
-        async function loadProjectsTxt() {
-            const possiblePaths = ['projects.txt', '/concrete/projects.txt', 'concrete/projects.txt'];
-            for (const path of possiblePaths) {
-                try {
-                    const res = await fetch(path);
-                    if (res.ok) {
-                        const text = await res.text();
-                        parseProjectsTxt(text);
-                        updateCoverQuotesUI();
-                        break;
-                    }
-                } catch (e) {
-                    // Try next
-                }
-            }
-            updateCoverQuotesUI();
-        }
-
-        function parseProjectsTxt(rawText) {
-            const lines = rawText.split('\n');
-            let currentCategory = null;
-
-            lines.forEach(line => {
-                const trimmed = line.trim();
-                if (!trimmed) return;
-
-                if (trimmed.toLowerCase().includes('commercial projects')) {
-                    currentCategory = 'comm';
-                    return;
-                } else if (trimmed.toLowerCase().includes('residential projects')) {
-                    currentCategory = 'res';
-                    return;
-                }
-
-                if (currentCategory) {
-                    const match = trimmed.match(/^(\d+)\.\s*([^,]+),\s*([^,]+),\s*["']?([^"']+)["']?/);
-                    if (match) {
-                        const idx = match[1];
-                        const title = match[2].trim();
-                        const client = match[3].trim();
-                        const quote = match[4].trim();
-                        const key = `${currentCategory}-${idx}`;
-
-                        if (galleryDatabase[key]) {
-                            galleryDatabase[key].title = title;
-                            galleryDatabase[key].client = client;
-                            galleryDatabase[key].quote = quote;
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateCoverQuotesUI() {
-            for (const key in galleryDatabase) {
-                const el = document.getElementById(`cover-quote-${key}`);
-                if (el) {
-                    const d = galleryDatabase[key];
-                    el.textContent = `"${d.quote}" — ${d.client}`;
-                }
-            }
-        }
-
-        function toggleGuarantee(e) {
-            e.stopPropagation();
-            document.getElementById('guaranteeWrap').classList.toggle('active');
-        }
-
-        document.addEventListener('click', (e) => {
-            const wrap = document.getElementById('guaranteeWrap');
-            if (wrap && !wrap.contains(e.target)) {
-                wrap.classList.remove('active');
-            }
-        });
-
-        function toggleContactInput() {
-            const pref = document.getElementById('c-pref').value;
-            const label = document.getElementById('c-info-label');
-            const input = document.getElementById('c-info');
-
-            if (pref === 'phone') {
-                label.textContent = 'Phone Number *';
-                input.placeholder = '(859) 555-0199';
-                input.type = 'tel';
-            } else {
-                label.textContent = 'Email Address *';
-                input.placeholder = 'name@example.com';
-                input.type = 'email';
-            }
-        }
-
-        function handleContactSubmit(e) {
-            e.preventDefault();
-            alert("We have received your message and will be in touch as soon as possible. Thank you for your interest in Diamond Concrete Flooring.");
-            resetDefaultView();
-        }
-
-        function handleTabHover(tabName) {
-            if (!isTabLocked) {
-                switchTab(tabName);
-            }
-        }
-
-        function lockTab(tabName) {
-            isTabLocked = true;
-            switchTab(tabName);
-        }
-
-        function switchTab(tabName) {
-            activeTab = tabName;
-            body.classList.add('tab-active');
-
-            document.querySelectorAll('.content-overlay').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
-
-            const overlay = document.getElementById(`overlay-${tabName}`);
-            const navBtn = document.getElementById(`tab-${tabName}`);
-
-            if (overlay) overlay.classList.add('active');
-            if (navBtn) navBtn.classList.add('active');
-        }
-
-        function resetDefaultView() {
-            isTabLocked = false;
-            activeTab = null;
-            body.classList.remove('tab-active');
-            document.querySelectorAll('.content-overlay').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
-        }
-
-        function openGridModal(key) {
-            const data = galleryDatabase[key];
-            if (!data) return;
-
-            document.getElementById('modalProjectTitle').textContent = data.title;
-            document.getElementById('modalReviewQuote').textContent = `"${data.quote}"`;
-            document.getElementById('modalReviewAuthor').textContent = data.client;
-
-            document.getElementById('modalImgA').src = data.imgA;
-            document.getElementById('modalImgB').src = data.imgB;
-            document.getElementById('modalImgC').src = data.imgC;
-
-            document.getElementById('gridModal').classList.add('is-open');
-            topHeader.classList.add('modal-open');
-        }
-
-        function closeGridModal() {
-            document.getElementById('gridModal').classList.remove('is-open');
-            topHeader.classList.remove('modal-open');
-        }
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                closeGridModal();
-                resetDefaultView();
-            }
-        });
-
-        // Initialize projects.txt load
-        window.addEventListener('DOMContentLoaded', loadProjectsTxt);
-    </script>
 </body>
 </html>
